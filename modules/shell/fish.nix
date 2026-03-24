@@ -46,9 +46,7 @@
 		shellAliases = {
             lg = "lazygit";
             rsync = "rsync -arvP";
-            proxychains = "proxychains -q";
-            update-grub = "sudo grub-mkconfig -o /boot/grub/grub.cfg";
-            archwiki = "firefox $(fd \".*\" --full-path /usr/share/doc/arch-wiki-zh-cn/html/zh-cn/ | fzf)";
+            px = "proxychains4 -f ~/.config/proxychains/proxychains.conf -q";
 		};
 
 		# --- --- --- 自定义函数 --- --- ---

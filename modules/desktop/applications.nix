@@ -27,7 +27,7 @@
     	loupe                # 图片查看器
     	libnotify            # 通知库
     	polkit_gnome         # 权限认证代理
-	firefox
+	    firefox
     	
     	# --- 字体、主题与图标 ---
     	nordic                 # GTK 主题
@@ -36,10 +36,10 @@
         noto-fonts-color-emoji # 表情符号支持
 
         # --- 终端模拟器 ---
-	alacritty
-	ghostty
+	    alacritty
+	    ghostty
 
-        # --- 其它应用程序 ---
+        # --- 其它应用程序(推荐开启透明代理后再安装) ---
         # Telegram 桌面端
         telegram-desktop
         # QQ
@@ -48,8 +48,8 @@
         wechat
         # 开源办公套件
         libreoffice-fresh
-        # # 几何画板
-        # geogebra
+        # 几何画板
+        geogebra6
         # GNU 图形处理工具
         gimp
         # p2p 下载器
@@ -61,6 +61,6 @@
         # 我的世界启动器
         prismlauncher
         # # 桌面共享工具
-        # rustdesk
+        rustdesk-flutter
     ];
 }

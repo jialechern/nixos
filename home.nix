@@ -54,8 +54,10 @@
   
       # 定义额外的自定义目录
       extraConfig = {
-        WALLPAPER = "${config.home.homeDirectory}/Pictures/WallPaper";
+        WALLPAPER = "${config.home.homeDirectory}/Pictures/WallPapers";
         PROJECTS = "${config.home.homeDirectory}/Projects";
+        TEST = "${config.home.homeDirectory}/Test";
+        STU = "${config.home.homeDirectory}/Stu";
       };
     };
 
@@ -93,6 +95,9 @@
     # Home Manager 非常擅长管理 dot 文件 (dotfiles). 管理纯文本文件的
     # 主要方式是通过 'home.file'
 	home.file = {
+        # 是的 fcitx5 主题插件在需要的目录下可见
+        ".local/share/fcitx5/themes".source = "${pkgs.fcitx5-nord}/share/fcitx5/themes";
+
         # # 构建此配置将在 Nix 存储中创建 'dotfiles/screenrc' 的副本
         # # 激活配置后, '~/.screenrc' 将成为指向 Nix 存储副本的符号链接
         # ".screenrc".source = dotfiles/screenrc;

@@ -25,8 +25,37 @@ in
 
   # --- --- --- 引导与内核 --- --- ---
   # 使用 systemd-boot EFI 引导加载器
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader = {
+    # 使用 Grub2 和 Grub2 主题
+    grub = {
+      enable = true;
+      # EFI 系统固定写 nodev
+      device = "nodev";
+      efiSupport = true;
+      # 如果有双系统(比如 Windows), 它会自动扫描并添加到菜单
+      useOSProber = true;
+
+      # 指定主题包
+      # # 使用 Catppuccin 主题
+      # theme = pkgs.catppuccin-grub; 
+
+      # 使用 Sleek 主题, 并利用 Nix 的 override 机制指定暗黑风格
+      theme = pkgs.sleek-grub-theme.override { 
+        # 支持: light, dark, orange, bigSur
+        withStyle = "dark";
+        # 自定义顶部文字
+        withBanner = "Welcome to NixOS";
+      };
+
+      # 可选: 如果 4K/2K 屏幕下 GRUB 菜单显得太小, 可以强制指定分辨率
+      gfxmodeEfi = "1920x1080"; 
+    };
+
+    # 彻底关闭默认的极简引导
+    systemd-boot.enable = false;
+
+    efi.canTouchEfiVariables = true;
+  };
 
   # 使用最新内核
   boot.kernelPackages = pkgs.linuxPackages_latest;
@@ -125,7 +154,18 @@ in
   };
 
   # 开启图形加速(尤其是 NVIDIA 显卡)
-  hardware.graphics.enable = true;
+  hardware.graphics = {
+    enable = true;
+    # 必须开启 32 位支持, 否则 Steam 会崩溃
+    enable32Bit = true;
+  };
+
+  # 启用 Steam 官方支持
+  programs.steam = {
+    enable = true;
+    # 针对 Niri/Wayland 建议开启这个
+    remotePlay.openFirewall = true; 
+  };
 
   # --- 合成器与桌面环境 ---
   # 自动处理 Niri 的 Wayland session 注册
@@ -247,9 +287,12 @@ in
   fonts.fontconfig = {
     defaultFonts = {
       emoji = [ "Noto Color Emoji" ];
-      monospace = [ "JetBrainsMono Nerd Font" ];
-      sansSerif = [ "Noto Sans CJK SC" ];
-      serif = [ "Noto Serif CJK SC" ];
+      monospace = [
+        "JetBrainsMono Nerd Font Mono"
+        "Sarasa Mono SC"
+      ];
+      sansSerif = [ "DejaVu Sans" "Noto Sans CJK SC" ];
+      serif = [ "DejaVu Serif" "Noto Serif CJK SC" ];
     };
   };
 
@@ -282,11 +325,14 @@ in
     V2RAYA_V2RAY_ASSETSDIR = "${v2rayAssets}/share/v2ray";
   };
 
-  # 容器
+  # --- 容器与沙箱 ---
+  # Docker/Podman
   virtualisation.podman = {
     enable = true;
     dockerCompat = true; # 将 docker 命令别名指向 podman
   };
+  # Flatpak
+  services.flatpak.enable = true;
 
   # --- --- --- 全局 Nix 守护进程设置 --- --- ---
   nix = {
@@ -370,6 +416,9 @@ in
     ntfs3g
     # 全局的文本编辑器
     neovim
+    # XWayland 依赖
+    xwayland-satellite
+    xhost
     # 全局依赖
     libsecret
   ];

@@ -6,6 +6,7 @@
 		Vertical Candidate List=False
 		PerScreenDPI=True
 		Theme=Nord-Dark
+        Font="JetBrainsMono Nerd Font Mono 12"
 	'';
 
 	# 定义输入法顺序为: 英文 -> 拼音 -> 日文

@@ -16,7 +16,8 @@
         ./fzf.nix
         ./yazi.nix
         ./bat.nix
-	./fastfetch.nix
+	    ./fastfetch.nix
+        ./proxychains.nix
 	];
 
     # --- --- --- 其它 Shell 工具 --- --- ---
