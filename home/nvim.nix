@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 
 let
-    nvimPath = /etc/nixos/modules/nvim;
+    nvimPath = /etc/nixos/home/nvim;
     deps = with pkgs; [
         # --- LSP 服务器 ---
         # Haskell LSP

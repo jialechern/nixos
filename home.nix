@@ -18,19 +18,19 @@
     # --- --- --- 引入配置 --- --- ---
     imports = [
         # 基本的 Shell 配置
-        ./modules/shell/shell.nix
+        ./home/shell/shell.nix
 
         # 开发环境
-        ./modules/dev/dev.nix
+        ./home/dev/dev.nix
 
         # neovim 配置
-        (if builtins.pathExists ./modules/nvim.nix then ./modules/nvim.nix else {})
+        (if builtins.pathExists ./home/nvim.nix then ./home/nvim.nix else {})
         # niri 配置
-        (if builtins.pathExists ./modules/niri.nix then ./modules/niri.nix else {})
+        (if builtins.pathExists ./home/niri.nix then ./home/niri.nix else {})
         # 桌面环境配置
-        (if builtins.pathExists ./modules/desktop/desktop.nix then ./modules/desktop/desktop.nix else {})
+        (if builtins.pathExists ./home/desktop/desktop.nix then ./home/desktop/desktop.nix else {})
         # 其它程序配置
-        ./modules/other/other.nix
+        ./home/other/other.nix
     ];
 
     # --- --- --- 生成标准家目录 --- --- ---

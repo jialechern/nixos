@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 
 let
-    niriPath = /etc/nixos/modules/niri;
+    niriPath = /etc/nixos/home/niri;
 in
 {
     # --- --- --- 链接 niri 配置目录 --- --- ---

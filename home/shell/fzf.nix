@@ -11,7 +11,8 @@ let
 	} (builtins.readFile ../../scripts/fzf-previewer); # 预览脚本位置
 
     defaultConfig = [
-		"--height 80%"
+        # "--height 80%"
+        "--style=full"
 		"--layout=reverse"
 		"--border"
 		"--info=inline"

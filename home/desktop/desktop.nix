@@ -6,6 +6,7 @@
         ./qt.nix
         ./xdg-desktop-portal.nix
         ./default-application.nix
+        ./fcitx5.nix
         ./fuzzel.nix
         ./swaylock.nix
         ./mpv.nix
@@ -19,13 +20,12 @@
 
 
         # services
-        ./services/fcitx5.nix
+        ./services/wl-clip-persist.nix
         ./services/mako.nix
         ./services/polkit-gnome-authentication-agent-1.nix
         ./services/waybar.nix
         ./services/swayidle.nix
         ./services/wlsunset.nix
-        ./services/wl-clip-persist.nix
         ./services/swww.nix
 	];
 

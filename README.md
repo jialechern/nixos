@@ -101,28 +101,28 @@ sudo dd bs=4M conv=fsync oflag=direct status=progress if=/path/to/nixos.iso of=/
     
     **注意:** 使用 "从现有系统安装" 或是 "Host-to-Target 安装" 需要将生成的 `hardware-configuration.nix` 中的多余本机信息删除.
 ### 安装 NixOS
-如果已经有 `NixOS` 的配置文件了, 只需要将刚刚生成的 `hardware-configuration.nix` 备份好, 将已有的配置文件替换为当前环境的 `/mnt/etc/nixos` 并将刚刚生成的 `hardware-configuration.nix` 与旧的配置文件中的 `hardware-configuration.nix` 做替换即可. 如果没有 `NixOS` 的配置文件, 就直接使用刚刚生成的新配置文件.
+1. 使用当前这份 `NixOS` 的配置文件, 需要将刚刚生成的 `hardware-configuration.nix` 移动至 `./hosts/<HOSTNAME>/` 下, 并放入配置好的 `configuration.nix`(可以使用当前配置文件中已有的 `configuration.nix` 作为模板)
+2. 在 `flake.nix` 的 `nixosConfigurations` 属性集中写入当前主机的配置信息(可以以已有主机作为模板). 在 `modules/*` 中放置了多项现成的可复用的 `configuration.nix` 配置, 只需要按需将它们放入 `nixpkgs.lib.nixosSystem { ... }` 的参数 `modules` 中即可
 
-**本仓库默认配置的一些说明:**
-    1. 初次构建系统可以使用 `nixos-install.sh` 进行安装, 其中已经包含了初次运行时的国内源设置
-    初次运行时可以把 `modules/desktop/applications.nix` 中的**其它软件**部分注释掉, 这些软件有些需要透明代理才能顺利下载, 等到初次构建成功后(v2rayA 服务已经成功部署后)再下载也是可以的
-    2. niri、nvim、alacritty 以及 ghostty 这四个软件的配置是独立的, 构建时需要将它们的配置文件放在 `modules/` 下并使用和软件相同的名称作为配置文件夹的名称
-    若想去除这些配置, 只需要将 `modules/` 下的同名的 `*.nix` 文件删掉即可
-    3. 如果使用核显, 则应该将 `configuration.nix` 下的"独立显卡驱动"的整段配置注释. 如果使用 AMD 的 CPU的整段配置注释, 如果使用 AMD 的 CPU 则需要将 `configuration.nix` 下"开启图形加速"相关的因特尔 CPU 相关配置注释, AMD 相关注释打开.
-
-**网络问题:**
-    - 下载慢的解决方案是使用镜像源, `nixos-install.sh` 是一份已经配置好了清华镜像源的下载命令可以直接运行下载, 也可以按需调整后运行下载
-    - 部分软件包会因为 hash 对不上而固执的跑到境外网站下载(`modules/desktop/applications.nix` 中 "其它软件" 的部分以及部分字体), 好在这些软件并不影响整体的系统功能, 在第一次 安装/构建 系统是可以将它们注释, 等代理服务能够正常运行后再解除注释重新构建它们.
-    - 也可以使用局域网内的其它主机作为代理(记得开启对应的代理工具的 "允许来自局域网内的连接" 功能)
-
-1. 通过如下命令通过 flake 的方式(前提是已经打开了 flake 功能)安装 `NixOS` 了. 其中 `FLAKEPATH` 是 `flake.nix` 文件的路径, `HOSTNAME` 是 `flake.nix` 中定义好的主机名称.
+3. 通过如下命令通过 flake 的方式(前提是已经打开了 flake 功能)安装 `NixOS` 了. 其中 `FLAKEPATH` 是 `flake.nix` 文件的路径, `HOSTNAME` 是 `flake.nix` 中定义好的主机名称.
 ```bash,zsh
 sudo nixos-install --flake <FLAKEPATH>#<HOSTNAME>
 ```
 
-2. 安装完成后使用 `nixos-enter --root /mnt` 进入刚刚安装的系统, 使用 `passwd <USER>` 修改配置文件中定义好的一般用户的密码(root 用户的密码在安装过程中就会通过交互式的方式设置好)
+**本仓库默认配置的一些说明:**
+    - niri、nvim、alacritty 以及 ghostty 这四个软件的配置是独立的, 构建时需要将它们的配置文件放在 `modules/` 下并使用和软件相同的名称作为配置文件夹的名称
+    若想去除这些配置, 只需要将 `home/` 下的同名的 `*.nix` 文件删掉即可
+    - 如果使用核显, 则不应该在 `nixpkgs.lib.nixosSystem { ... }` 的参数 `modules` 中引入形如 `./modules/nvidia.nix` 的独立显卡驱动配置项.
 
-3. 重启 `reboot`
+**网络问题:**
+    - 初次构建系统可以使用 `nixos-install.sh` 进行安装, 其中已经包含了初次运行时的国内源设置
+    初次运行时可以把 `modules/desktop/applications.nix` 中的**其它软件**部分注释掉, 这些软件有些需要透明代理才能顺利下载, 等到初次构建成功后(v2rayA 服务已经成功部署后)再下载也是可以的
+    - 部分软件包会因为 hash 对不上而固执的跑到境外网站下载(`modules/desktop/applications.nix` 中 "其它软件" 的部分以及部分字体), 好在这些软件并不影响整体的系统功能, 在第一次 安装/构建 系统是可以将它们注释, 等代理服务能够正常运行后再解除注释重新构建它们.
+    - 也可以使用局域网内的其它主机作为代理(记得开启对应的代理工具的 "允许来自局域网内的连接" 功能)
+
+4. 安装完成后使用 `nixos-enter --root /mnt` 进入刚刚安装的系统, 使用 `passwd <USER>` 修改配置文件中定义好的一般用户的密码(root 用户的密码在安装过程中就会通过交互式的方式设置好)
+
+5. 重启 `reboot`
 ### 附录: `Btrfs` 常见操作
 1. 查看子卷列表 `sudo btrfs subvolume list /`
 2. 操作快照

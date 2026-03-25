@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 
 let
-    alacrittyPath = /etc/nixos/modules/alacritty;
+    ghosttyPath = /etc/nixos/home/ghostty;
 in
 {
     # --- --- --- 链接 niri 配置目录 --- --- ---
@@ -10,5 +10,5 @@ in
     #     source = config.lib.file.mkOutOfStoreSymlink niriPath;
     # };
 
-    xdg.configFile."alacritty".source = config.lib.file.mkOutOfStoreSymlink alacrittyPath;
+    xdg.configFile."ghostty".source = config.lib.file.mkOutOfStoreSymlink ghosttyPath;
 }

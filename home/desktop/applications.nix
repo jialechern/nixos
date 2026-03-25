@@ -20,7 +20,6 @@
     	
     	# --- 桌面工具 ---
     	brightnessctl        # 亮度控制
-    	wl-clipboard         # 剪贴板基础
         swww                 # 壁纸底层
         waypaper             # 壁纸图形化
     	overskride           # 蓝牙管理
