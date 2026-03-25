@@ -54,7 +54,7 @@
   
       # 定义额外的自定义目录
       extraConfig = {
-        WALLPAPER = "${config.home.homeDirectory}/Pictures/WallPapers";
+        WALLPAPERS = "${config.home.homeDirectory}/Pictures/WallPapers";
         PROJECTS = "${config.home.homeDirectory}/Projects";
         TEST = "${config.home.homeDirectory}/Test";
         STU = "${config.home.homeDirectory}/Stu";
