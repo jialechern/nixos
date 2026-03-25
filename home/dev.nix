@@ -2,10 +2,10 @@
 
 {
 	imports = [
-        ./git.nix
-        ./lazygit.nix
-        ./haskell.nix
-        ./python.nix
+        ./dev/git.nix
+        ./dev/lazygit.nix
+        ./dev/haskell.nix
+        ./dev/python.nix
 	];
 
     # --- --- --- 其它开发环境相关的程序 --- --- ---
