@@ -2,6 +2,7 @@
 
 {
 	imports = [
+
         ./desktop/gtk.nix
         ./desktop/qt.nix
         ./desktop/xdg-desktop-portal.nix
@@ -13,10 +14,9 @@
         ./desktop/zathura.nix
 	    ./desktop/keepassxc.nix
         ./desktop/applications.nix
-        # ghostty 配置
-        (if builtins.pathExists ./ghostty.nix then ./ghostty.nix else {})
-        # alacritty 配置
-        (if builtins.pathExists ./alacritty.nix then ./alacritty.nix else {})
+
+        # 需要网络代理才能下载的应用列表配置
+        ./desktop/applications-require-proxy.nix
 
 
         # services
@@ -27,7 +27,16 @@
         ./desktop/services/swayidle.nix
         ./desktop/services/wlsunset.nix
         ./desktop/services/swww.nix
-	];
+
+	] ++ (builtins.filter builtins.pathExists [
+
+        # ghostty 配置
+        ./ghostty.nix
+
+        # alacritty 配置
+        ./alacritty.nix
+
+        ]);
 
 	# --- --- --- 环境变量与会话同步 --- --- ---
 	home.sessionVariables = {

@@ -21,6 +21,9 @@
 
       # 用户名
       username = "jlc";
+
+      # 引入必要的库
+      lib = nixpkgs.lib;
     in
     {
       # 注意这里: 从 homeConfigurations 变成了 nixosConfigurations
@@ -33,13 +36,15 @@
           # 将 inputs 和 username 传递给所有的 NixOS 系统级模块
           specialArgs = { inherit inputs username; };
 
-          modules = [
+          modules = lib.flatten [
             # 系统的核心配置和硬件配置 (系统自动生成)
             ./hosts/omen/configuration.nix
             # 引入 nvidia 驱动
             ./modules/nvidia.nix
             # 引入默认配置
             ./modules.nix
+            # 引入需要网络代理的系统依赖
+            (lib.optional (builtins.pathExists ./modules/system-dependencies-require-proxy.nix) ./modules/system-dependencies-require-proxy.nix)
 
             # 将 Home Manager 作为 NixOS 的一个子模块嵌入
             home-manager.nixosModules.home-manager
@@ -64,11 +69,13 @@
           # 将 inputs 和 username 传递给所有的 NixOS 系统级模块
           specialArgs = { inherit inputs username; };
 
-          modules = [
+          modules = lib.flatten [
             # 系统的核心配置和硬件配置 (系统自动生成)
             ./hosts/hp/configuration.nix
             # 引入默认配置
             ./modules.nix
+            # 引入需要网络代理的系统依赖
+            (lib.optional (builtins.pathExists ./modules/system-dependencies-require-proxy.nix) ./modules/system-dependencies-require-proxy.nix)
 
             # 将 Home Manager 作为 NixOS 的一个子模块嵌入
             home-manager.nixosModules.home-manager

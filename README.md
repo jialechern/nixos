@@ -110,14 +110,14 @@ sudo nixos-install --flake <FLAKEPATH>#<HOSTNAME>
 ```
 
 **本仓库默认配置的一些说明:**
-    - niri、nvim、alacritty、ghostty 以及 aichat 这五个软件的配置是独立的, 构建时需要将它们的配置文件放在 `home/` 下并使用和软件相同的名称作为配置文件夹的名称
+    - niri、nvim、alacritty、ghostty 这些软件的配置是独立的, 构建时需要将它们的配置文件放在 `home/` 下并使用和软件相同的名称作为配置文件夹的名称
     若想去除这些配置, 只需要将 `home/` 下的同名的 `*.nix` 文件删掉即可
     - 如果使用核显, 则不应该在 `nixpkgs.lib.nixosSystem { ... }` 的参数 `modules` 中引入形如 `./modules/nvidia.nix` 的独立显卡驱动配置项.
 
 **网络问题:**
     - 初次构建系统可以使用 `nixos-install.sh` 进行安装, 其中已经包含了初次运行时的国内源设置
     初次运行时可以把 `modules/desktop/applications.nix` 中的**其它软件**部分注释掉, 这些软件有些需要透明代理才能顺利下载, 等到初次构建成功后(v2rayA 服务已经成功部署后)再下载也是可以的
-    - 部分软件包会因为 hash 对不上而固执的跑到境外网站下载(`modules/desktop/applications.nix` 中 "其它软件" 的部分以及部分字体), 好在这些软件并不影响整体的系统功能, 在第一次 安装/构建 系统是可以将它们注释, 等代理服务能够正常运行后再解除注释重新构建它们.
+    - 部分软件包会因为 hash 对不上而固执的跑到境外网站下载(`modules/system-dependencies-require-proxy.nix`、`home/desktop/applications-require-proxy.nix` 等带有 `*-require-proxy.nix` 字样的文件), 好在这些软件并不影响整体的系统功能, 在第一次 安装/构建 系统是可以将它们移走, 等代理服务能够正常运行后再将它们移入重新构建它们.
     - 也可以使用局域网内的其它主机作为代理(记得开启对应的代理工具的 "允许来自局域网内的连接" 功能)
 
 4. 安装完成后使用 `nixos-enter --root /mnt` 进入刚刚安装的系统, 使用 `passwd <USER>` 修改配置文件中定义好的一般用户的密码(root 用户的密码在安装过程中就会通过交互式的方式设置好)

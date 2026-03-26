@@ -17,24 +17,28 @@
 
     # --- --- --- 引入配置 --- --- ---
     imports = [
+
         # 基本的 Shell 配置
         ./home/shell.nix
 
         # 开发环境
         ./home/dev.nix
 
-        # neovim 配置
-        (if builtins.pathExists ./home/nvim.nix then ./home/nvim.nix else {})
-        # niri 配置
-        (if builtins.pathExists ./home/niri.nix then ./home/niri.nix else {})
-        # 桌面环境配置
-        (if builtins.pathExists ./home/desktop.nix then ./home/desktop.nix else {})
-        # aichat 配置
-        (if builtins.pathExists ./home/aichat.nix then ./home/aichat.nix else {})
-
         # 其它程序配置
         ./home/other.nix
-    ];
+
+    ] ++ (builtins.filter builtins.pathExists [
+
+        # neovim 配置
+        ./home/nvim.nix
+
+        # niri 配置
+        ./home/niri.nix
+
+        # 桌面环境配置
+        ./home/desktop.nix
+
+        ]);
 
     # --- --- --- 生成标准家目录 --- --- ---
     # 开启 XDG 用户目录管理

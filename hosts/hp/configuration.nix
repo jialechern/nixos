@@ -15,7 +15,7 @@
   # system.copySystemConfiguration = true;
 
   # 定义主机名, 可随时修改
-  networking.hostName = "omen";
+  networking.hostName = "hp";
 
   # --- --- --- 文件系统 --- --- ---
   fileSystems."/home" = {

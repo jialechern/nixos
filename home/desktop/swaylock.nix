@@ -25,7 +25,7 @@
 			# --- 指示器外观 ---
 			indicator-radius = 270;
 			indicator-thickness = 13;
-            font = "sans-serif";
+            font = "Noto Sans CJK SC";
 			font-size = 59;
 			
 			# --- Nord 调色盘颜色配置 ---

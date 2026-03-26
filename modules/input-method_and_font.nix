@@ -17,7 +17,6 @@
 
   # --- 字体配置 ---
   fonts.packages = with pkgs; [
-    wqy_zenhei
     noto-fonts-cjk-sans
     noto-fonts-color-emoji
     noto-fonts
@@ -41,4 +40,3 @@
     };
   };
 }
-
