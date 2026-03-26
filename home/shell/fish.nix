@@ -74,7 +74,6 @@
 
 	home.sessionPath = [
 		"$HOME/.local/bin"
-		"$HOME/.local/share/npm-global/bin"
 		"$HOME/Projects/bin"
 		"$HOME/.cargo/bin"
 	];

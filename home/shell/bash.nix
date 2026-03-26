@@ -44,10 +44,6 @@
 
 		# --- --- --- 自定义函数 --- --- ---
 		bashrcExtra = ''
-			# NPM 全局环境初始化 [cite: 30]
-			if [ ! -d "$HOME/.local/share/npm-global" ]; then
-				mkdir -p "$HOME/.local/share/npm-global"
-			fi
 		'';
 	};
 

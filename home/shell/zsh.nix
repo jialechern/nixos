@@ -26,7 +26,6 @@
     
 	home.sessionPath = [
 		"$HOME/.local/bin"
-		"$HOME/.local/share/npm-global/bin"
 		"$HOME/Projects/bin"
 		"$HOME/.cargo/bin"
 	];
@@ -75,14 +74,6 @@
 			# PATH 追加
 			export PATH=$HOME/.local/bin:$HOME/Projects/bin:$PATH
 			[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
-
-			# NPM 环境初始化逻辑
-			if [ ! -d "$HOME/.local/share/npm-global" ]; then
-				mkdir -p "$HOME/.local/share/npm-global"
-			fi
-
-            npm config set prefix "$HOME/.local/share/npm-global"
-			export PATH=$HOME/.local/share/npm-global/bin:$PATH
 		'';
 	};
 

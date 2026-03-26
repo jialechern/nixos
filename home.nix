@@ -29,6 +29,9 @@
         (if builtins.pathExists ./home/niri.nix then ./home/niri.nix else {})
         # 桌面环境配置
         (if builtins.pathExists ./home/desktop.nix then ./home/desktop.nix else {})
+        # aichat 配置
+        (if builtins.pathExists ./home/aichat.nix then ./home/aichat.nix else {})
+
         # 其它程序配置
         ./home/other.nix
     ];

@@ -110,7 +110,7 @@ sudo nixos-install --flake <FLAKEPATH>#<HOSTNAME>
 ```
 
 **本仓库默认配置的一些说明:**
-    - niri、nvim、alacritty 以及 ghostty 这四个软件的配置是独立的, 构建时需要将它们的配置文件放在 `modules/` 下并使用和软件相同的名称作为配置文件夹的名称
+    - niri、nvim、alacritty、ghostty 以及 aichat 这五个软件的配置是独立的, 构建时需要将它们的配置文件放在 `home/` 下并使用和软件相同的名称作为配置文件夹的名称
     若想去除这些配置, 只需要将 `home/` 下的同名的 `*.nix` 文件删掉即可
     - 如果使用核显, 则不应该在 `nixpkgs.lib.nixosSystem { ... }` 的参数 `modules` 中引入形如 `./modules/nvidia.nix` 的独立显卡驱动配置项.
 

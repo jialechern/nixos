@@ -14,7 +14,45 @@
 			pandas       # 虽然有了 polars, 但在处理某些旧格式时依然是行业标准
 			requests     # 几乎所有 Python 项目都会用到的 HTTP 库
 		]))
+
+        pkgs.ruff
 	];
+
+    # --- --- --- --- --- --- uv 配置 --- --- --- --- --- ---
+	programs.uv = {
+		enable = true;
+		# 默认使用系统中的 uv 包, 也可以手动指定版本
+		package = pkgs.uv;
+
+		# 核心配置 (对应 uv.toml)
+		settings = {
+			# --- Python 策略 ---
+			# 偏好使用系统中安装的 Python(例如通过 Nix 安装的)
+			# 但也允许 uv 自动下载并管理隔离的 Python 版本
+			python-preference = "managed";
+			
+			# --- 缓存与路径 ---
+			# 明确指定缓存目录, 便于管理和清理
+			cache-dir = "${config.home.homeDirectory}/.cache/uv";
+			
+			# --- 交互优化 ---
+			# 开启原生 TLS 支持, 在某些受限网络环境下更稳定
+			native-tls = true;
+
+            # # 如果想让 uv 在找不到 Python 时自动下载
+            # # 应该确保 python-downloads 被允许
+            # python-downloads = "auto";
+
+			# --- 默认索引 ---
+			# # 如果需要使用镜像站(例如清华源), 可以在此配置
+			# index-url = "https://pypi.tuna.tsinghua.edu.cn/simple";
+
+			# --- 编译与链接 ---
+			# # 解决 NixOS 上一些 binary 无法运行的常见问题
+			# # 强制 uv 在安装时尝试链接到系统库(如果需要)
+			# compile-bytecode = true;
+		};
+	};
 
     # --- --- --- --- --- --- mypy 配置 --- --- --- --- --- ---
 	programs.mypy = {
