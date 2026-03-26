@@ -1,76 +1,66 @@
 { config, pkgs, lib, ... }:
 
 let
-    nvimPath = /etc/nixos/home/nvim;
-    deps = with pkgs; [
-        # --- LSP 服务器 ---
-        # Haskell LSP
-        haskell-language-server
-        # Haskell fomatter
-        ormolu
+  nvimPath = /etc/nixos/home/nvim;
 
-        # C/C++
-        clang-tools
-        
-        # Lua
-        lua-language-server
-        
-        # Markdown
-        marksman
-        
-        # Nix
-        nixd
-        nixpkgs-fmt	 # 格式化工具
-        
-        # Python
-        pyright
-        # Python fomatter
-        black
-        
-        # 这个包中包含了 rust-analyzer
-        rustup
+  extraTools = with pkgs; [
+    ripgrep
+    fd
+    bat
+    nodejs
+    yarn
+    cargo
+    fzf
 
-        # Typescript
-        typescript-language-server
-        # Typescript/Javascript fomatter
-        prettierd
-        
-        # TOML
-        taplo
-        
-        # LaTeX & Typst
-        texlab
-        tinymist
-        typst
+    zathura
 
-        # --- 其它 neovim 依赖的外部工具 ---
-        tree-sitter
-	];
+    # vimtex 的反向搜索依赖
+    xdotool
+
+    # nvim-treesitter 插件需要
+    git
+    gcc
+    gnumake
+    tree-sitter
+  ];
+
+  lspDeps = with pkgs; [
+    haskell-language-server ormolu
+    clang-tools
+    lua-language-server
+    marksman
+    nixd nixpkgs-fmt
+    pyright black
+    rust-analyzer 
+    typescript-language-server prettierd
+    taplo
+    texlab tinymist typst
+  ];
 in
 {
-    # --- --- --- 安装外部依赖 --- --- ---
-    home.packages = deps;
+  # 安装外部依赖到系统环境
+  home.packages = lspDeps ++ extraTools;
 
-    # --- --- --- neovim 基础配置 --- --- ---
-	programs.neovim = {
-		enable = true;
+  programs.neovim = {
+    enable = true;
 
-        # 设置为默认编辑器
-		defaultEditor = true;
+    defaultEditor = true;
 
-        # 创建 vi/vim 别名
-		viAlias = true;
-		vimAlias = true;
+    viAlias = true;
+    vimAlias = true;
+    vimdiffAlias = true;
 
-        # --- --- --- 外部依赖 --- --- ---
-		extraPackages = deps;
-	};
+    withNodeJs = true;
+    withPython3 = true;
 
-    # --- --- --- 链接 nvim 配置目录 --- --- ---
+    # --- 使用 nix/home-manager 管理 neovim 插件 ---
+    plugins = with pkgs.vimPlugins; [
+    ];
 
-    # xdg.configFile."nvim" = lib.mkIf (builtins.pathExists nvimPath) {
-    #     source = config.lib.file.mkOutOfStoreSymlink nvimPath;
-    # };
+    # 将依赖注入 Neovim 的 PATH
+    extraPackages = lspDeps ++ extraTools;
+  };
 
-    xdg.configFile."nvim".source = config.lib.file.mkOutOfStoreSymlink nvimPath;
+  # 链接你的 Lua 配置文件夹
+  xdg.configFile."nvim".source = config.lib.file.mkOutOfStoreSymlink nvimPath;
 }

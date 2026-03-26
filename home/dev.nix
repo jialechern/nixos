@@ -13,12 +13,6 @@
     home.packages = with pkgs; [
         # 系统调用的 trace 工具
         strace
-        # Rust 工具链安装器
-        rustup
-        # bash 的编译构建工具
-        argc
-        # 命令行的 json/toml/yaml... 解析工具
-        jq
 	    # --- 开发必备工具链 ---
 	    gcc           # 提供 C 编译器 (cc, gcc)
 	    gnumake       # 很多插件编译时需要用到 make
