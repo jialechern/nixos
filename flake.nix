@@ -25,7 +25,8 @@
     {
       # 注意这里: 从 homeConfigurations 变成了 nixosConfigurations
       nixosConfigurations = {
-        # "omen" 是主机名 (hostname), 可以根据不同机器改成不同的名字
+        # "omen" / "hp" 是主机名 (hostname), 可以根据不同机器改成不同的名字
+
         "omen" = nixpkgs.lib.nixosSystem {
           inherit system;
 
@@ -55,6 +56,37 @@
             }
           ];
         };
+
+
+        "hp" = nixpkgs.lib.nixosSystem {
+          inherit system;
+
+          # 将 inputs 和 username 传递给所有的 NixOS 系统级模块
+          specialArgs = { inherit inputs username; };
+
+          modules = [
+            # 系统的核心配置和硬件配置 (系统自动生成)
+            ./hosts/hp/configuration.nix
+            # 引入默认配置
+            ./modules.nix
+
+            # 将 Home Manager 作为 NixOS 的一个子模块嵌入
+            home-manager.nixosModules.home-manager
+            {
+              # 让 Home Manager 复用 NixOS 全局的 pkgs 实例 (包含允许 non-free 的设置)
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+
+              # 将所有的 inputs 传递给各个 .nix 模块
+              home-manager.extraSpecialArgs = { inherit inputs username; };
+
+              # 核心模块引入: 直接指向你现有的 home.nix 入口
+              home-manager.users.${username} = import ./home.nix;
+            }
+          ];
+        };
+
       };
+
     };
 }
