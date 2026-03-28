@@ -11,10 +11,18 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    
+    # 引入 sops-nix 源
+    sops-nix.url = "github:Mic92/sops-nix";
   };
 
   # Outputs (输出): 定义系统配置
-  outputs = { self, nixpkgs, home-manager, ... }@inputs:
+  outputs = {
+                self,
+                nixpkgs,
+                home-manager,
+                sops-nix,
+        ... }@inputs:
     let
       # 系统架构
       system = "x86_64-linux";

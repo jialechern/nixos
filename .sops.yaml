@@ -1,0 +1,79 @@
+# =====================================================================
+# SOPS 核心路由配置文件 (.sops.yaml)
+# 该文件必须是明文, 并提交到的 Git 仓库中
+# 它告诉 sops 在加密和解密时, 应该使用哪些公钥以及应用哪些规则
+# =====================================================================
+
+# 事先工作(准备主 age 密钥对):
+#   1. 获取 age 运行环境:
+#     - 下载程序
+#     - 使用 `nix shell nixpkgs#age` 进入临时的具有 age 的环境
+#   2. 创建密钥对保存的目录(推荐 `$HOME/.config/sops/age/`): `mkdir -p $HOME/.config/sops/age`
+#   3. 创建密钥对(`age-keygen -o <密钥对保存目录>/<密钥对文件>.txt`): `age-keygen -o ~/.config/sops/age/keys.txt`
+#   4. 查看并复制公钥(`age-keygen -y <密钥对保存目录>/<密钥对文件>.txt | wl-copy`): `age-keygen -y ~/.config/sops/age/keys.txt | wl-copy`
+# 创建加密数据:
+#   1. 在配置根目录执行 `mkdir -p secrets/<secrets-data-dir>` 创建用于保存私密数据的目录
+#   2. 使用 `sops secrets/<secrets-data-dir>/<data>.yaml`
+#       这会使用系统默认编辑器打开对应的 yaml 文件,
+#       在其中以 `<data-lable>: <data>` 的形式写入需要加密的数据,
+#       保存退出后在对应的文件夹下就存放好了加密过后的数据.
+#   3. 在 NixOS 配置中使用: 见 `./sops.nix`.
+
+# 公钥定义区 (Keys)
+# 在这里声明所有可能用到的公钥(使用 YAML 锚点 (&) 以便后续复用).
+keys:
+  # [必填] 个人主公钥 (使用上一步生成的 age 公钥填入下方)
+  - &admin_alice age1yl0lwryyc2ywk399fxvrw0rnpmqmggqp5uzcrlcyrdfkdhzl397qc5qkxy
+
+  # # [选填] 如果有多台设备, 可以把其它设备的公钥也写在这里
+  # - &server_other  # age1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+
+  # # [选填] PGP 公钥 (不推荐在 Nix 中使用, 速度慢且容易出环境问题, 留空演示)
+  # - &pgp_key     # 你的 PGP 公钥指纹，如: 0000000000000000000000000000000000000000
+
+# 路由生成规则 (Creation Rules)
+# 自上而下匹配. 当要加密一个文件时, sops 会根据文件路径或名称, 决定用上面定义的哪些公钥来加密
+creation_rules:
+
+  # 规则 A: 针对 SSH 密钥等高机密文件
+  # path_regex: 使用正则表达式匹配文件路径
+  - path_regex: secrets/ssh_keys/.*\.yaml$
+    # key_groups: 定义哪些密钥可以解密该文件. 同一 group 内的任意密钥均可解密
+    key_groups:
+      - age:
+          # 只有 admin_alice 的私钥才能解密这个目录下的文件
+          - *admin_alice
+      # # 如果也想让 PGP 解密, 可以在这里取消注释
+      # pgp:          
+      #   - *pgp_key
+
+  # 规则 B: 针对 Aider 或其它通用 AI API Key
+  - path_regex: secrets/ai_api_keys/.*\.yaml$
+    key_groups:
+      - age:
+          - *admin_alice
+          # # 假设想让服务器 other 也能调用 Aider, 就把 other 的公钥加进来
+          # - *server_other
+
+  # 规则 C: 默认回退规则 (Fallback)
+  # 如果前面的正则都没有匹配上, 只要文件名包含 secrets, 就默认用主的公钥加密
+  - path_regex: secrets/.*
+    key_groups:
+      - age:
+          - *admin_alice
+
+  # -------------------------------------------------------------------
+  # 以下是高级配置区 (通常用于云原生环境)
+  # -------------------------------------------------------------------
+  # 
+  # KMS (Key Management Service) 规则
+  # 如果你的私钥托管在云厂商那里, sops 也可以直接调用云厂商的 API 来加解密。
+  # 
+  # aws_kms:
+  #   - arn: arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab # AWS KMS ARN
+  # gcp_kms:
+  #   - resource_id: projects/my-project/locations/global/keyRings/my-ring/cryptoKeys/my-key # GCP KMS ID
+  # azure_kv:
+  #   - vault_url: https://my-vault.vault.azure.net # Azure Key Vault URL
+  # hc_vault:
+  #   - transit_uri: https://vault.example.com/v1/transit/keys/my-key # HashiCorp Vault

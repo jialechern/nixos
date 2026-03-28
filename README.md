@@ -116,8 +116,40 @@ sudo nixos-install --flake <FLAKEPATH>#<HOSTNAME>
 
 **网络问题:**
     - 初次构建系统可以使用 `nixos-install.sh` 进行安装, 其中已经包含了初次运行时的国内源设置
-    初次运行时可以把 `modules/desktop/applications.nix` 中的**其它软件**部分注释掉, 这些软件有些需要透明代理才能顺利下载, 等到初次构建成功后(v2rayA 服务已经成功部署后)再下载也是可以的
     - 部分软件包会因为 hash 对不上而固执的跑到境外网站下载(`modules/system-dependencies-require-proxy.nix`、`home/desktop/applications-require-proxy.nix` 等带有 `*-require-proxy.nix` 字样的文件), 好在这些软件并不影响整体的系统功能, 在第一次 安装/构建 系统是可以将它们移走, 等代理服务能够正常运行后再将它们移入重新构建它们.
+    - 私密数据管理模块 `sops-nix` 必须使用透明代理才能够正常构建并使用, 故第一次构建时(如果没有代理)需要将 `sops.nix` 移走. 并且将 `flake.nix` 中的 `inputs` 属性集以及 `outputs` 参数集的 `sops-nix` 相关配置注释, 如下:
+    ```nix
+    # ...
+
+    inputs = {
+        # ...
+    
+        # # --- --- --- GEGIN 需要注释的部分 --- --- ---
+        # # 引入 sops-nix 源
+        # sops-nix.url = "github:Mic92/sops-nix";
+        # # --- --- --- END   需要注释的部分 --- --- ---
+
+        # ...
+    };
+
+    # ...
+    
+    outputs = {
+                # ...
+
+                # # --- --- --- GEGIN 需要注释的部分 --- --- ---
+                # sops-nix,
+                # # --- --- --- END   需要注释的部分 --- --- ---
+
+                # ...
+        ... }@inputs:
+    
+    let
+        # ...
+    in
+    
+    { ... }
+    ```
     - 也可以使用局域网内的其它主机作为代理(记得开启对应的代理工具的 "允许来自局域网内的连接" 功能)
 
 4. 安装完成后使用 `nixos-enter --root /mnt` 进入刚刚安装的系统, 使用 `passwd <USER>` 修改配置文件中定义好的一般用户的密码(root 用户的密码在安装过程中就会通过交互式的方式设置好)

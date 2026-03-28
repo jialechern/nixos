@@ -2,7 +2,6 @@
 
 {
 	imports = [
-
         ./desktop/gtk.nix
         ./desktop/qt.nix
         ./desktop/xdg-desktop-portal.nix
@@ -15,10 +14,6 @@
 	    ./desktop/keepassxc.nix
         ./desktop/applications.nix
 
-        # 需要网络代理才能下载的应用列表配置
-        ./desktop/applications-require-proxy.nix
-
-
         # services
         ./desktop/services/wl-clip-persist.nix
         ./desktop/services/mako.nix
@@ -29,13 +24,14 @@
         ./desktop/services/swww.nix
 
 	] ++ (builtins.filter builtins.pathExists [
+        # 需要网络代理才能下载的应用列表配置
+        ./desktop/applications-require-proxy.nix
 
         # ghostty 配置
         ./ghostty.nix
 
         # alacritty 配置
         ./alacritty.nix
-
         ]);
 
 	# --- --- --- 环境变量与会话同步 --- --- ---

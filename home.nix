@@ -28,6 +28,8 @@
         ./home/other.nix
 
     ] ++ (builtins.filter builtins.pathExists [
+        # sops-nix 配置
+        ./sops.nix
 
         # neovim 配置
         ./home/nvim.nix
@@ -37,7 +39,6 @@
 
         # 桌面环境配置
         ./home/desktop.nix
-
         ]);
 
     # --- --- --- 生成标准家目录 --- --- ---
