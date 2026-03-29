@@ -34,8 +34,8 @@
       # 每七天运行一次垃圾回收
       dates = "weekly";
   
-      # # 自动删除超过 7 天的世代
-      # ptions = "--delete-older-than 7d";
+      # 自动删除超过 7 天的世代
+      options = "--delete-older-than 7d";
     };
   
     registry = {
