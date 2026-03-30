@@ -5,6 +5,7 @@
 		./shell/bash.nix
 		./shell/fish.nix
 		./shell/zsh.nix
+        ./shell/btop.nix
         ./shell/tmux.nix
 		./shell/starship.nix
 		./shell/zoxide.nix
@@ -24,6 +25,7 @@
     home.packages = with pkgs; [
         wget
         curl
+        ffmpeg
         # yaml toml xml 等文件的命令行解析工具
         yq
         # 动态链接软件的分流代理工具

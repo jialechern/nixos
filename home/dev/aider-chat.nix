@@ -1,8 +1,46 @@
 { config, pkgs, ... }:
 
+let
+  # =========================================================
+  # 统一维护的模型名称
+  # 只在这里改, 下面的 metadata 和 settings 会一起跟着变
+  # =========================================================
+  aiderModels = {
+    doubaoCode = "openai/doubao-seed-code-preview-251028";
+    deepseekV3 = "openai/deepseek-v3-2-251201";
+    seed18 = "openai/doubao-seed-1-8-251228";
+    seed16Flash = "openai/doubao-seed-1.6-flash-250828";
+  };
+in
 {
+  # =========================================================
+  # 依赖程序
+  # =========================================================
+  home.packages = with pkgs; [
+    portaudio                # /voice 语音输入需要
+    playwright-driver.browsers # /web 的 Playwright 浏览器, NixOS 下推荐这样提供
+  ];
+
+
+  # =========================================================
+  # Playwright 配置
+  # =========================================================
+  home.sessionVariables = {
+    # 让 Playwright 直接使用 nixpkgs 提供的浏览器包
+    PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
+
+    # 避免 Playwright 在 NixOS 上做宿主依赖检查时报错
+    PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
+  };
+
+  # =========================================================
+  # aider 核心配置
+  # =========================================================
   programs.aider-chat = {
     enable = true;
+
+    # 使用满配软件包
+    package = pkgs.aider-chat-full;
 
     settings = {
       # =========================================================
@@ -158,42 +196,78 @@
 
       # 只在当前子树内工作; 默认 false
       "subtree-only" = false;
+
+      # 依赖已通过 nixpkgs 提供, 这里保留默认可用状态
+      "disable-playwright" = false;
     };
   };
 
-  # 生成 ~/.config/aider/model.metadata.json
+  # =========================================================
+  # 生成 `~/.config/aider/model.metadata.json`
+  # =========================================================
   xdg.configFile."aider/model.metadata.json".text = builtins.toJSON {
-    "openai/doubao-seed-code-preview-251028" = {
-      # 256k 上下文窗口
+    "${aiderModels.doubaoCode}" = {
       max_tokens = 256000;
       max_input_tokens = 256000;
-
-      # 这里先按 128k 做一个实用的输出上限估算;
-      # 如果后面确认自己的实际上限不同, 再改这里即可
       max_output_tokens = 128000;
-
-      # 采用火山方舟 128-256k 档位的单价换算成"每 token"估算值
-      input_cost_per_token = 0.0000028;
-      output_cost_per_token = 0.000016;
-
-      # 这里保持 openai, 和当前 Aider 识别出的模型前缀一致
       litellm_provider = "openai";
+      mode = "chat";
+    };
 
-      # 这个模型按聊天模型处理
+    "${aiderModels.deepseekV3}" = {
+      max_tokens = 128000;
+      litellm_provider = "openai";
+      mode = "chat";
+    };
+
+    "${aiderModels.seed18}" = {
+      max_tokens = 256000;
+      litellm_provider = "openai";
+      mode = "chat";
+    };
+
+    "${aiderModels.seed16Flash}" = {
+      max_tokens = 256000;
+      litellm_provider = "openai";
       mode = "chat";
     };
   };
 
+  # =========================================================
+  # 生成 `~/.config/aider/model.settings.yml`
+  # =========================================================
+  # 这里故意保持很短: Aider 说这个文件只需要写"覆盖默认值"的项
+  xdg.configFile."aider/model.settings.yml".text = ''
+    - name: ${aiderModels.doubaoCode}
+      edit_format: diff
+      use_repo_map: true
+
+    - name: ${aiderModels.deepseekV3}
+      edit_format: diff
+      use_repo_map: true
+
+    - name: ${aiderModels.seed18}
+      edit_format: diff
+      use_repo_map: true
+
+    - name: ${aiderModels.seed16Flash}
+      edit_format: whole
+      use_repo_map: false
+  '';
+
   # --- shell 别名 ---
   programs.bash.shellAliases = {
     ai = "aider";
+    code = "aider";
   };
 
   programs.fish.shellAliases = {
     ai = "aider";
+    code = "aider";
   };
 
   programs.zsh.shellAliases = {
     ai = "aider";
+    code = "aider";
   };
 }
