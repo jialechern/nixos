@@ -3,6 +3,7 @@
 {
 	imports = [
         ./dev/git.nix
+        ./dev/aider-chat.nix
         ./dev/lazygit.nix
         ./dev/haskell.nix
         ./dev/python.nix

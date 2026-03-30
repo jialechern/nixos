@@ -23,7 +23,7 @@
 # 在这里声明所有可能用到的公钥(使用 YAML 锚点 (&) 以便后续复用).
 keys:
   # [必填] 个人主公钥 (使用上一步生成的 age 公钥填入下方)
-  - &admin_alice age1yl0lwryyc2ywk399fxvrw0rnpmqmggqp5uzcrlcyrdfkdhzl397qc5qkxy
+  - &normal age1yl0lwryyc2ywk399fxvrw0rnpmqmggqp5uzcrlcyrdfkdhzl397qc5qkxy
 
   # # [选填] 如果有多台设备, 可以把其它设备的公钥也写在这里
   # - &server_other  # age1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
@@ -41,8 +41,8 @@ creation_rules:
     # key_groups: 定义哪些密钥可以解密该文件. 同一 group 内的任意密钥均可解密
     key_groups:
       - age:
-          # 只有 admin_alice 的私钥才能解密这个目录下的文件
-          - *admin_alice
+          # 只有 normal 的私钥才能解密这个目录下的文件
+          - *normal
       # # 如果也想让 PGP 解密, 可以在这里取消注释
       # pgp:          
       #   - *pgp_key
@@ -51,7 +51,7 @@ creation_rules:
   - path_regex: secrets/ai_api_keys/.*\.yaml$
     key_groups:
       - age:
-          - *admin_alice
+          - *normal
           # # 假设想让服务器 other 也能调用 Aider, 就把 other 的公钥加进来
           # - *server_other
 
@@ -60,7 +60,7 @@ creation_rules:
   - path_regex: secrets/.*
     key_groups:
       - age:
-          - *admin_alice
+          - *normal
 
   # -------------------------------------------------------------------
   # 以下是高级配置区 (通常用于云原生环境)

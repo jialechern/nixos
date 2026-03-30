@@ -12,14 +12,21 @@
     age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt"; 
 
     # 默认的加密文件路径 (可选, 如果有多个文件, 可以在 secrets 中单独指定)
-    defaultSopsFile = ./secrets/ssh_keys/git.yaml;
+    defaultSopsFile = ./secrets/default.yaml;
 
     # 声明要解密的秘密变量
     secrets = {
       # 不把它放到默认的 `/run/user/...` 目录
       # 而是直接映射到 SSH 默认读取的路径
       "id_ed25519" = {
+        sopsFile = ./secrets/ssh_keys/git.yaml;
         path = "${config.home.homeDirectory}/.ssh/id_ed25519";
+        mode = "0600";
+      };
+
+      "aider_env" = {
+        sopsFile = ./secrets/ai_api_keys/aider_env.yaml;
+        path = "${config.home.homeDirectory}/.config/aider/.env";
         mode = "0600";
       };
       
