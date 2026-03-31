@@ -25,7 +25,7 @@
       warn-dirty = false;
       # 限制构建任务使用的核心数 (根据的 CPU 自行调整, 0 为使用全部)
       max-jobs = "auto";
-      cores = 0;
+      # cores = 0;
     };
   
     # 开启系统级的 nix 垃圾回收

@@ -155,6 +155,9 @@ sudo nixos-install --flake <FLAKEPATH>#<HOSTNAME>
 4. 安装完成后使用 `nixos-enter --root /mnt` 进入刚刚安装的系统, 使用 `passwd <USER>` 修改配置文件中定义好的一般用户的密码(root 用户的密码在安装过程中就会通过交互式的方式设置好)
 
 5. 重启 `reboot`
+6. 再次构建前, 如果希望使用存放在配置仓库里的私密数据, 可以将对应的加密密钥存放在 `~/.config/sops/age/keys.txt`
+7. 重启后如果 `v2raya` 已经正常开启, 则可以导入节点并开启透明代理, 并将刚刚移出的需要透明代理才可以构建的 nix 配置文件重新放回原本的位置, 并使用 `sudo nixos-rebuild switch --flake <flake.nix-path>#<host-name>` 再次构建
+8. `home/dev/opencode/` 下的以及 `home/dev/aider-chat/` 下的配置是私有配置, 不必要时可随时移除.
 ### 附录: `Btrfs` 常见操作
 1. 查看子卷列表 `sudo btrfs subvolume list /`
 2. 操作快照
