@@ -7,9 +7,9 @@
 需要现有系统中具有软件包 `nixos-install-tools`.
 - 使用官方提供的 Live CD
 在获取 NixOS 官方提供的最小化安装镜像后, 使用如下命令将安装镜像写入 U 盘:
-```bash,zsh
-sudo dd bs=4M conv=fsync oflag=direct status=progress if=/path/to/nixos.iso of=/dev/sdX && sync
-```
+    ```bash,zsh
+    sudo dd bs=4M conv=fsync oflag=direct status=progress if=/path/to/nixos.iso of=/dev/sdX && sync
+    ```
 ### 连接网络
 1. 如果使用有线网络直接插线即可
 2. 使用 wifi
@@ -105,52 +105,52 @@ sudo dd bs=4M conv=fsync oflag=direct status=progress if=/path/to/nixos.iso of=/
 2. 在 `flake.nix` 的 `nixosConfigurations` 属性集中写入当前主机的配置信息(可以以已有主机作为模板). 在 `modules/*` 中放置了多项现成的可复用的 `configuration.nix` 配置, 只需要按需将它们放入 `nixpkgs.lib.nixosSystem { ... }` 的参数 `modules` 中即可
 
 3. 通过如下命令通过 flake 的方式(前提是已经打开了 flake 功能)安装 `NixOS` 了. 其中 `FLAKEPATH` 是 `flake.nix` 文件的路径, `HOSTNAME` 是 `flake.nix` 中定义好的主机名称.
-```bash,zsh
-sudo nixos-install --flake <FLAKEPATH>#<HOSTNAME>
-```
-
-**本仓库默认配置的一些说明:**
-    - niri、nvim、alacritty、ghostty 这些软件的配置是独立的, 构建时需要将它们的配置文件放在 `home/` 下并使用和软件相同的名称作为配置文件夹的名称
-    若想去除这些配置, 只需要将 `home/` 下的同名的 `*.nix` 文件删掉即可
-    - 如果使用核显, 则不应该在 `nixpkgs.lib.nixosSystem { ... }` 的参数 `modules` 中引入形如 `./modules/nvidia.nix` 的独立显卡驱动配置项.
-
-**网络问题:**
-    - 初次构建系统可以使用 `nixos-install.sh` 进行安装, 其中已经包含了初次运行时的国内源设置
-    - 部分软件包会因为 hash 对不上而固执的跑到境外网站下载(`modules/system-dependencies-require-proxy.nix`、`home/desktop/applications-require-proxy.nix` 等带有 `*-require-proxy.nix` 字样的文件), 好在这些软件并不影响整体的系统功能, 在第一次 安装/构建 系统是可以将它们移走, 等代理服务能够正常运行后再将它们移入重新构建它们.
-    - 私密数据管理模块 `sops-nix` 必须使用透明代理才能够正常构建并使用, 故第一次构建时(如果没有代理)需要将 `sops.nix` 移走. 并且将 `flake.nix` 中的 `inputs` 属性集以及 `outputs` 参数集的 `sops-nix` 相关配置注释, 如下:
-    ```nix
-    # ...
-
-    inputs = {
-        # ...
-    
-        # # --- --- --- GEGIN 需要注释的部分 --- --- ---
-        # # 引入 sops-nix 源
-        # sops-nix.url = "github:Mic92/sops-nix";
-        # # --- --- --- END   需要注释的部分 --- --- ---
-
-        # ...
-    };
-
-    # ...
-    
-    outputs = {
-                # ...
-
-                # # --- --- --- GEGIN 需要注释的部分 --- --- ---
-                # sops-nix,
-                # # --- --- --- END   需要注释的部分 --- --- ---
-
-                # ...
-        ... }@inputs:
-    
-    let
-        # ...
-    in
-    
-    { ... }
+    ```bash,zsh
+    sudo nixos-install --flake <FLAKEPATH>#<HOSTNAME>
     ```
-    - 也可以使用局域网内的其它主机作为代理(记得开启对应的代理工具的 "允许来自局域网内的连接" 功能)
+
+    **本仓库默认配置的一些说明:**
+        - niri、nvim、alacritty、ghostty 这些软件的配置是独立的, 构建时需要将它们的配置文件放在 `home/` 下并使用和软件相同的名称作为配置文件夹的名称
+        若想去除这些配置, 只需要将 `home/` 下的同名的 `*.nix` 文件删掉即可
+        - 如果使用核显, 则不应该在 `nixpkgs.lib.nixosSystem { ... }` 的参数 `modules` 中引入形如 `./modules/nvidia.nix` 的独立显卡驱动配置项.
+
+    **网络问题:**
+        - 初次构建系统可以使用 `nixos-install.sh` 进行安装, 其中已经包含了初次运行时的国内源设置
+        - 部分软件包会因为 hash 对不上而固执的跑到境外网站下载(`modules/system-dependencies-require-proxy.nix`、`home/desktop/applications-require-proxy.nix` 等带有 `*-require-proxy.nix` 字样的文件), 好在这些软件并不影响整体的系统功能, 在第一次 安装/构建 系统是可以将它们移走, 等代理服务能够正常运行后再将它们移入重新构建它们.
+        - 私密数据管理模块 `sops-nix` 必须使用透明代理才能够正常构建并使用, 故第一次构建时(如果没有代理)需要将 `sops.nix` 移走. 并且将 `flake.nix` 中的 `inputs` 属性集以及 `outputs` 参数集的 `sops-nix` 相关配置注释, 如下:
+        ```nix
+        # ...
+
+        inputs = {
+            # ...
+        
+            # # --- --- --- GEGIN 需要注释的部分 --- --- ---
+            # # 引入 sops-nix 源
+            # sops-nix.url = "github:Mic92/sops-nix";
+            # # --- --- --- END   需要注释的部分 --- --- ---
+
+            # ...
+        };
+
+        # ...
+        
+        outputs = {
+                    # ...
+
+                    # # --- --- --- GEGIN 需要注释的部分 --- --- ---
+                    # sops-nix,
+                    # # --- --- --- END   需要注释的部分 --- --- ---
+
+                    # ...
+            ... }@inputs:
+        
+        let
+            # ...
+        in
+        
+        { ... }
+        ```
+        - 也可以使用局域网内的其它主机作为代理(记得开启对应的代理工具的 "允许来自局域网内的连接" 功能)
 
 4. 安装完成后使用 `nixos-enter --root /mnt` 进入刚刚安装的系统, 使用 `passwd <USER>` 修改配置文件中定义好的一般用户的密码(root 用户的密码在安装过程中就会通过交互式的方式设置好)
 
@@ -158,6 +158,50 @@ sudo nixos-install --flake <FLAKEPATH>#<HOSTNAME>
 6. 再次构建前, 如果希望使用存放在配置仓库里的私密数据, 可以将对应的加密密钥存放在 `~/.config/sops/age/keys.txt`
 7. 重启后如果 `v2raya` 已经正常开启, 则可以导入节点并开启透明代理, 并将刚刚移出的需要透明代理才可以构建的 nix 配置文件重新放回原本的位置, 并使用 `sudo nixos-rebuild switch --flake <flake.nix-path>#<host-name>` 再次构建
 8. `home/dev/opencode/` 下的以及 `home/dev/aider-chat/` 下的配置是私有配置, 不必要时可随时移除.
+### 安装交换空间(`Btrfs` 事后补救版)
+1. 挂载 `Btrfs` 顶层视图并创建用于交换分区的字卷
+    ```zsh,bash
+    # 挂载顶级视图
+    sudo mount -t btrfs -o subvolid=5 /dev/nvme0n1p2 /mnt
+    # 创建子卷
+    sudo btrfs subvolume create /mnt/@swap
+    # 卸载挂载点
+    sudo umount /mnt
+    ```
+2. 创建用于交换空间的挂载点并挂载字卷
+    ```zsh,bash
+    sudo mkdir -p /swap
+    sudo mount -t btrfs -o noatime,subvol=@swap /dev/nvme0n1p2 /swap
+    ```
+3. 修改 `hardware-configuration.nix` 以保存 `swap` 挂载信息并启用交换空间
+    ```nix
+    # hardware-configuration.nix
+    # ...
+    fileSystems."/swap" = {
+      # uuid 可以使用 'lsblk -f` 查询, 也可以照抄同磁盘挂载点的 uuid 配置
+      device = "/dev/disk/by-uuid/XXXX-XXXX";
+      fsType = "btrfs";
+      options = [ "noatime" "subvol=@swap" ];
+    };
+    # ...
+    # --- 启用交换空间 ---
+    swapDevices = [{
+      device = "/swap/swapfile";
+      # 大小可以设置为当前机器内存的 1.5 或是 2.0 倍 (单位: MiB)
+      size = 8 * 1024;
+    }];
+    # ...
+    ```
+5. 重新复位机器
+    ```zsh,bash
+    sudo nixos-rebuild switch --flake <flake.nix-path>#<host-name>
+    ```
+6. 检查交换空间的 开启/使用 情况
+    ```zsh,bash
+    # 一下两种选其一即可
+    swapon --show
+    free -h
+    ```
 ### 附录: `Btrfs` 常见操作
 1. 查看子卷列表 `sudo btrfs subvolume list /`
 2. 操作快照

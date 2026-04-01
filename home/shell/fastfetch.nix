@@ -77,6 +77,10 @@
           key = "󰍛 RAM";
         }
         {
+          type = "swap";
+          key = "󰾅 SWAP";
+        }
+        {
           type = "disk";
           key = "󰋊 Disk (Home)";
           folders = "/home"; 

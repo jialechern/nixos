@@ -19,6 +19,12 @@
       options = [ "subvol=@" ];
     };
 
+  fileSystems."/swap" =
+    { device = "/dev/disk/by-uuid/01fd5fe3-4d40-4745-aa97-d770fb733965";
+      fsType = "btrfs";
+      options = [ "noatime" "subvol=@swap" ];
+    };
+
   fileSystems."/home" =
     { device = "/dev/disk/by-uuid/01fd5fe3-4d40-4745-aa97-d770fb733965";
       fsType = "btrfs";
@@ -43,7 +49,12 @@
       options = [ "fmask=0022" "dmask=0022" ];
     };
 
-  swapDevices = [ ];
+  # --- 启用交换空间 ---
+  swapDevices = [{
+    device = "/swap/swapfile";
+    # 大小可以设置为当前机器内存的 1.5 或是 2.0 倍 (单位: MiB)
+    size = 24 * 1024;
+  }];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
