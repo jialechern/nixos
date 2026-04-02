@@ -9,7 +9,7 @@ let
     bat
     nodejs
     yarn
-    cargo
+    rustup
     fzf
 
     zathura
@@ -31,7 +31,7 @@ let
     marksman
     nixd nixpkgs-fmt
     pyright black
-    rust-analyzer 
+    # rust-analyzer # 已被 rustup 包包含
     typescript-language-server prettierd
     taplo
     texlab tinymist typst

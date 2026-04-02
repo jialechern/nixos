@@ -21,7 +21,7 @@
         ./desktop/services/waybar.nix
         ./desktop/services/swayidle.nix
         ./desktop/services/wlsunset.nix
-        ./desktop/services/swww.nix
+        ./desktop/services/wallpaper.nix
 
 	] ++ (builtins.filter builtins.pathExists [
         # 需要网络代理才能下载的应用列表配置

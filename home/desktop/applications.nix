@@ -20,8 +20,6 @@
     	
     	# --- 桌面工具 ---
     	brightnessctl        # 亮度控制
-        swww                 # 壁纸底层
-        waypaper             # 壁纸图形化
     	overskride           # 蓝牙管理
     	loupe                # 图片查看器
     	libnotify            # 通知库
