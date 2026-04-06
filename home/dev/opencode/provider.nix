@@ -13,7 +13,7 @@
         };
 
         models = {
-            "doubao-seed-code-preview-251028" = {
+            "doubao-seed-2-0-code-preview-260215" = {
                 # 在 `/models` 列表里显示的名称
                 name = "Doubao Seed Code Preview";
 
@@ -43,16 +43,12 @@
                 };
             };
 
-            "doubao-seed-1-6-flash-250828" = {
-                name = "Doubao Seed 1.6 Flash";
+            "doubao-seed-2-0-lite-260215" = {
+                name = "Doubao Seed 2.0 Lite";
             };
 
-            "doubao-seed-1-8-251228" = {
-                name = "Doubao Seed 1.8";
-            };
-
-            "doubao-seed-translation-250915" = {
-                name = "Doubao Seed Translation";
+            "doubao-seed-2-0-pro-260215" = {
+                name = "Doubao Seed 2.0";
             };
         };
     };

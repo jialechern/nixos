@@ -32,5 +32,7 @@
         proxychains-ng
         # OCR 工具
         ocrmypdf
+        # 命令行艺术字体生成工具
+        figlet
     ];
 }

@@ -37,6 +37,7 @@
 
 		# --- --- --- 别名设置 --- --- ---
 		shellAliases = {
+            ff = "fastfetch";
 			lg = "lazygit";
 			rsync = "rsync -arvP";
             px = "proxychains4 -f ~/.config/proxychains/proxychains.conf -q";

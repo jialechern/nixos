@@ -12,6 +12,8 @@
 
     # --- --- --- 其它开发环境相关的程序 --- --- ---
     home.packages = with pkgs; [
+        # Scheme 解释器
+        guile
         # 系统调用的 trace 工具
         strace
 	    # --- 开发必备工具链 ---

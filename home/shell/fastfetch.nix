@@ -5,7 +5,7 @@
     enable = true;
     settings = {
       logo = {
-        source = "nixos"; 
+        source = "nixos";
         padding = {
           right = 2;
           top = 1;
@@ -19,93 +19,95 @@
           keys = "magenta";
           output = "white";
         };
-        separator = "  ";
+        separator = "  ";
       };
       modules = [
         "title"
         "separator"
+
+        # --- --- --- 系统 --- --- ---
         {
           type = "os";
-          key = "󱄅 OS";
+          key = "┌ 󱄅 OS";
         }
         {
           type = "host";
-          key = "󰌢 Host";
+          key = "├ 󰌢 Host";
         }
         {
           type = "kernel";
-          key = " Kernel";
+          key = "├  Kernel";
         }
         {
           type = "uptime";
-          key = "󰔚 Uptime";
+          key = "├ 󰔚 Uptime";
         }
         {
           type = "packages";
-          key = "󰏖 PKGs";
+          key = "├ 󰏖 PKGs";
         }
         {
           type = "shell";
-          key = "󰈺 Shell";
+          key = "├ 󰈺 Shell";
         }
         {
           type = "display";
-          key = "󰍹 Display";
+          key = "├ 󰍹 Display";
         }
         {
           type = "wm";
-          key = " WM";
+          key = "├  WM";
         }
         {
           type = "terminal";
-          key = "󰆍 Term";
+          key = "└ 󰆍 Term";
         }
+
         "break"
-        
-        # --- 硬件实时监控 ---
+
+        # --- --- --- 硬件 --- --- ---
         {
           type = "cpu";
-          key = "󰻠 CPU";
+          key = "┌ 󰻠 CPU";
           showPeCoreCount = true;
         }
         {
           type = "gpu";
-          key = "󰢮 GPU";
+          key = "├ 󰢮 GPU";
+          detectionMethod = "pci";
         }
         {
           type = "memory";
-          key = "󰍛 RAM";
+          key = "├ 󰍛 RAM";
         }
         {
           type = "swap";
-          key = "󰾅 SWAP";
+          key = "├ 󰾅 Swap";
         }
         {
           type = "disk";
-          key = "󰋊 Disk (Home)";
-          folders = "/home"; 
+          key = "├ 󰋊 Disk /";
+          folders = "/";
         }
+        {
+          type = "disk";
+          key = "└ 󰋊 Disk ~";
+          folders = "/home";
+        }
+
         "break"
 
-        # --- 网络与环境 ---
+        # --- --- --- 网络 --- --- ---
         {
           type = "localip";
-          key = "󰩟 LAN";
+          key = "┌ 󰩟 LAN";
+          showIpv6 = false;
         }
         {
           type = "publicip";
-          key = "󰩠 WAN";
+          key = "└ 󰩠 WAN";
         }
-        "break"
 
-        # --- 媒体与色彩 ---
-        {
-          type = "datetime";
-          key = "󰃭 Date";
-          format = "{1}-{3}-{11}";
-        }
-        "player"
-        "media"
         "break"
         "colors"
       ];

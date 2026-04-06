@@ -47,15 +47,18 @@ in
     programs.bash.shellAliases = {
         code = "opencode";
         ask = "opencode run";
+        ai = "opencode";
     };
 
     programs.fish.shellAliases = {
         code = "opencode";
         ask = "opencode run";
+        ai = "opencode";
     };
 
     programs.zsh.shellAliases = {
         code = "opencode";
         ask = "opencode run";
+        ai = "opencode";
     };
 }

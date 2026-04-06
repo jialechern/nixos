@@ -35,5 +35,9 @@
         # --- 终端模拟器 ---
 	    alacritty
 	    ghostty
+
+        # --- Latex && Typst 环境 ---
+        typst
+        texliveFull
     ];
 }
