@@ -21,6 +21,10 @@
     bridge-utils
     libva-utils
     iw
+    # 虚拟机
+    qemu # QEMU 本体
+    dnsmasq # 默认虚拟网络需要
+    virtiofsd # 共享文件夹支持
     # xray 内核
     xray
     # 文件系统工具
@@ -53,7 +57,7 @@
   # 列出系统配置文件中安装的软件包。
   # 您可以使用 https://search.nixos.org/ 查找更多软件包(和选项)
   # environment.systemPackages = with pkgs; [
-      # 别忘了添加编辑器来编辑 configuration.nix 文件！Nano 编辑器默认也已安装
+  # 别忘了添加编辑器来编辑 configuration.nix 文件！Nano 编辑器默认也已安装
   #   vim
   #   wget
   # ];

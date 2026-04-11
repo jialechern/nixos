@@ -27,21 +27,21 @@
       max-jobs = "auto";
       # cores = 0;
     };
-  
+
     # 开启系统级的 nix 垃圾回收
     gc = {
       automatic = true;
       # 每七天运行一次垃圾回收
       dates = "weekly";
-  
+
       # 自动删除超过 7 天的世代
       options = "--delete-older-than 7d";
     };
-  
+
     registry = {
-        # 将命令行的 nixpkgs 映射到 Flake 锁定的那个 nixpkgs
-        # 前提是 home.nix 能接收到 flake 的 inputs 参数
-        nixpkgs.flake = inputs.nixpkgs; 
+      # 将命令行的 nixpkgs 映射到 Flake 锁定的那个 nixpkgs
+      # 前提是 home.nix 能接收到 flake 的 inputs 参数
+      nixpkgs.flake = inputs.nixpkgs;
     };
   };
 

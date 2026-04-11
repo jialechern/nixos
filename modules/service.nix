@@ -22,6 +22,10 @@ in
   # 或者完全禁用防火墙
   # networking.firewall.enable = false;
 
+  networking.firewall.trustedInterfaces = [
+    "virbr0" # 放行默认虚拟网桥
+  ];
+
   # --- 其它 ---
   # 电源管理
   services.tlp.enable = true;
@@ -37,6 +41,18 @@ in
   systemd.services.v2raya.environment = {
     V2RAYA_V2RAY_ASSETSDIR = "${v2rayAssets}/share/v2ray";
   };
+
+  # --- 虚拟机 ---
+  # 启用 libvirt 服务
+  virtualisation.libvirtd.enable = true;
+
+  systemd.tmpfiles.rules = [
+    "L+ /var/lib/qemu/firmware - - - - ${pkgs.qemu}/share/qemu/firmware"
+  ]; # 给 virt-manager / libvirt 提供 UEFI 固件
+  
+  virtualisation.libvirtd.qemu.vhostUserPackages = with pkgs; [
+    virtiofsd # 共享目录更顺手
+  ];
 
   # --- 容器与沙箱 ---
   # Docker/Podman

@@ -25,18 +25,23 @@ let
   ];
 
   lspDeps = with pkgs; [
-    haskell-language-server ormolu
+    haskell-language-server
+    ormolu
     clang-tools
     lua-language-server
     marksman
-    nixd nixpkgs-fmt
-    pyright black
+    nixd
+    nixpkgs-fmt
+    basedpyright
+    black
     # Scheme
     guile-lsp-server
     # rust-analyzer # 已被 rustup 包包含
-    typescript-language-server prettierd
+    typescript-language-server
+    prettierd
     taplo
-    texlab tinymist
+    texlab
+    tinymist
   ];
 in
 {
@@ -54,6 +59,7 @@ in
 
     withNodeJs = true;
     withPython3 = true;
+    withRuby = true;
 
     # --- 使用 nix/home-manager 管理 neovim 插件 ---
     plugins = with pkgs.vimPlugins; [

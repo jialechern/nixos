@@ -26,6 +26,8 @@
         wget
         curl
         ffmpeg
+        # ip 扫描工具
+        nmap
         # yaml toml xml 等文件的命令行解析工具
         yq
         # 动态链接软件的分流代理工具

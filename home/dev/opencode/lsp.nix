@@ -1,5 +1,5 @@
 {
-    typescript = {
-      disabled =  true;
-    };
+  typescript = {
+    disabled = true;
+  };
 }

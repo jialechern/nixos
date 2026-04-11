@@ -1,5 +1,5 @@
 { config, pkgs, ... }:
 
 {
-    home.packages = [ pkgs.dust ];
+  home.packages = [ pkgs.dust ];
 }

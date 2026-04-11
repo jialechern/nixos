@@ -5,7 +5,8 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "uas" "sd_mod" "sdhci_pci" ];
@@ -14,41 +15,47 @@
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/0abb0e77-a3f1-46e5-a054-3e0c48069f28";
+    {
+      device = "/dev/disk/by-uuid/0abb0e77-a3f1-46e5-a054-3e0c48069f28";
       fsType = "btrfs";
       options = [ "subvol=@" ];
     };
 
   fileSystems."/swap" =
-    { device = "/dev/disk/by-uuid/0abb0e77-a3f1-46e5-a054-3e0c48069f28";
+    {
+      device = "/dev/disk/by-uuid/0abb0e77-a3f1-46e5-a054-3e0c48069f28";
       fsType = "btrfs";
       options = [ "noatime" "subvol=@swap" ];
     };
 
   fileSystems."/nix" =
-    { device = "/dev/disk/by-uuid/0abb0e77-a3f1-46e5-a054-3e0c48069f28";
+    {
+      device = "/dev/disk/by-uuid/0abb0e77-a3f1-46e5-a054-3e0c48069f28";
       fsType = "btrfs";
       options = [ "subvol=@nix" ];
     };
 
   fileSystems."/var/log" =
-    { device = "/dev/disk/by-uuid/0abb0e77-a3f1-46e5-a054-3e0c48069f28";
+    {
+      device = "/dev/disk/by-uuid/0abb0e77-a3f1-46e5-a054-3e0c48069f28";
       fsType = "btrfs";
       options = [ "subvol=@log" ];
     };
 
   fileSystems."/home" =
-    { device = "/dev/disk/by-uuid/63088d49-836a-40b8-9e99-aa987455ca7f";
+    {
+      device = "/dev/disk/by-uuid/63088d49-836a-40b8-9e99-aa987455ca7f";
       fsType = "btrfs";
       options = [ "subvol=@home" ];
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/A9E8-5E1C";
+    {
+      device = "/dev/disk/by-uuid/A9E8-5E1C";
       fsType = "vfat";
       options = [ "fmask=0022" "dmask=0022" ];
     };
-  
+
   # --- 开启交换空间 ---
   swapDevices = [{
     device = "/swap/swapfile";

@@ -2,7 +2,7 @@
 
 {
   home.packages = with pkgs; [
-	nodejs        # 包含 node 和 npm
+    nodejs # 包含 node 和 npm
   ];
 
   # 生成 .npmrc 文件

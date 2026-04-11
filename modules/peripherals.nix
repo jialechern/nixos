@@ -10,7 +10,7 @@
     variant = "";
     # 比如你想把 CapsLock 改成 Esc
     # options = "caps:escape";
- };
+  };
 
   # 确保控制台也使用同样的布局
   console.useXkbConfig = true;
@@ -29,7 +29,7 @@
     nssmdns4 = true;
     openFirewall = true;
   };
-  
+
   # 添加常见的打印机驱动
   services.printing.drivers = [ pkgs.gutenprint pkgs.hplip ];
 

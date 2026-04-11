@@ -34,17 +34,17 @@
       # # 平时用 Intel 核显, 想用 NVIDIA 时手动指定(如: nvidia-offload steam)
       # offload = {
       # enable = true;
-        # # 自动创建 nvidia-offload 脚本
+      # # 自动创建 nvidia-offload 脚本
       # enableOffloadCmd = true;
 
       # 模式 B: Sync 模式
       # 强行全程使用 NVIDIA, 显示器直接挂在独显上. 功耗高, 但在 Niri 下通常最稳
-      sync.enable = true; 
+      sync.enable = true;
 
       # 需要填入你机器真实的 PCI 总线 ID
       # 在命令行输入 `lspci | grep -E "VGA|3D"` 查看
-      intelBusId = "PCI:0:2:0";   # 示例 ID, 请替换为自己的
-      nvidiaBusId = "PCI:1:0:0";  # 示例 ID, 请替换为自己的
+      intelBusId = "PCI:0:2:0"; # 示例 ID, 请替换为自己的
+      nvidiaBusId = "PCI:1:0:0"; # 示例 ID, 请替换为自己的
     };
   };
 
@@ -54,6 +54,6 @@
     LIBVA_DRIVER_NAME = "nvidia";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
     # 在 Sync 模式下，有时需要强制指定 WLR 后端以确保流畅度
-    WLR_NO_HARDWARE_CURSORS = "1"; 
+    WLR_NO_HARDWARE_CURSORS = "1";
   };
 }

@@ -3,9 +3,9 @@
 {
   # 安装必要的软件包
   home.packages = with pkgs; [
-    wl-clipboard      # 基础工具
-    wl-clip-persist   # 持久化工具
-    cliphist          # 历史管理器
+    wl-clipboard # 基础工具
+    wl-clip-persist # 持久化工具
+    cliphist # 历史管理器
   ];
 
   # 配置 wl-clip-persist 服务

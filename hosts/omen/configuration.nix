@@ -6,9 +6,9 @@
 
 {
   imports = [
-      # 包含硬件扫描结果
-      ./hardware-configuration.nix
-    ];
+    # 包含硬件扫描结果
+    ./hardware-configuration.nix
+  ];
 
   # 复制 NixOS 配置文件并将其链接到生成的系统中
   # (/run/current-system/configuration.nix). 这在您意外删除 configuration.nix 文件时非常有用
@@ -21,14 +21,14 @@
   fileSystems."/home" = {
     device = "/dev/disk/by-uuid/63088d49-836a-40b8-9e99-aa987455ca7f";
     fsType = "btrfs";
-    options = [ 
-      "defaults" 
+    options = [
+      "defaults"
       "compress=zstd"
       "autodefrag"
       "discard=async"
     ];
   };
-  
+
   fileSystems."/" = {
     device = "/dev/disk/by-uuid/0abb0e77-a3f1-46e5-a054-3e0c48069f28";
     fsType = "btrfs";
@@ -41,16 +41,16 @@
   };
 
   # --- --- --- 用户与组 --- --- ---
-    users.groups.nix-users = { };
-    users.users."${username}" = {
-      isNormalUser = true;
-      shell = pkgs.zsh;
-      extraGroups = [ "networkmanager" "wheel" "video" "audio" "nix-users" ];
-    };
+  users.groups.nix-users = { };
+  users.users."${username}" = {
+    isNormalUser = true;
+    shell = pkgs.zsh;
+    extraGroups = [ "networkmanager" "wheel" "video" "audio" "nix-users" "libvirtd" ];
+  };
 
-    users.users.root = {
-      shell = pkgs.zsh;
-    };
+  users.users.root = {
+    shell = pkgs.zsh;
+  };
 
   # 定义用户账户. 别忘了用 `passwd` 命令设置密码
   # users.users.alice = {

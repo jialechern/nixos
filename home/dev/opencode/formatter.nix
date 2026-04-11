@@ -1,14 +1,14 @@
 {
-    prettier = {
-        command = [ "npx" "prettier" "--write" "$FILE" ];
-        environment = {
-            NODE_ENV = "development";
-        };
-        extensions = [ ".js" ".ts" ".jsx" ".tsx" ];
+  prettier = {
+    command = [ "npx" "prettier" "--write" "$FILE" ];
+    environment = {
+      NODE_ENV = "development";
     };
+    extensions = [ ".js" ".ts" ".jsx" ".tsx" ];
+  };
 
-    custom-markdown-formatter = {
-        command = [ "deno" "fmt" "$FILE" ];
-        extensions = [".md"];
-    };
+  custom-markdown-formatter = {
+    command = [ "deno" "fmt" "$FILE" ];
+    extensions = [ ".md" ];
+  };
 }

@@ -17,7 +17,7 @@
       # theme = pkgs.catppuccin-grub; 
 
       # 使用 Sleek 主题, 并利用 Nix 的 override 机制指定暗黑风格
-      theme = pkgs.sleek-grub-theme.override { 
+      theme = pkgs.sleek-grub-theme.override {
         # 支持: light, dark, orange, bigSur
         withStyle = "dark";
         # 自定义顶部文字
@@ -25,7 +25,7 @@
       };
 
       # 可选: 如果 4K/2K 屏幕下 GRUB 菜单显得太小, 可以强制指定分辨率
-      gfxmodeEfi = "1920x1080"; 
+      gfxmodeEfi = "1920x1080";
     };
 
     # 彻底关闭默认的极简引导
