@@ -13,6 +13,8 @@
       matplotlib # 配合 scipy/sympy 进行绘图可视化
       pandas # 虽然有了 polars, 但在处理某些旧格式时依然是行业标准
       requests # 几乎所有 Python 项目都会用到的 HTTP 库
+      pymupdf pypdf # pdf 操作组合
+      pillow # 图像处理
     ]))
 
     pkgs.ruff
