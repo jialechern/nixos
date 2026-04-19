@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 
 let
-  nvimPath = /etc/nixos/home/nvim;
+  nvimPath = "/etc/nixos/home/nvim";
 
   extraTools = with pkgs; [
     ripgrep
@@ -67,8 +67,14 @@ in
 
     # 将依赖注入 Neovim 的 PATH
     extraPackages = lspDeps ++ extraTools;
+
+    # 不再写入 ~/.config/nvim/init.lua, 避免和自己的配置文件冲突
+    sideloadInitLua = true;
   };
 
-  # 链接你的 Lua 配置文件夹
-  xdg.configFile."nvim".source = config.lib.file.mkOutOfStoreSymlink nvimPath;
+  # 链接 Lua 配置文件夹
+  xdg.configFile."nvim" = {
+    source = config.lib.file.mkOutOfStoreSymlink nvimPath;
+    force = true;
+  };
 }

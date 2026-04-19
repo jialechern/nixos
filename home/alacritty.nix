@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 
 let
-  alacrittyPath = /etc/nixos/home/alacritty;
+  alacrittyPath = "/etc/nixos/home/alacritty";
 in
 {
   # --- --- --- 链接 alacritty 配置目录 --- --- ---
@@ -10,5 +10,8 @@ in
   #     source = config.lib.file.mkOutOfStoreSymlink alacrittyPath;
   # };
 
-  xdg.configFile."alacritty".source = config.lib.file.mkOutOfStoreSymlink alacrittyPath;
+  xdg.configFile."alacritty" = {
+    source = config.lib.file.mkOutOfStoreSymlink alacrittyPath;
+    force = true;
+  };
 }
