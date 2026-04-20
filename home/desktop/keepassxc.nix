@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, dotfilesRoot, ... }:
 
 {
   # 安装 KeePassXC 软件包
@@ -12,5 +12,11 @@
     QT_QPA_PLATFORM = "wayland";
     # 如果使用自动输入 (Auto-type), Wayland 下可能需要特定的支持
     QT_XCB_GL_INTEGRATION = "none";
+  };
+
+  # --- --- --- 链接 keepassxc 配置目录 --- --- ---
+  xdg.configFile."keepassxc" = {
+    source = config.lib.file.mkOutOfStoreSymlink "${dotfilesRoot}/keepassxc";
+    force = true;
   };
 }

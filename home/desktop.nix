@@ -27,11 +27,14 @@
     # 需要网络代理才能下载的应用列表配置
     ./desktop/applications-require-proxy.nix
 
+    # niri 配置
+    ./desktop/niri.nix
+
     # ghostty 配置
-    ./ghostty.nix
+    ./desktop/ghostty.nix
 
     # alacritty 配置
-    ./alacritty.nix
+    ./desktop/alacritty.nix
   ]);
 
   # --- --- --- 环境变量与会话同步 --- --- ---

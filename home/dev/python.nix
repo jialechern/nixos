@@ -9,6 +9,7 @@
       polars # 高性能数据处理 (比 pandas 更现代)
       scipy # 科学计算
       sympy # 符号计算(代数运算)
+      z3-solver # 约束求解库
       numpy
       matplotlib # 配合 scipy/sympy 进行绘图可视化
       pandas # 虽然有了 polars, 但在处理某些旧格式时依然是行业标准

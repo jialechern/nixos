@@ -1,8 +1,6 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, dotfilesRoot, ... }:
 
 let
-  nvimPath = "/etc/nixos/home/nvim";
-
   extraTools = with pkgs; [
     ripgrep
     fd
@@ -74,7 +72,7 @@ in
 
   # 链接 Lua 配置文件夹
   xdg.configFile."nvim" = {
-    source = config.lib.file.mkOutOfStoreSymlink nvimPath;
+    source = config.lib.file.mkOutOfStoreSymlink "${dotfilesRoot}/nvim";
     force = true;
   };
 }

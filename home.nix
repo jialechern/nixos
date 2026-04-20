@@ -31,12 +31,6 @@
     # sops-nix 配置
     ./sops.nix
 
-    # neovim 配置
-    ./home/nvim.nix
-
-    # niri 配置
-    ./home/niri.nix
-
     # 桌面环境配置
     ./home/desktop.nix
   ]);

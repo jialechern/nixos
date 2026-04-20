@@ -33,6 +33,9 @@
 
       # 引入必要的库
       lib = nixpkgs.lib;
+
+      # 必要软件配置仓库的根目录
+      dotfilesRoot = "/etc/nixos/dotfiles";
     in
     {
       # 注意这里: 从 homeConfigurations 变成了 nixosConfigurations
@@ -43,7 +46,7 @@
           inherit system;
 
           # 将 inputs 和 username 传递给所有的 NixOS 系统级模块
-          specialArgs = { inherit inputs username; };
+          specialArgs = { inherit inputs username dotfilesRoot; };
 
           modules = lib.flatten [
             # 系统的核心配置和硬件配置 (系统自动生成)
@@ -63,7 +66,7 @@
               home-manager.useUserPackages = true;
 
               # 将所有的 inputs 传递给各个 .nix 模块
-              home-manager.extraSpecialArgs = { inherit inputs username; };
+              home-manager.extraSpecialArgs = { inherit inputs username dotfilesRoot; };
 
               # 核心模块引入: 直接指向你现有的 home.nix 入口
               home-manager.users.${username} = import ./home.nix;
@@ -76,7 +79,7 @@
           inherit system;
 
           # 将 inputs 和 username 传递给所有的 NixOS 系统级模块
-          specialArgs = { inherit inputs username; };
+          specialArgs = { inherit inputs username dotfilesRoot; };
 
           modules = lib.flatten [
             # 系统的核心配置和硬件配置 (系统自动生成)
@@ -94,7 +97,7 @@
               home-manager.useUserPackages = true;
 
               # 将所有的 inputs 传递给各个 .nix 模块
-              home-manager.extraSpecialArgs = { inherit inputs username; };
+              home-manager.extraSpecialArgs = { inherit inputs username dotfilesRoot; };
 
               # 核心模块引入: 直接指向你现有的 home.nix 入口
               home-manager.users.${username} = import ./home.nix;

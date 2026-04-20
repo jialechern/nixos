@@ -20,7 +20,10 @@
     ./shell/fastfetch.nix
     ./shell/proxychains.nix
     ./shell/yt-dlp.nix
-  ];
+  ] ++ (builtins.filter builtins.pathExists [
+    # neovim 配置
+    ./shell/nvim.nix
+  ]);
 
   # --- --- --- 其它 Shell 工具 --- --- ---
   home.packages = with pkgs; [
