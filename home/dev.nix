@@ -5,6 +5,7 @@
     ./dev/git.nix
     ./dev/opencode.nix
     ./dev/lazygit.nix
+    ./dev/rust.nix
     ./dev/haskell.nix
     ./dev/python.nix
     ./dev/nodejs.nix

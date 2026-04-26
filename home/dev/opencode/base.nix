@@ -9,5 +9,5 @@
   # 默认使用的模式
   default_agent = "plan";
   # 使用的主题
-  theme = "system";
+  theme = "catppuccin-macchiato";
 }

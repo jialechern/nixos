@@ -7,7 +7,6 @@ let
     bat
     nodejs
     yarn
-    rustup
     fzf
 
     zathura
@@ -34,7 +33,7 @@ let
     black
     # Scheme
     guile-lsp-server
-    # rust-analyzer # 已被 rustup 包包含
+    rust-analyzer
     typescript-language-server
     prettierd
     taplo

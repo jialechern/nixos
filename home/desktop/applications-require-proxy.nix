@@ -18,8 +18,6 @@
     qbittorrent
     # Steam
     steam
-    # Windows prefix 管理器
-    bottles
     # 我的世界启动器
     prismlauncher
     # # 桌面共享工具
