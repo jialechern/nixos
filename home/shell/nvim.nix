@@ -31,7 +31,6 @@ let
     nixpkgs-fmt
     basedpyright
     black
-    # Scheme
     guile-lsp-server
     rust-analyzer
     typescript-language-server

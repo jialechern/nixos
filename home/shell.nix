@@ -17,6 +17,7 @@
     ./shell/fzf.nix
     ./shell/yazi.nix
     ./shell/bat.nix
+    ./shell/pandoc.nix
     ./shell/fastfetch.nix
     ./shell/proxychains.nix
     ./shell/yt-dlp.nix
@@ -38,6 +39,8 @@
     proxychains-ng
     # OCR 工具
     ocrmypdf
+    # 将 Nix 命令的输出处理以显示有用且美观的信息的工具
+    nix-output-monitor
     # 命令行艺术字体生成工具
     figlet
   ];

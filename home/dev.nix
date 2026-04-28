@@ -8,7 +8,6 @@
     ./dev/rust.nix
     ./dev/haskell.nix
     ./dev/python.nix
-    ./dev/sage.nix
     ./dev/nodejs.nix
   ];
 
@@ -20,9 +19,10 @@
     strace
     # --- 开发必备工具链 ---
     gcc # 提供 C 编译器 (cc, gcc)
+    # clang # clang 会和 gcc 冲突
     gdb # 调试器
     gnumake # 很多插件编译时需要用到 make
     binutils # 提供 ld, ar 等二进制工具
-    deno # JS/TS 工具兼运行时
+    deno # JS/TS 运行时
   ];
 }
