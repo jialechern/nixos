@@ -23,12 +23,6 @@
       # --- 编辑器 ---
       EDITOR = "nvim";
 
-      # --- ollama 配置 ---
-      OLLAMA_MODELS = "$HOME/LLMS";
-
-      # 启用 GPU
-      OLLAMA_FORCE_GPU = "1";
-
       # --- rust 设置 ---
       RUST_BACKTRACE = "1";
       RUSTUP_DIST_SERVER = "https://rsproxy.cn";

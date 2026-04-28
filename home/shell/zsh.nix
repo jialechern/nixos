@@ -11,10 +11,6 @@
   home.sessionVariables = {
     # --- 编辑器 ---
     EDITOR = "nvim";
-    # --- ollama 配置 ---
-    OLLAMA_MODELS = "$HOME/LLMS";
-    # 启用 GPU
-    OLLAMA_FORCE_GPU = "1";
     # --- Rust 配置 ---
     # 打印详细 BACKTRACE
     RUST_BACKTRACE = "1";
@@ -77,5 +73,4 @@
       			[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
       		'';
   };
-
 }

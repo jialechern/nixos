@@ -45,6 +45,7 @@
   # 如果在 Waybar 里看到网络图标
   programs.nm-applet.enable = true;
   # Shell
+  programs.fish.enable = true;
   programs.zsh.enable = true;
   programs.bash.enable = true;
   # 开启文档功能(man)

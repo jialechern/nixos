@@ -54,17 +54,20 @@ in
     code = "opencode";
     ask = "opencode run";
     ai = "opencode";
+    ag = "opencode";
   };
 
   programs.fish.shellAliases = {
     code = "opencode";
     ask = "opencode run";
     ai = "opencode";
+    ag = "opencode";
   };
 
   programs.zsh.shellAliases = {
     code = "opencode";
     ask = "opencode run";
     ai = "opencode";
+    ag = "opencode";
   };
 }

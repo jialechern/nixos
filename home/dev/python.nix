@@ -7,15 +7,14 @@
     (pkgs.python3.withPackages (python-set: with python-set; [
       python-magic # 文件类型检测
       polars # 高性能数据处理 (比 pandas 更现代)
-      scipy # 科学计算
-      sympy # 符号计算(代数运算)
-      z3-solver # 约束求解库
       numpy
-      matplotlib # 配合 scipy/sympy 进行绘图可视化
+      matplotlib # 绘图库
       pandas # 虽然有了 polars, 但在处理某些旧格式时依然是行业标准
       requests # 几乎所有 Python 项目都会用到的 HTTP 库
       pymupdf pypdf # pdf 操作组合
       pillow # 图像处理
+      sympy # 符号计算库
+      scipy # 科学计算库
     ]))
 
     pkgs.ruff

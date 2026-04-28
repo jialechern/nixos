@@ -8,6 +8,7 @@
     ./dev/rust.nix
     ./dev/haskell.nix
     ./dev/python.nix
+    ./dev/sage.nix
     ./dev/nodejs.nix
   ];
 
