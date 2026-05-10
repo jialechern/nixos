@@ -8,6 +8,8 @@
     qq
     # 微信
     wechat
+    # WPS 中文版
+    wpsoffice-cn
     # 开源办公套件
     libreoffice-fresh
     # 几何画板

@@ -43,5 +43,8 @@
     nix-output-monitor
     # 命令行艺术字体生成工具
     figlet
+    # pdf 处理工具
+    poppler-utils
+    python3Packages.pdf2docx
   ];
 }
