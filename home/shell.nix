@@ -21,6 +21,7 @@
     ./shell/fastfetch.nix
     ./shell/proxychains.nix
     ./shell/yt-dlp.nix
+    ./shell/jq.nix
   ] ++ (builtins.filter builtins.pathExists [
     # neovim 配置
     ./shell/nvim.nix
