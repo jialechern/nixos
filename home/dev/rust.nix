@@ -8,9 +8,12 @@
     # 额外组件
     rustfmt
     clippy
+    cargo-flamegraph
+    cargo-bloat
+    cargo-llvm-lines
 
     # rust-src 用于 IDE 自动补全和跳转定义
-    (pkgs.runCommand "rust-src" {} ''
+    (pkgs.runCommand "rust-src" { } ''
       mkdir -p $out/lib/rustlib/src
       ln -s ${pkgs.rustPlatform.rustcSrc} $out/lib/rustlib/src/rust
     '')

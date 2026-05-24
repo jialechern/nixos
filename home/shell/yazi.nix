@@ -81,8 +81,8 @@
       plugin = {
         # git.yazi 的 fetcher：让 Yazi 在目录里收集 git 状态
         prepend_fetchers = [
-          { id = "git"; url = "*"; run = "git"; } # 普通文件
-          { id = "git"; url = "*/"; run = "git"; } # 目录
+          { url = "*"; run = "git"; group = "git"; } # 普通文件
+          { url = "*/"; run = "git"; group = "git"; } # 目录
         ];
       };
 

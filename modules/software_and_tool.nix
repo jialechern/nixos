@@ -4,6 +4,9 @@
   # 允许非自由的软件源
   nixpkgs.config.allowUnfree = true;
 
+  # 把 Linux 内核的 perf 访问限制放宽到最宽松的级别
+  boot.kernel.sysctl."kernel.perf_event_paranoid" = -1;
+
   environment.systemPackages = with pkgs; [
     # 基础工具
     git
@@ -38,6 +41,29 @@
     xhost
     # 全局依赖
     libsecret
+
+    # perf
+    perf
+    perf-tools
+
+    # tracing / profiling
+    bpftrace
+    flamegraph
+    valgrind
+    kdePackages.kcachegrind
+
+    # debugging
+    gdbHostCpuOnly
+    rr
+    ltrace
+    nixseparatedebuginfod2
+
+    # process / system inspection
+    sysstat
+    procps
+    htop
+    iotop
+    lsof
   ];
 
   # 很多 GTK 程序(包括 Niri 里的部分组件)依赖它存储设置

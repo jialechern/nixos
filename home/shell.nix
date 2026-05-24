@@ -6,6 +6,7 @@
     ./shell/fish.nix
     ./shell/zsh.nix
     ./shell/btop.nix
+    ./shell/htop.nix
     ./shell/tmux.nix
     ./shell/starship.nix
     ./shell/zoxide.nix
