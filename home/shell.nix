@@ -33,6 +33,9 @@
     wget
     curl
     ffmpeg
+
+    # nixos 安装工具
+    nixos-install-tools
     # ip 扫描工具
     nmap
     # yaml toml xml 等文件的命令行解析工具
