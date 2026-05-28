@@ -14,8 +14,8 @@
       # 确保 Vulkan 支持(Steam 游戏必备)
       vulkan-loader
       vulkan-validation-layers
-      # # 如果是 AMD 核心，则通常不需要额外装这个
-      # libvdpau-va-gl
+      # VA-API → VDPAU 桥接 (Intel/AMD/NVIDIA 均需要)
+      libvdpau-va-gl
     ];
   };
 }

@@ -2,6 +2,8 @@
 
 {
   home.packages = with pkgs; [
+    # Steam
+    steam
     # Telegram 桌面端
     telegram-desktop
     # QQ
@@ -18,8 +20,6 @@
     gimp
     # p2p 下载器
     qbittorrent
-    # Steam
-    steam
     # 我的世界启动器
     prismlauncher
     # # 桌面共享工具
@@ -31,5 +31,16 @@
     ./obs.nix
 
   ];
+
+  # Steam 配置
+  xdg.desktopEntries = {
+    steam-gamescope = {
+      name = "Steam (gamescope)";
+      exec = "gamescope -- steam";
+      icon = "steam";
+      terminal = false;
+      categories = [ "Game" ];
+    };
+  };
 
 }

@@ -1,13 +1,6 @@
 { config, lib, pkgs, username, ... }:
 
 {
-  # --- 启用 Steam 官方支持 ---
-  programs.steam = {
-    enable = true;
-    # 针对 Niri/Wayland 建议开启这个
-    remotePlay.openFirewall = true;
-  };
-
   # --- 合成器与桌面环境 ---
   # 自动处理 Niri 的 Wayland session 注册
   programs.niri.enable = true;

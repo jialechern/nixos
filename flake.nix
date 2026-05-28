@@ -86,6 +86,8 @@
             ./hosts/hp/configuration.nix
             # 引入默认配置
             ./modules.nix
+            # 引入 intel 核显配置
+            ./modules/intel-extra.nix
             # 引入需要网络代理的系统依赖
             (lib.optional (builtins.pathExists ./modules/system-dependencies-require-proxy.nix) ./modules/system-dependencies-require-proxy.nix)
 

@@ -22,5 +22,7 @@
     ./modules/service.nix
     # 引入系统必要的软件与工具
     ./modules/software_and_tool.nix
+    # 引入 steam 通用配置
+    ./modules/steam.nix
   ];
 }

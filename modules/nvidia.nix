@@ -48,6 +48,10 @@
     };
   };
 
+  hardware.graphics.extraPackages = with pkgs; [
+    nvidia-vaapi-driver
+  ];
+
   # 针对 Niri/Wayland 的环境变量优化
   environment.variables = {
     GBM_BACKEND = "nvidia-drm";
