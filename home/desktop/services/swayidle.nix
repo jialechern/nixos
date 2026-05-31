@@ -4,28 +4,27 @@
   services.swayidle = {
     enable = true;
 
-    # swayidle -w 参数在 Home Manager 中默认启用
-    # 它会确保 swayidle 在锁屏程序退出前不会继续执行后续动作
+    # 在命令执行完毕前阻塞，确保锁屏等关键操作先完成
+    extraArgs = [ "-w" ];
 
+    # --- 空闲超时动作（不含自动锁屏） ---
     timeouts = [
-      # 十五分钟 (900秒) 自动锁屏
+      # 十分钟（600 秒）无活动后自动关闭显示器
       {
-        timeout = 900;
-        # 如果是 NixOS 则使用 nix 安装的 swaylock 反之则使用本地系统安装的 swaylock, 为防止本地用户密码无法通过验证
-        command = "${config.programs.swaylock.package}/bin/swaylock";
-      }
-
-      # 半小时 (1800秒) 自动熄屏，并在恢复时点亮
-      {
-        timeout = 1800;
-        # 熄屏动作
+        timeout = 600;
         command = "${pkgs.niri}/bin/niri msg action power-off-monitors";
-        # 对应命令中的 resume 动作: 当用户活动时恢复屏幕
+        # 恢复活动时点亮显示器
         resumeCommand = "${pkgs.niri}/bin/niri msg action power-on-monitors";
       }
     ];
 
-    # 由于"永不休眠", 不需要配置 systemd 的 sleep 目标
-    # 也不需要配置 events 列表中的 before-sleep
+    # --- 系统电源事件 ---
+    events = {
+      # 系统进入睡眠前锁定屏幕
+      before-sleep = "${config.programs.swaylock.package}/bin/swaylock";
+
+      # 系统从睡眠恢复后确保显示器点亮
+      after-resume = "${pkgs.niri}/bin/niri msg action power-on-monitors";
+    };
   };
 }
