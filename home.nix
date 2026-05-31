@@ -12,6 +12,10 @@
   # 想要更新此值, 请务必先查看 Home Manager 的发布说明
   home.stateVersion = "25.11"; # 请在更改前阅读注释
 
+  # 已经通过 follows 确保了 home-manager 和 nixpkgs 的兼容性
+  # 为防止出现版本检查导致的警告, 禁用版本检查
+  home.enableNixpkgsReleaseCheck = false;
+
   # 让 Home Manager 安装和管理自身
   programs.home-manager.enable = true;
 
