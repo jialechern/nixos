@@ -15,7 +15,7 @@
       indicator-idle-visible = true; # 空闲时也显示指示器
       ignore-empty-password = false; # 不允许空密码解锁
       show-failed-attempts = true; # 显示失败尝试次数
-      show-keyboard-layout = true; # 显示当前键盘布局
+      show-keyboard-layout = false; # 隐藏键盘布局指示器(如 "English(US)")
       disable-caps-lock-text = false; # 显示大小写锁定状态文字
       indicator-caps-lock = true; # 指示器上显示大小写锁定状态
       submit-on-touch = true; # 触屏事件提交密码
@@ -36,7 +36,13 @@
       indicator-radius = 320; # 指示器外圈半径(加大半径避免中文溢出)
       indicator-thickness = 12; # 指示器圆环粗细
       font = "Noto Sans CJK SC"; # 字体
-      font-size = 48; # 字体大小
+
+      # swaylock-effects 的字体渲染硬编码逻辑:
+      #   时间(timestr) = font-size,         默认 = arc_radius / 3 ≈ 107
+      #   日期(datestr) = arc_radius / 6.0f, 固定 = 320 / 6 ≈ 53
+      # 设置 font-size 时只影响时间字体, 日期字体不受 font-size 控制
+      # 为了避免时间比日期小, 这里显式设置一个大于日期字号的合理值
+      font-size = 80; # 时间字体大小 (日期固定 ≈ 53, 此处 80 > 53 确保时间更突出)
 
       # --- 线条样式 ---
       line-uses-ring = true; # 分割线颜色跟随圆环颜色
