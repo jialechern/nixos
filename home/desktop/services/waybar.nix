@@ -25,7 +25,8 @@
         "fixed-center" = true;
 
         # ── 外边距: 使顶栏不贴屏幕边缘 ──
-        "margin-top" = 6;
+        "margin-top" = 4;
+        "margin-bottom" = 2;
         "margin-left" = 12;
         "margin-right" = 12;
 
@@ -295,7 +296,7 @@
       #keyboard-state,
       #battery,
       #tray {
-        margin: 5px 6px;
+        margin: 3px 6px;
         padding: 0 15px;
         background: rgba(49, 50, 68, 0.72);
         color: @text;
