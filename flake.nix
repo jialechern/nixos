@@ -13,7 +13,10 @@
     };
 
     # 引入 sops-nix 源
-    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   # Outputs (输出): 定义系统配置
