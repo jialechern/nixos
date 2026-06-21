@@ -68,6 +68,10 @@
       			# 基础按键绑定(vi 模式)
       			bindkey -v
       			
+      			# 使用 Ctrl+q 代替 ESC 进入 normal 模式(需先关闭终端流控)
+      			stty -ixon
+      			bindkey -M viins '^Q' vi-cmd-mode
+      			
       			# PATH 追加
       			export PATH=$HOME/.local/bin:$HOME/Projects/bin:$PATH
       			[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
