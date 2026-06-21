@@ -65,8 +65,8 @@
 
   # 全局 Shell 别名设置
   home.shellAliases = {
-    # 用 bat 替代传统的 cat
-    cat = "bat";
+    # # 用 bat 替代传统的 cat
+    # cat = "bat";
 
     # 使用 batgrep 替代 grep, 直接在搜索结果中看到带高亮的代码
     bgrep = "batgrep";
@@ -75,7 +75,7 @@
     bdiff = "batdiff";
 
     # 安装了 batman, 可以用 alias 覆盖传统的 man
-    # 这样以后输入 man <命令> 就会默认使用带高亮的 bat 渲染
-    man = "batman";
+    # 这样以后输入 bman <命令> 就会默认使用带高亮的 bat 渲染
+    bman = "batman";
   };
 }

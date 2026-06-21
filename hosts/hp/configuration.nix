@@ -44,12 +44,12 @@
   users.groups.nix-users = { };
   users.users."${username}" = {
     isNormalUser = true;
-    shell = pkgs.fish;
+    shell = pkgs.zsh;
     extraGroups = [ "networkmanager" "wheel" "video" "audio" "nix-users" "libvirtd" ];
   };
 
   users.users.root = {
-    shell = pkgs.fish;
+    shell = pkgs.zsh;
   };
 
   # 定义用户账户. 别忘了用 `passwd` 命令设置密码
