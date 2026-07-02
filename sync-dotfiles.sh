@@ -4,9 +4,10 @@ set -euo pipefail
 # =========================================================
 # dotfiles 仓库同步脚本
 # 用法：
-#   ./sync-dotfiles.sh                 # 默认使用国际源(GitHub)
-#   ./sync-dotfiles.sh --source cn     # 使用国内源(Gitee)
-#   ./sync-dotfiles.sh --source intl   # 明确使用国际源(GitHub)
+#   ./sync-dotfiles.sh                 # 默认使用国际源(GitHub), SSH 方式
+#   ./sync-dotfiles.sh --source cn     # 使用国内源(Gitee), SSH 方式
+#   ./sync-dotfiles.sh --source intl   # 明确使用国际源(GitHub), SSH 方式
+#   ./sync-dotfiles.sh --https         # 使用 HTTPS 方式拉取(适用于公开仓库)
 # =========================================================
 
 # -----------------------------
@@ -14,6 +15,11 @@ set -euo pipefail
 # 默认值为 intl
 # -----------------------------
 SOURCE="intl"
+
+# -----------------------------
+# 是否使用 HTTPS 方式拉取(默认使用 SSH)
+# -----------------------------
+USE_HTTPS="false"
 
 # -----------------------------
 # dotfiles 根目录
@@ -42,17 +48,19 @@ REPOS=(
 usage() {
   cat <<'EOF'
 用法：
-  sync-dotfiles.sh [--source intl|cn] [--root 路径]
+  sync-dotfiles.sh [--source intl|cn] [--root 路径] [--https]
 
 参数：
   --source   选择仓库来源, intl 表示国际源, cn 表示国内源
   --root     dotfiles 根目录, 默认是 /etc/nixos/dotfiles
+  --https    使用 HTTPS 方式拉取(公开仓库), 不指定则使用 SSH
   -h, --help 显示帮助
 
 示例：
   sync-dotfiles.sh
   sync-dotfiles.sh --source cn
-  sync-dotfiles.sh --root /persist/dotfiles --source intl
+  sync-dotfiles.sh --https
+  sync-dotfiles.sh --root /persist/dotfiles --source intl --https
 EOF
 }
 
@@ -68,6 +76,10 @@ while [[ $# -gt 0 ]]; do
     --root)
       DOTFILES_ROOT="${2:-}"
       shift 2
+      ;;
+    --https)
+      USE_HTTPS="true"
+      shift
       ;;
     -h|--help)
       usage
@@ -112,6 +124,22 @@ choose_url() {
 }
 
 # -----------------------------
+# 将 SSH 地址转换为 HTTPS 地址
+# git@github.com:user/repo.git  →  https://github.com/user/repo.git
+# git@gitee.com:user/repo.git   →  https://gitee.com/user/repo.git
+# -----------------------------
+ssh_to_https() {
+  local ssh_url="$1"
+
+  [[ "$ssh_url" =~ ^git@([^:]+):(.+)$ ]] || {
+    echo "错误: 无法解析 SSH 地址格式: ${ssh_url}" >&2
+    exit 1
+  }
+
+  printf 'https://%s/%s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
+}
+
+# -----------------------------
 # 同步单个仓库
 # 如果目录不存在则 clone
 # 如果目录已存在则更新 remote 并 pull
@@ -127,9 +155,18 @@ sync_repo() {
   local url
   url="$(choose_url "$intl_url" "$cn_url")"
 
+  # 如果指定了 --https, 将 SSH 地址转换为 HTTPS 地址
+  if [[ "$USE_HTTPS" == "true" ]]; then
+    url="$(ssh_to_https "$url")"
+  fi
+
+  local protocol
+  protocol="$([[ "$USE_HTTPS" == "true" ]] && echo "HTTPS" || echo "SSH")"
+
   echo "==> 处理仓库: ${name}"
   echo "    目标目录: ${repo_dir}"
   echo "    使用源: ${SOURCE}"
+  echo "    协议: ${protocol}"
   echo "    地址: ${url}"
 
   # 目录不存在时, 直接克隆
@@ -161,6 +198,7 @@ sync_repo() {
 echo "开始同步 dotfiles..."
 echo "根目录: ${DOTFILES_ROOT}"
 echo "源: ${SOURCE}"
+echo "协议: $([[ "$USE_HTTPS" == "true" ]] && echo 'HTTPS' || echo 'SSH')"
 echo
 
 for item in "${REPOS[@]}"; do

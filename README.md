@@ -113,6 +113,10 @@
         - niri、nvim、alacritty、ghostty、keepassxc 这些软件的配置是独立的, 构建时需要将它们的配置文件放在 `/etc/nixos/dotfiles` 下并使用和软件相同的名称作为配置文件夹的名称
         也可以使用 `sync-dotfiles.sh` 脚本进行安装, 具体用法见 `sync-dotfiles.sh -h`.
         若想去除这些配置, 只需要将 `home/` 下的同名的 `*.nix` 文件删掉即可
+        - 如果不存在 `~/Pictures/Wallpapers/` 目录,
+          那么在构建系统时将会自动创建这个路径, 因为这个路径被 niri 配置中的 `awww` 相关自动命令
+          作为默认的获取壁纸文件的路径. 如有希望作为壁纸的图片,
+          只需要将其存放在该路径下即可.
         - 如果使用核显, 则不应该在 `nixpkgs.lib.nixosSystem { ... }` 的参数 `modules` 中引入形如 `./modules/nvidia.nix` 的独立显卡驱动配置项, 而应当引入形如 `./modules/intel-extra.nix` 这样的核显适配的配置项.
 
     **网络问题:**
