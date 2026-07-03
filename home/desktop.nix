@@ -11,7 +11,6 @@
     ./desktop/swaylock.nix
     ./desktop/mpv.nix
     ./desktop/zathura.nix
-    ./desktop/keepassxc.nix
     ./desktop/applications.nix
 
     # services
@@ -35,6 +34,9 @@
 
     # alacritty 配置
     ./desktop/alacritty.nix
+
+    # keepassxc 配置
+    ./desktop/keepassxc.nix
   ]);
 
   # --- --- --- 环境变量与会话同步 --- --- ---
