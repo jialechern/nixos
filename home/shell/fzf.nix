@@ -76,18 +76,24 @@ in
     defaultCommand = "fd --type file --follow --strip-cwd-prefix --hidden --exclude .git";
 
     # Alt+C 切换工作目录时使用的命令与 fzf 选项
-    changeDirWidgetCommand = "fd --type directory --follow --strip-cwd-prefix --hidden --exclude .git";
-    changeDirWidgetOptions = defaultConfig;
+    changeDirWidget = {
+      command = "fd --type directory --follow --strip-cwd-prefix --hidden --exclude .git";
+      options = defaultConfig;
+    };
 
     # Ctrl+T 搜索文件时使用的命令与 fzf 选项
-    fileWidgetCommand = "fd --type file --follow --strip-cwd-prefix --hidden --exclude .git";
-    fileWidgetOptions = defaultConfig;
+    fileWidget = {
+      command = "fd --type file --follow --strip-cwd-prefix --hidden --exclude .git";
+      options = defaultConfig;
+    };
 
     # Ctrl+R 搜索历史命令时的 fzf 选项
-    historyWidgetOptions = [
-      "--sort" # 按匹配质量排序
-      "--exact" # 精确匹配
-    ];
+    historyWidget = {
+      options = [
+        "--sort" # 按匹配质量排序
+        "--exact" # 精确匹配
+      ];
+    };
 
     # Tmux 集成
     tmux.enableShellIntegration = true;

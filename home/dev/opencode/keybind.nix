@@ -1,6 +1,6 @@
 {
   # leader: 快捷键前缀; 官方默认是 ctrl+x, 大多数动作都先按它再按后续键位
-  leader = "ctrl+o";
+  leader = "ctrl+x";
 
   # app_exit: 退出 OpenCode; 对应官方 /exit ( 别名 /quit、/q )
   app_exit = "ctrl+c,ctrl+q,ctrl+d,<leader>q";
@@ -266,8 +266,8 @@
   # terminal_title_toggle: 切换终端标题显示
   terminal_title_toggle = "none";
 
-  # tips_toggle: 切换提示/帮助提示显示
-  tips_toggle = "<leader>h";
+  # tips_toggle: 切换提示/帮助提示显示 (已被 messages_toggle_conceal 占用了 <leader>h)
+  tips_toggle = "none";
 
   # display_thinking: 切换思考块显示; 官方说明 thinking 只影响显示, 不影响模型是否真的启用推理
   display_thinking = "none";

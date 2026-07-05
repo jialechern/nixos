@@ -9,7 +9,7 @@ let
   lsp = if builtins.pathExists ./opencode/lsp.nix then import ./opencode/lsp.nix else { };
   formatter = if builtins.pathExists ./opencode/formatter.nix then import ./opencode/formatter.nix else { };
   agent = if builtins.pathExists ./opencode/agent.nix then import ./opencode/agent.nix else { };
-  keybinds = if builtins.pathExists ./opencode/keybinds.nix then import ./opencode/keybinds.nix else { };
+  keybinds = if builtins.pathExists ./opencode/keybind.nix then import ./opencode/keybind.nix else { };
 
   # 生成配置
   finalConfig = lib.foldl' lib.recursiveUpdate { } [
@@ -51,23 +51,17 @@ in
 
   # --- shell 别名 ---
   programs.bash.shellAliases = {
-    code = "opencode";
-    ask = "opencode run";
-    ai = "opencode";
+    code = "opencode --port";
     ag = "opencode";
   };
 
   programs.fish.shellAliases = {
-    code = "opencode";
-    ask = "opencode run";
-    ai = "opencode";
+    code = "opencode --port";
     ag = "opencode";
   };
 
   programs.zsh.shellAliases = {
-    code = "opencode";
-    ask = "opencode run";
-    ai = "opencode";
+    code = "opencode --port";
     ag = "opencode";
   };
 }
