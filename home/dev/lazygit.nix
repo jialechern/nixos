@@ -302,7 +302,7 @@
           markCommitAsBaseForRebase = "B";
           tagCommit = "T";
           checkoutCommit = "<c-c>";
-          resetCherryPick = "<c-R>";
+          resetCherryPick = "<ctrl+shift+r>";
           copyCommitAttributeToClipboard = "y";
           openLogMenu = "<c-l>";
           openInBrowser = "o";
