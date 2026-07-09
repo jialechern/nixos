@@ -52,12 +52,12 @@
       			## 启动 tmux 时默认隐藏状态栏
       			set -g status off
 
-      			# 颜色设置
-      			## 配置 pane 分割线颜色
-      			### 普通分割线：黑色
-      			set -g pane-border-style "fg=black"
-      			### 活动分割线背景色
-      			set -g pane-active-border-style "fg=white,bg=black"
+            # 颜色设置
+            ## 配置 pane 分割线颜色
+            ### 普通分割线：黑色
+            set -g pane-border-style "fg=black"
+            ### 活动分割线背景色
+            set -g pane-active-border-style "fg=white,bg=black"
 
       			# session 选择快捷键
       			bind -n M-s choose-session

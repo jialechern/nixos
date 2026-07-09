@@ -54,5 +54,6 @@
     # pdf 处理工具
     poppler-utils
     python3Packages.pdf2docx
+    img2pdf
   ];
 }

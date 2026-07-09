@@ -10,6 +10,7 @@ let
   formatter = if builtins.pathExists ./opencode/formatter.nix then import ./opencode/formatter.nix else { };
   agent = if builtins.pathExists ./opencode/agent.nix then import ./opencode/agent.nix else { };
   keybinds = if builtins.pathExists ./opencode/keybind.nix then import ./opencode/keybind.nix else { };
+  command = if builtins.pathExists ./opencode/command.nix then import ./opencode/command.nix else { };
 
   # 生成配置
   finalConfig = lib.foldl' lib.recursiveUpdate { } [
@@ -21,6 +22,7 @@ let
     { inherit formatter; }
     { inherit agent; }
     { inherit keybinds; }
+    { inherit command; }
   ];
 in
 {
