@@ -73,8 +73,15 @@
       			bindkey -M viins '^Q' vi-cmd-mode
       			
       			# PATH 追加
-      			export PATH=$HOME/.local/bin:$HOME/Projects/bin:$PATH
-      			[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
-      		'';
+    			export PATH=$HOME/.local/bin:$HOME/Projects/bin:$PATH
+    			[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+
+    			# 一键清理 NixOS 旧系统世代与 Nix Store 垃圾
+    			nclean() {
+    			  echo "=> 清理 NixOS 旧世代 & 垃圾回收 Nix Store ..."
+    			  sudo nix-collect-garbage -d
+    			  echo "=> 清理完成。"
+    			}
+    		'';
   };
 }

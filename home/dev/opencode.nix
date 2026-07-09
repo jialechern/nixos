@@ -55,15 +55,18 @@ in
   programs.bash.shellAliases = {
     code = "opencode --port";
     ag = "opencode";
+    oclean = "for s in $(opencode session list | awk 'NR > 2 {print $1}'); do opencode session delete $s; done";
   };
 
   programs.fish.shellAliases = {
     code = "opencode --port";
     ag = "opencode";
+    oclean = "for s in (opencode session list | awk 'NR > 2 {print $1}'); opencode session delete $s; end";
   };
 
   programs.zsh.shellAliases = {
     code = "opencode --port";
     ag = "opencode";
+    oclean = "for s in $(opencode session list | awk 'NR > 2 {print $1}'); do opencode session delete $s; done";
   };
 }

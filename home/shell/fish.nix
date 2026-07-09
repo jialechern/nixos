@@ -159,6 +159,13 @@
       # echo "'$file' 不是有效文件"
       # end
       # '';
+
+      # 一键清理 NixOS 旧系统世代与 Nix Store 垃圾
+      nclean = ''
+        echo "=> 清理 NixOS 旧世代 & 垃圾回收 Nix Store ..."
+        sudo nix-collect-garbage -d
+        echo "=> 清理完成。"
+      '';
     };
 
     # --- 自定义补全 ---

@@ -60,6 +60,13 @@
 
       # less 传送 ANSI 颜色序列，使 man 手册和日志可读
       export LESS="-R"
+
+      # 一键清理 NixOS 旧系统世代与 Nix Store 垃圾
+      nclean() {
+        echo "=> 清理 NixOS 旧世代 & 垃圾回收 Nix Store ..."
+        sudo nix-collect-garbage -d
+        echo "=> 清理完成。"
+      }
     '';
 
     # --- --- --- 交互式 Shell 级配置 --- --- ---
