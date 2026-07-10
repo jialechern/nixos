@@ -176,15 +176,7 @@
   # ============================================================
   # 环境变量
   # ============================================================
-  home.sessionVariables = {
-    # 默认编辑器
-    EDITOR = "nvim";
-    # Rust 详细回溯
-    RUST_BACKTRACE = "1";
-    # Rust 安装源 (rsproxy 镜像)
-    RUSTUP_DIST_SERVER = "https://rsproxy.cn";
-    RUSTUP_UPDATE_ROOT = "https://rsproxy.cn/rustup";
-  };
+  home.sessionVariables = {};
 
   # ============================================================
   # PATH 扩展

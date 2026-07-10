@@ -65,6 +65,7 @@
 
       set -s extended-keys on
       set -as terminal-features 'xterm*:extkeys'
+      set -as terminal-features 'tmux*:extkeys'
 
       # ============================================================
       # 外观设置

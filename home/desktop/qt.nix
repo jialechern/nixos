@@ -16,4 +16,11 @@
     noto-fonts-color-emoji
     nerd-fonts.jetbrains-mono # NixOS 24.11+ 的新写法
   ];
+
+  home.sessionVariables = {
+    # 强制 QT 使用 Wayland 模式, 避免缩放模糊
+    QT_QPA_PLATFORM = "wayland";
+    # 如果使用自动输入 (Auto-type), Wayland 下可能需要特定的支持
+    QT_XCB_GL_INTEGRATION = "none";
+  };
 }

@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, username, ... }:
+{ config, pkgs, lib, inputs, username, ... }:
 
 {
   # Home Manager 需要一些关于它应该管理的路径的信息
@@ -131,7 +131,23 @@
   #	/etc/profiles/per-user/${username}/etc/profile.d/hm-session-vars.sh
   #
   home.sessionVariables = {
-    # EDITOR = "nvim";
+    # 默认编辑器
+    EDITOR = "nvim";
+
+    # 禁止 fzf 在 tmux 中新建 pane, 改为内联显示(覆盖 fzf 模块默认的 "1")
+    FZF_TMUX = lib.mkForce "0";
+
+    # 强制 KeePassXC 使用 Wayland 模式, 避免缩放模糊
+    QT_QPA_PLATFORM = "wayland";
+    # 如果使用自动输入 (Auto-type), Wayland 下可能需要特定的支持
+    QT_XCB_GL_INTEGRATION = "none";
+
+    # --- Rust 代理设置 ---
+    # Rust 详细回溯
+    RUST_BACKTRACE = "1";
+    # Rust 安装源 (rsproxy 镜像)
+    RUSTUP_DIST_SERVER = "https://rsproxy.cn";
+    RUSTUP_UPDATE_ROOT = "https://rsproxy.cn/rustup";
   };
 
   # 启用 home-manager 中安装的字体

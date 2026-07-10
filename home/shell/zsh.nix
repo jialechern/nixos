@@ -8,16 +8,7 @@
   ];
 
   # --- --- --- 环境变量与 PATH --- --- ---
-  home.sessionVariables = {
-    # --- 编辑器 ---
-    EDITOR = "nvim";
-    # --- Rust 配置 ---
-    # 打印详细 BACKTRACE
-    RUST_BACKTRACE = "1";
-    # Rust 代理设置
-    RUSTUP_DIST_SERVER = "https://rsproxy.cn";
-    RUSTUP_UPDATE_ROOT = "https://rsproxy.cn/rustup";
-  };
+  home.sessionVariables = {};
 
 
   home.sessionPath = [

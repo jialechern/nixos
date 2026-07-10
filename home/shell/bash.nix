@@ -35,15 +35,7 @@
     ];
 
     # --- --- --- 环境变量 --- --- ---
-    sessionVariables = {
-      # --- 编辑器 ---
-      EDITOR = "nvim";
-
-      # --- rust 设置 ---
-      RUST_BACKTRACE = "1";
-      RUSTUP_DIST_SERVER = "https://rsproxy.cn";
-      RUSTUP_UPDATE_ROOT = "https://rsproxy.cn/rustup";
-    };
+    sessionVariables = {};
 
     # --- --- --- 别名设置 --- --- ---
     shellAliases = {

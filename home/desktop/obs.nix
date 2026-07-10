@@ -29,7 +29,6 @@
 
   # 确保环境能够让 OBS 原生运行在 Wayland 上
   home.sessionVariables = {
-    QT_QPA_PLATFORM = "wayland";
     # 强制 OBS 使用 Wayland 原生运行，而不是走 Xwayland
     OBS_USE_EGL = "1";
   };

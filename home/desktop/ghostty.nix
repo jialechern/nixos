@@ -92,7 +92,7 @@ in
         "clipboard-trim-trailing-spaces" = true;
         "image-storage-limit" = 320000000;
         # 启动时自动 attach 到名为 main 的 tmux session, 不存在则创建
-        "initial-command" = "tmux new-session -A -s main";
+        "initial-command" = "tmux";
         "shell-integration" = "detect";
         "shell-integration-features" = "cursor,no-sudo,title,path";
         "window-show-tab-bar" = "auto";
