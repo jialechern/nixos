@@ -50,7 +50,7 @@
       ff = "fastfetch";
       lg = "lazygit";
       rsync = "rsync -arvP";
-      px = "proxychains4 -f ~/.config/proxychains/proxychains.conf -q";
+      px = "proxychains4 -f ${config.xdg.configHome}/proxychains/proxychains.conf -q";
     };
 
     # --- --- --- .bashrc 级配置(所有 Bash 调用均执行) --- --- ---
@@ -79,6 +79,10 @@
 
       # <C-q> 从插入模式进入 Normal(vi-movement) 模式
       bind -m vi-insert '"\C-q": vi-movement-mode'
+
+      # vi 模式光标: 每次显示提示符时设竖线 (bash 默认为插入模式)
+      # 注意: readline 不支持模式切换钩子, 进入 normal 模式时光标仍为竖线
+      PROMPT_COMMAND='printf "\\e[6 q"'
     '';
   };
 

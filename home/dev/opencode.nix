@@ -61,8 +61,14 @@ in
   programs.fish.shellAliases = {
     code = "opencode --port";
     ag = "opencode";
-    oclean = "for s in (opencode session list | awk 'NR > 2 {print $1}'); opencode session delete $s; end";
   };
+
+  # oclean 含 for 循环块, fish 的 alias 包装会与 end 冲突, 改用 function
+  programs.fish.functions.oclean = ''
+    for s in (opencode session list | awk 'NR > 2 {print $1}')
+      opencode session delete $s
+    end
+  '';
 
   programs.zsh.shellAliases = {
     code = "opencode --port";

@@ -56,7 +56,7 @@
       ff = "fastfetch";
       lg = "lazygit";
       rsync = "rsync -arvP";
-      px = "proxychains4 -f ~/.config/proxychains/proxychains.conf -q";
+      px = "proxychains4 -f ${config.xdg.configHome}/proxychains/proxychains.conf -q";
     };
 
     # 需要最先加载的 zsh 配置
@@ -71,6 +71,16 @@
       			# 使用 Ctrl+q 代替 ESC 进入 normal 模式(需先关闭终端流控)
       			stty -ixon
       			bindkey -M viins '^Q' vi-cmd-mode
+
+      			# vi 模式光标形状: 插入=竖线, 普通/可视=方块
+      			zle-keymap-select() {
+      			  printf '\e[%d q' $(( $KEYMAP == vicmd ? 2 : 6 ))
+      			}
+      			zle -N zle-keymap-select
+
+      			# 启动时确保光标为竖线 (默认进入插入模式)
+      			zle-line-init() { printf '\e[6 q' }
+      			zle -N zle-line-init
       			
       			# PATH 追加
     			export PATH=$HOME/.local/bin:$HOME/Projects/bin:$PATH

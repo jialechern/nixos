@@ -109,7 +109,7 @@
       ff = "fastfetch";
       lg = "lazygit";
       rsync = "rsync -arvP";
-      px = "proxychains4 -f ~/.config/proxychains/proxychains.conf -q";
+      px = "proxychains4 -f ${config.xdg.configHome}/proxychains/proxychains.conf -q";
     };
 
     # --- 键绑定 ---
