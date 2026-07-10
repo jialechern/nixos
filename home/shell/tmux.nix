@@ -96,6 +96,8 @@
       # 选择 session
       bind -n M-s choose-session
       # 重命名 session
+      bind -n M-S-s command-prompt -I "#S" "rename-session '%%'"
+      bind -n M-S-S command-prompt -I "#S" "rename-session '%%'"
       bind -n M-S command-prompt -I "#S" "rename-session '%%'"
 
       # ============================================================
@@ -104,6 +106,8 @@
       # 重新加载配置 (使用 Home Manager 管理的实际路径)
       bind M-r source-file ${config.home.homeDirectory}/.config/tmux/tmux.conf \; display-message "tmux config reloaded"
       # 重命名窗口
+      bind -n M-S-r command-prompt -I "#W" "rename-window '%%'"
+      bind -n M-S-R command-prompt -I "#W" "rename-window '%%'"
       bind -n M-R command-prompt -I "#W" "rename-window '%%'"
       # 重命名 pane
       bind -n M-r command-prompt -I "#P" "select-pane -T '%%'"
@@ -139,9 +143,19 @@
       bind -n M-9 select-window -t 9
       bind -n M-0 select-window -t 0   # 预留: baseIndex=1 时通常无 0 号窗口
       # 关闭窗口
+      bind -n M-S-q kill-window
+      bind -n M-S-Q kill-window
       bind -n M-Q kill-window
       # 新建窗口
-      bind -n M-c new-window
+      bind c new-window
+      bind w new-window
+      bind -n M-w new-window
+      bind -n M-S-w new-window
+      bind -n M-W new-window
+      bind -n M-S-W new-window
+      bind -n M-S-c new-window
+      bind -n M-C new-window
+      bind -n M-S-C new-window
       # 轮换窗口编号
       bind-key -n M-- swap-window -t -1 \; previous-window
       bind-key -n M-= swap-window -t +1 \; next-window
@@ -160,6 +174,26 @@
       bind -n M-k select-pane -U
       bind -n M-j select-pane -D
       # 挪动 pane 到指定窗口
+      bind -n M-S-1 join-pane -t :1
+      bind -n M-S-2 join-pane -t :2
+      bind -n M-S-3 join-pane -t :3
+      bind -n M-S-4 join-pane -t :4
+      bind -n M-S-5 join-pane -t :5
+      bind -n M-S-6 join-pane -t :6
+      bind -n M-S-7 join-pane -t :7
+      bind -n M-S-8 join-pane -t :8
+      bind -n M-S-9 join-pane -t :9
+      bind -n M-S-0 join-pane -t :0
+      bind -n M-S-! join-pane -t :1
+      bind -n M-S-@ join-pane -t :2
+      bind -n M-S-# join-pane -t :3
+      bind -n M-S-$ join-pane -t :4
+      bind -n M-S-% join-pane -t :5
+      bind -n M-S-^ join-pane -t :6
+      bind -n M-S-& join-pane -t :7
+      bind -n M-S-* join-pane -t :8
+      bind -n M-S-( join-pane -t :9
+      bind -n M-S-) join-pane -t :0
       bind -n M-! join-pane -t :1
       bind -n M-@ join-pane -t :2
       bind -n M-# join-pane -t :3
@@ -173,13 +207,29 @@
       # pane 交换位置
       bind -n M-] swap-pane -D
       bind -n M-[ swap-pane -U
-      bind -n M-| next-layout
+      bind -n M-S-/ next-layout
+      bind -n M-S-? next-layout
+      bind -n M-? next-layout
       # 挪动 pane 到相邻窗口并跳转
+      bind -n M-S-p join-pane -t :-
+      bind -n M-S-n join-pane -t :+
+      bind -n M-S-P join-pane -t :-
+      bind -n M-S-N join-pane -t :+
       bind -n M-P join-pane -t :-
       bind -n M-N join-pane -t :+
       # 以当前 pane 新建窗口
+      bind -n M-S-f break-pane
+      bind -n M-S-F break-pane
       bind -n M-F break-pane
       # 调整 pane 尺寸 (Alt + Shift + H/J/K/L)
+      bind -n M-S-h resize-pane -L 1
+      bind -n M-S-l resize-pane -R 1
+      bind -n M-S-k resize-pane -U 1
+      bind -n M-S-j resize-pane -D 1
+      bind -n M-S-H resize-pane -L 1
+      bind -n M-S-L resize-pane -R 1
+      bind -n M-S-K resize-pane -U 1
+      bind -n M-S-J resize-pane -D 1
       bind -n M-H resize-pane -L 1
       bind -n M-L resize-pane -R 1
       bind -n M-K resize-pane -U 1
@@ -195,20 +245,82 @@
       # 选择与复制
       bind-key -T copy-mode-vi v send-keys -X begin-selection
       bind-key -T copy-mode-vi V send-keys -X select-line
+      bind-key -T copy-mode-vi S-v send-keys -X select-line
       bind-key -T copy-mode-vi M-v send-keys -X rectangle-toggle
       bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
       # 光标移动
       bind-key -T copy-mode-vi h send-keys -X cursor-left
       bind-key -T copy-mode-vi j send-keys -X cursor-down
-      bind-key -T copy-mode-vi J send-keys -N 5 -X cursor-down
       bind-key -T copy-mode-vi k send-keys -X cursor-up
-      bind-key -T copy-mode-vi K send-keys -N 5 -X cursor-up
       bind-key -T copy-mode-vi l send-keys -X cursor-right
-      bind-key -T copy-mode-vi w send-keys -X next-word-end
-      bind-key -T copy-mode-vi H send-keys -X start-of-line
-      bind-key -T copy-mode-vi L send-keys -X end-of-line
+      bind-key -T copy-mode-vi H send-keys -X cursor-left
+      bind-key -T copy-mode-vi J send-keys -X cursor-down
+      bind-key -T copy-mode-vi K send-keys -X cursor-up
+      bind-key -T copy-mode-vi L send-keys -X cursor-right
+      bind-key -T copy-mode-vi S-h send-keys -X start-of-line
+      bind-key -T copy-mode-vi S-j send-keys -N 5 -X cursor-down
+      bind-key -T copy-mode-vi S-k send-keys -N 5 -X cursor-up
+      bind-key -T copy-mode-vi S-l send-keys -X end-of-line
       bind-key -T copy-mode-vi n send-keys -X search-again
+      bind-key -T copy-mode-vi S-n send-keys -X search-reverse
       bind-key -T copy-mode-vi N send-keys -X search-reverse
+
+      bind-key -T copy-mode-vi w send-keys -X next-word-end
+      bind-key -T copy-mode-vi b send-keys -X previous-word
+
+      bind-key -T copy-mode-vi W send-keys -X next-space
+      bind-key -T copy-mode-vi E send-keys -X next-space-end
+      bind-key -T copy-mode-vi B send-keys -X previous-space
+      bind-key -T copy-mode-vi S-w send-keys -X next-space
+      bind-key -T copy-mode-vi S-e send-keys -X next-space-end
+      bind-key -T copy-mode-vi S-b send-keys -X previous-space
+      bind-key -T copy-mode-vi S-W send-keys -X next-space
+      bind-key -T copy-mode-vi S-E send-keys -X next-space-end
+      bind-key -T copy-mode-vi S-B send-keys -X previous-space
+
+      bind-key -T copy-mode-vi ^ send-keys -X back-to-indentation
+      bind-key -T copy-mode-vi S-6 send-keys -X back-to-indentation
+      bind-key -T copy-mode-vi S-^ send-keys -X back-to-indentation
+      bind-key -T copy-mode-vi $ send-keys -X end-of-line
+      bind-key -T copy-mode-vi S-4 send-keys -X end-of-line
+      bind-key -T copy-mode-vi S-$ send-keys -X end-of-line
+      bind-key -T copy-mode-vi 0 send-keys -X start-of-line
+
+      bind-key -T copy-mode-vi g send-keys -X history-top
+      bind-key -T copy-mode-vi G send-keys -X history-bottom
+      bind-key -T copy-mode-vi S-g send-keys -X history-bottom
+      bind-key -T copy-mode-vi S-G send-keys -X history-bottom
+
+      bind-key -T copy-mode-vi z send-keys -X middle-line
+
+      bind-key -T copy-mode-vi \{ send-keys -X previous-paragraph
+      bind-key -T copy-mode-vi \} send-keys -X next-paragraph
+      bind-key -T copy-mode-vi S-[ send-keys -X previous-paragraph
+      bind-key -T copy-mode-vi S-] send-keys -X next-paragraph
+      bind-key -T copy-mode-vi S-\{ send-keys -X previous-paragraph
+      bind-key -T copy-mode-vi S-\} send-keys -X next-paragraph
+
+      bind-key -T copy-mode-vi % send-keys -X next-matching-bracket
+      bind-key -T copy-mode-vi S-5 send-keys -X next-matching-bracket
+      bind-key -T copy-mode-vi S-% send-keys -X next-matching-bracket
+
+      bind-key -T copy-mode-vi f command-prompt -1 -p "(jump-forward)" "send-keys -X jump-forward \"%%%\""
+      bind-key -T copy-mode-vi F command-prompt -1 -p "(jump-backward)" "send-keys -X jump-backward \"%%%\""
+      bind-key -T copy-mode-vi S-f command-prompt -1 -p "(jump-backward)" "send-keys -X jump-backward \"%%%\""
+      bind-key -T copy-mode-vi S-F command-prompt -1 -p "(jump-backward)" "send-keys -X jump-backward \"%%%\""
+
+      bind-key -T copy-mode-vi t command-prompt -1 -p "(jump-to-forward)" "send-keys -X jump-to-forward \"%%%\""
+      bind-key -T copy-mode-vi T command-prompt -1 -p "(jump-to-backward)" "send-keys -X jump-to-backward \"%%%\""
+      bind-key -T copy-mode-vi S-t command-prompt -1 -p "(jump-to-backward)" "send-keys -X jump-to-backward \"%%%\""
+      bind-key -T copy-mode-vi S-T command-prompt -1 -p "(jump-to-backward)" "send-keys -X jump-to-backward \"%%%\""
+
+      bind-key -T copy-mode-vi \; send-keys -X jump-again
+      bind-key -T copy-mode-vi , send-keys -X jump-reverse
+
+      bind-key -T copy-mode-vi / command-prompt -p "(search down)" "send-keys -X search-forward \"%%%\""
+      bind-key -T copy-mode-vi ? command-prompt -p "(search up)" "send-keys -X search-backward \"%%%\""
+      bind-key -T copy-mode-vi S-/ command-prompt -p "(search up)" "send-keys -X search-backward \"%%%\""
+      bind-key -T copy-mode-vi S-? command-prompt -p "(search up)" "send-keys -X search-backward \"%%%\""
     '';
   };
 }
