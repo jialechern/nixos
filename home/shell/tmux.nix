@@ -13,14 +13,14 @@
     escapeTime = 0;
 
     # --- --- --- Home Manager 声明式选项 --- --- ---
-    historyLimit = 10000;            # 回滚行数 (默认 2000)
-    focusEvents = true;              # 终端焦点事件透传
-    clock24 = true;                  # 24 小时制
-    aggressiveResize = true;         # 窗口大小跟随最小 session
-    newSession = true;               # 无 session 时自动创建
+    historyLimit = 10000; # 回滚行数 (默认 2000)
+    focusEvents = true; # 终端焦点事件透传
+    clock24 = true; # 24 小时制
+    aggressiveResize = true; # 窗口大小跟随最小 session
+    newSession = true; # 无 session 时自动创建
     disableConfirmationPrompt = true; # 杀死 pane/window 时免确认
-    secureSocket = true;             # socket 存于 /run (Linux 默认值, 显式声明)
-    sensibleOnTop = true;            # sensible 插件前置, 可被 extraConfig 覆盖
+    secureSocket = true; # socket 存于 /run (Linux 默认值, 显式声明)
+    sensibleOnTop = true; # sensible 插件前置, 可被 extraConfig 覆盖
 
     # --- --- --- 插件 --- --- ---
     plugins = with pkgs.tmuxPlugins; [
@@ -43,16 +43,16 @@
       # --- 主题 ---
       nord
 
-      # --- 生产力工具 ---
-      fzf-tmux-url     # fzf 模糊搜索并打开 pane 中的 URL/文件路径
-      open             # 用默认程序打开高亮内容
-      extrakto         # fzf 快速抓取 pane 中的文本 (路径、URL、单词等)
+      # --- 其它工具 ---
+      fzf-tmux-url # fzf 模糊搜索并打开 pane 中的 URL/文件路径
+      open # 用默认程序打开高亮内容
+      extrakto # fzf 快速抓取 pane 中的文本 (路径、URL、单词等)
 
       # --- 系统剪贴板 ---
       yank
 
       # --- 状态栏 ---
-      prefix-highlight  # 按下 prefix 时状态栏高亮提示
+      prefix-highlight # 按下 prefix 时状态栏高亮提示
     ];
 
     # --- --- --- 原生配置无法表达的部分 --- --- ---
@@ -61,8 +61,9 @@
       # 终端兼容性与色彩
       # ============================================================
       set -g allow-passthrough all
-      set -s extended-keys on
       set -as terminal-features 'tmux-256color:RGB'
+
+      set -s extended-keys on
       set -as terminal-features 'xterm*:extkeys'
 
       # ============================================================
@@ -73,11 +74,13 @@
       set -g status off
       # pane 分割线颜色
       set -g pane-border-style "fg=black"
-      set -g pane-active-border-style "fg=white,bg=black"
+      set -g pane-active-border-style "fg=black"
       # pane 标题栏
       set -g pane-border-status top
       # 窗口被手动重命名后禁止 tmux 自动覆盖标题
       set -g allow-rename off
+      # 只显示一个小标记, 而不是整块标题栏
+      set -g pane-border-indicators colour
 
       # ============================================================
       # 窗口编号管理
@@ -98,7 +101,7 @@
       # 通用快捷操作
       # ============================================================
       # 重新加载配置 (使用 Home Manager 管理的实际路径)
-      bind r source-file #{config_files} \; display-message "tmux config reloaded"
+      bind M-r source-file ${config.home.homeDirectory}/.config/tmux/tmux.conf \; display-message "tmux config reloaded"
       # 重命名窗口
       bind -n M-R command-prompt -I "#W" "rename-window '%%'"
       # 重命名 pane
@@ -182,13 +185,16 @@
       bind -n M-J resize-pane -D 1
 
       # ============================================================
-      # copy-mode-vi 快捷键
+      # copy-mode-vi 快捷键与行为
       # ============================================================
+      # 进入 copy-mode 时光标变为方块, 退出时恢复为竖线
+      set-hook -g pane-mode-changed 'if -F "#{m:*copy-mode*,#{pane_mode}}" "set -p cursor-style block" "set -p cursor-style bar"'
       # 进入 copy-mode
-      bind -n M-V copy-mode
+      bind M-v copy-mode
       # 选择与复制
-      bind-key -T copy-mode-vi V send-keys -X begin-selection
-      bind-key -T copy-mode-vi C-V send-keys -X rectangle-toggle
+      bind-key -T copy-mode-vi v send-keys -X begin-selection
+      bind-key -T copy-mode-vi V send-keys -X select-line
+      bind-key -T copy-mode-vi M-v send-keys -X rectangle-toggle
       bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
       # 光标移动
       bind-key -T copy-mode-vi h send-keys -X cursor-left

@@ -37,7 +37,6 @@ DOTFILES_ROOT="${DOTFILES_ROOT:-/etc/nixos/dotfiles}"
 REPOS=(
   "nvim|nvim|git@github.com:jialechern/nvim.git|git@gitee.com:cjl-2692367185-qed/nvim.git|main"
   "niri|niri|git@github.com:jialechern/niri.git|git@gitee.com:cjl-2692367185-qed/niri.git|main"
-  "ghostty|ghostty|git@github.com:jialechern/ghostty.git|git@gitee.com:cjl-2692367185-qed/ghostty.git|main"
   "alacritty|alacritty|git@github.com:jialechern/alacritty.git|git@gitee.com:cjl-2692367185-qed/alacritty.git|main"
   "keepass|keepassxc|git@github.com:jialechern/keepass.git|git@gitee.com:cjl-2692367185-qed/keepass.git|main"
 )

@@ -1,4 +1,4 @@
-{ config, pkgs, lib, dotfilesRoot, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   # Linux 平台判断
