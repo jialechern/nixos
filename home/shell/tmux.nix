@@ -253,16 +253,21 @@
       bind-key -T copy-mode-vi j send-keys -X cursor-down
       bind-key -T copy-mode-vi k send-keys -X cursor-up
       bind-key -T copy-mode-vi l send-keys -X cursor-right
-      bind-key -T copy-mode-vi H send-keys -X cursor-left
-      bind-key -T copy-mode-vi J send-keys -X cursor-down
-      bind-key -T copy-mode-vi K send-keys -X cursor-up
-      bind-key -T copy-mode-vi L send-keys -X cursor-right
+      bind-key -T copy-mode-vi H send-keys -X start-of-line
+      bind-key -T copy-mode-vi J send-keys -X halfpage-down
+      bind-key -T copy-mode-vi K send-keys -X halfpage-up
+      bind-key -T copy-mode-vi L send-keys -X end-of-line
+      bind-key -T copy-mode-vi S-H send-keys -X start-of-line
+      bind-key -T copy-mode-vi S-J send-keys -X halfpage-down
+      bind-key -T copy-mode-vi S-K send-keys -X halfpage-up
+      bind-key -T copy-mode-vi S-L send-keys -X end-of-line
       bind-key -T copy-mode-vi S-h send-keys -X start-of-line
-      bind-key -T copy-mode-vi S-j send-keys -N 5 -X cursor-down
-      bind-key -T copy-mode-vi S-k send-keys -N 5 -X cursor-up
+      bind-key -T copy-mode-vi S-j send-keys -X halfpage-down
+      bind-key -T copy-mode-vi S-k send-keys -X halfpage-up
       bind-key -T copy-mode-vi S-l send-keys -X end-of-line
       bind-key -T copy-mode-vi n send-keys -X search-again
       bind-key -T copy-mode-vi S-n send-keys -X search-reverse
+      bind-key -T copy-mode-vi S-N send-keys -X search-reverse
       bind-key -T copy-mode-vi N send-keys -X search-reverse
 
       bind-key -T copy-mode-vi w send-keys -X next-word-end
