@@ -11,6 +11,7 @@
       # --- --- --- 终端 --- --- ---
       terminal.shell = {
         program = "${pkgs.tmux}/bin/tmux";
+        args = ["new-session" "-A" "-s" "main"];
       };
 
       # --- --- --- 光标 --- --- ---

@@ -73,7 +73,8 @@
       bind -m vi-insert '"\C-q": vi-movement-mode'
 
       # vi 模式光标: 每次显示提示符时设竖线 (bash 默认为插入模式)
-      # 注意: readline 不支持模式切换钩子, 进入 normal 模式时光标仍为竖线
+      # 局限性: Readline 无 vi-mode-change 钩子, 进入 normal 模式时光标仍为竖线
+      # 替代方案: 使用 ble.sh (Bash Line Editor) 可支持模式感知光标
       PROMPT_COMMAND='printf "\\e[6 q"'
     '';
   };

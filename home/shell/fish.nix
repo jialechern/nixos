@@ -6,11 +6,8 @@
 
     # --- 包与补全 ---
 
-    # 使用 nixpkgs 提供的 fish 包(可替换为 fish 其他版本)
-    package = pkgs.fish;
-
-    # 基于已安装 man 页面自动生成补全文件(默认为 true)
-    generateCompletions = true;
+    # package 默认为 pkgs.fish, 无需显式声明
+    # generateCompletions 默认为 true, 无需显式声明
 
     # --- Shell 初始化(所有 shell)---
     shellInit = ''
@@ -113,8 +110,8 @@
     };
 
     # --- 键绑定 ---
+    # 将 <C-q> 从插入模式退出到普通模式
     binds = {
-      # 退出到普通模式
       ctrl-q = {
         mode = "insert";
         setsMode = "default";
@@ -186,4 +183,22 @@
     "$HOME/Projects/bin"
     "$HOME/.cargo/bin"
   ];
+
+  # ============================================================
+  # 可选增强 (按需取消注释启用)
+  # ============================================================
+
+  # 1. Atuin 魔法历史: 替换默认 C-r, 全设备同步历史, 支持模糊搜索
+  #    programs.atuin = {
+  #      enable = true;
+  #      enableFishIntegration = true;
+  #    };
+  #    然后: programs.fzf.historyWidget.command 设为 "" 以避免 C-r 冲突
+
+  # 2. direnv 自动环境加载: 进入目录时自动加载 .envrc
+  #    programs.direnv = {
+  #      enable = true;
+  #      enableFishIntegration = true;
+  #      nix-direnv.enable = true;
+  #    };
 }
