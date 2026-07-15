@@ -28,8 +28,10 @@
     qemu # QEMU 本体
     dnsmasq # 默认虚拟网络需要
     virtiofsd # 共享文件夹支持
-    # xray 内核
+    # 网络代理工具内核
+    v2ray
     xray
+    sing-box
     # 文件系统工具
     btrfs-progs
     exfat
