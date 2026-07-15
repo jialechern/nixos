@@ -5,7 +5,7 @@
     enable = true;
 
     # --- --- --- 基本设置 --- --- ---
-    prefix = "M-/";
+    prefix = "M-s";
     mouse = true;
     terminal = "tmux-256color";
     keyMode = "vi";
@@ -99,7 +99,7 @@
       # Session 管理
       # ============================================================
       # 选择 session
-      bind -n M-s choose-session
+      bind -n M-/ choose-session
       # 重命名 session
       bind -n M-S-s command-prompt -I "#S" "rename-session '%%'"
       bind -n M-S-S command-prompt -I "#S" "rename-session '%%'"
