@@ -210,8 +210,8 @@
       bind -n M-( join-pane -t :9
       bind -n M-) join-pane -t :0
       # pane 交换位置
-      bind -n M-] swap-pane -D
-      bind -n M-[ swap-pane -U
+      bind -n M-. swap-pane -D
+      bind -n M-, swap-pane -U
       bind -n M-S-/ next-layout
       bind -n M-S-? next-layout
       bind -n M-? next-layout
