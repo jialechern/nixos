@@ -70,6 +70,7 @@
   # --- --- --- 其它细碎配置 --- --- ---
   # niri 依赖的光标配置
   home.pointerCursor = {
+    enable = true;
     package = pkgs.kdePackages.breeze;
     name = "breeze_cursors";
     size = 24;
