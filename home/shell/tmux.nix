@@ -11,6 +11,7 @@
     keyMode = "vi";
     baseIndex = 1;
     escapeTime = 0;
+    shell = "${pkgs.fish}/bin/fish"; # tmux 内部命令使用的 shell(default-shell)
 
     # --- --- --- Home Manager 声明式选项 --- --- ---
     historyLimit = 10000; # 回滚行数 (默认 2000)
@@ -35,7 +36,7 @@
       {
         plugin = continuum;
         extraConfig = ''
-          set -g @continuum-restore 'on'
+          set -g @continuum-restore 'on'               # 自动保存上一次关闭 tmux 会话前的内容, 并在打开时恢复
           set -g @continuum-save-interval '15'         # 每 15 分钟自动保存
         '';
       }

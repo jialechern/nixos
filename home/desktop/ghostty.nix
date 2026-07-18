@@ -3,6 +3,8 @@
 let
   # Linux 平台判断
   isLinux = pkgs.stdenv.hostPlatform.isLinux;
+  # 光标拖尾着色器文件名 (与 scripts/ 目录下的文件名一致)
+  cursorSmearShader = "cursor_smear.glsl";
 in
 {
   # --- --- --- Ghostty 终端声明式配置 --- --- ---
@@ -80,7 +82,8 @@ in
         # 输入时隐藏鼠标指针
         "mouse-hide-while-typing" = true;
         # 光标拖尾特效着色器
-        "custom-shader" = "${config.xdg.configHome}/ghostty/cursor_smear.glsl";
+        "custom-shader" = "${config.xdg.configHome}/ghostty/${cursorSmearShader}";
+        "custom-shader-animation" = true;
 
         # ---------------------------------------------------------
         # 终端行为与兼容性
@@ -179,6 +182,6 @@ in
 
   # --- --- --- 光标拖尾特效着色器 --- --- ---
   # 构建时读取 shader 内容并嵌入, 无需运行时依赖 dotfiles 目录
-  home.file."${config.xdg.configHome}/ghostty/cursor_smear.glsl".text =
-    builtins.readFile ../../scripts/cursor_smear.glsl;
+  home.file."${config.xdg.configHome}/ghostty/${cursorSmearShader}".text =
+    builtins.readFile ../../scripts/${cursorSmearShader};
 }

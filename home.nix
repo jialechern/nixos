@@ -135,6 +135,9 @@
     # 默认编辑器
     EDITOR = "nvim";
 
+    # 默认 Shell
+    SHELL = "${pkgs.fish}/bin/fish";
+
     # 禁止 fzf 在 tmux 中新建 pane, 改为内联显示(覆盖 fzf 模块默认的 "1")
     FZF_TMUX = lib.mkForce "0";
 
