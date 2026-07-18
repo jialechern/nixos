@@ -6,6 +6,8 @@
     ./desktop/qt.nix
     ./desktop/xdg-desktop-portal.nix
     ./desktop/default-application.nix
+    ./desktop/ghostty.nix
+    ./desktop/alacritty.nix
     ./desktop/fcitx5.nix
     ./desktop/fuzzel.nix
     ./desktop/swaylock.nix
@@ -28,12 +30,6 @@
 
     # niri 配置
     ./desktop/niri.nix
-
-    # ghostty 配置
-    ./desktop/ghostty.nix
-
-    # alacritty 配置
-    ./desktop/alacritty.nix
 
     # keepassxc 配置
     ./desktop/keepassxc.nix

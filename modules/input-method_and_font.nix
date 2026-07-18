@@ -5,14 +5,17 @@
   i18n.inputMethod = {
     enable = true;
     type = "fcitx5";
-    fcitx5.addons = with pkgs; [
-      qt6Packages.fcitx5-chinese-addons
-      fcitx5-anthy
-      fcitx5-pinyin-moegirl
-      fcitx5-pinyin-zhwiki
-      fcitx5-material-color
-      fcitx5-nord
-    ];
+    fcitx5 = {
+      waylandFrontend = true;
+      addons = with pkgs; [
+        qt6Packages.fcitx5-chinese-addons
+        fcitx5-anthy
+        fcitx5-pinyin-moegirl
+        fcitx5-pinyin-zhwiki
+        fcitx5-material-color
+        fcitx5-nord
+      ];
+    };
   };
 
   # --- 字体配置 ---
