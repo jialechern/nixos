@@ -115,15 +115,38 @@ in
         "quit-after-last-window-closed" = true;
 
         "keybind" = [
-          # --- 全屏 / 最大化 ---
+          # --- 窗口管理 ---
+          "ctrl+shift+n=new_window"
           "ctrl+shift+f=toggle_fullscreen"
           "ctrl+shift+m=toggle_maximize"
 
+          # --- 退出 / 关闭 ---
+          "ctrl+shift+q=quit"
+          "ctrl+shift+w=close_surface"
+
+          # --- 字体大小 ---
+          "ctrl+shift+==increase_font_size:1.5"
+          "ctrl+shift+-=decrease_font_size:1.5"
+          "ctrl+shift+0=reset_font_size"
+
           # --- 滚动控制 ---
-          "ctrl+shift+==scroll_to_top"
-          "ctrl+shift+-=scroll_to_bottom"
-          "ctrl+shift+.=scroll_page_fractional:0.5"
-          "ctrl+shift+,=scroll_page_fractional:-0.5"
+          "ctrl+shift+[=scroll_to_top"
+          "ctrl+shift+]=scroll_to_bottom"
+          "ctrl+shift+,=scroll_page_up"
+          "ctrl+shift+.=scroll_page_down"
+
+          # --- 清屏 ---
+          "ctrl+shift+l=clear_screen"
+          "ctrl+l=clear_screen"
+
+          # --- 剪贴板操作 ---
+          "ctrl+shift+c=copy_to_clipboard"
+          "ctrl+shift+y=copy_to_clipboard"
+          "alt+shift+y=copy_title_to_clipboard"
+          "alt+shift+c=copy_url_to_clipboard"
+          "ctrl+shift+v=paste_from_clipboard"
+          "ctrl+shift+p=paste_from_clipboard"
+          "alt+shift+p=paste_from_selection"
 
           # --- 命令提示符跳转 ---
           "ctrl+shift+i=jump_to_prompt:1"
@@ -135,29 +158,8 @@ in
           # --- 命令面板 ---
           "ctrl+alt+p=toggle_command_palette"
 
-          # --- 清屏 ---
-          "ctrl+shift+l=clear_screen"
-
-          # --- 剪贴板操作 ---
-          "ctrl+shift+c=copy_to_clipboard"
-          "ctrl+shift+y=copy_to_clipboard"
-          "alt+shift+y=copy_title_to_clipboard"
-          "alt+shift+c=copy_url_to_clipboard"
-          "ctrl+shift+v=paste_from_clipboard"
-          "ctrl+shift+p=paste_from_clipboard"
-          "alt+shift+p=paste_from_selection"
-
-          # --- 浮动终端 ---
+          # --- 浮动终端 (Ghostty 专有) ---
           "ctrl+shift+t=toggle_quick_terminal"
-
-          # --- 字体大小 ---
-          "ctrl+==increase_font_size:1.5"
-          "ctrl+-=decrease_font_size:1.5"
-          "ctrl+shift+\\=reset_font_size"
-
-          # --- 退出 ---
-          "ctrl+shift+q=quit"
-          "ctrl+alt+shift+q=close_surface"
         ];
       }
 

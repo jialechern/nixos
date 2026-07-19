@@ -67,8 +67,28 @@
         { key = "Return"; mods = "Control|Shift"; action = "SpawnNewInstance"; }
         { key = "N"; mods = "Control|Shift"; action = "CreateNewWindow"; }
         { key = "F"; mods = "Control|Shift"; action = "ToggleFullscreen"; }
-        { key = "H"; mods = "Control|Shift"; action = "Minimize"; }
         { key = "M"; mods = "Control|Shift"; action = "ToggleMaximized"; }
+        # # Minimize 在 niri 环境下无效
+        # { key = "H"; mods = "Control|Shift"; action = "Minimize"; }
+        { key = "Q"; mods = "Control|Shift"; action = "Quit"; }
+
+        # --- 字体大小 ---
+        { key = "="; mods = "Control"; action = "IncreaseFontSize"; }
+        { key = "-"; mods = "Control"; action = "DecreaseFontSize"; }
+        { key = "0"; mods = "Control"; action = "ResetFontSize"; }
+
+        # --- 滚动 ---
+        { key = "Home"; mods = "Control|Shift"; action = "ScrollToTop"; }
+        { key = "End"; mods = "Control|Shift"; action = "ScrollToBottom"; }
+        { key = "PageUp"; mods = "Control|Shift"; action = "ScrollPageUp"; }
+        { key = "PageDown"; mods = "Control|Shift"; action = "ScrollPageDown"; }
+
+        # --- 清屏 ---
+        { key = "L"; mods = "Control"; action = "ClearHistory"; }
+
+        # --- 复制粘贴 ---
+        { key = "C"; mods = "Control|Shift"; action = "Copy"; }
+        { key = "V"; mods = "Control|Shift"; action = "Paste"; }
 
         # --- Vi 模式切换 ---
         { key = "Escape"; mods = "Control"; mode = "~Vi|~Search"; action = "ToggleViMode"; }
