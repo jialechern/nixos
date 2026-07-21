@@ -106,7 +106,7 @@
     ".local/share/fcitx5/themes".source = "${pkgs.fcitx5-nord}/share/fcitx5/themes";
 
     # # 构建此配置将在 Nix 存储中创建 'dotfiles/screenrc' 的副本
-    # # 激活配置后, '~/.screenrc' 将成为指向 Nix 存储副本的符号链接
+    # # 激活配置后, '${config.home.homeDirectory}/.screenrc' 将成为指向 Nix 存储副本的符号链接
     # ".screenrc".source = dotfiles/screenrc;
 
     # # 您也可以直接设置文件内容
@@ -121,11 +121,11 @@
   # 如果不想通过 Home Manager 管理 shell, 那么需要手动加载
   # 位于以下位置之一的 'hm-session-vars.sh'：
   #
-  #	~/.nix-profile/etc/profile.d/hm-session-vars.sh
+  #	${config.home.homeDirectory}/.nix-profile/etc/profile.d/hm-session-vars.sh
   #
   # 或
   #
-  #	~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh
+  #	${config.home.homeDirectory}/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh
   #
   # 或
   #

@@ -64,7 +64,7 @@ in
     # 将依赖注入 Neovim 的 PATH
     extraPackages = lspDeps ++ extraTools;
 
-    # 不再写入 ~/.config/nvim/init.lua, 避免和自己的配置文件冲突
+    # 不再写入 ${config.home.homeDirectory}/.config/nvim/init.lua, 避免和自己的配置文件冲突
     sideloadInitLua = true;
   };
 

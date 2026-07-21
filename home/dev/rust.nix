@@ -46,8 +46,8 @@
 
     # ---------------------------------------------------------------------
     # 自定义 CARGO_HOME 目录
-    # 默认 null 使用 `~/.cargo`
-    # 示例: "${config.xdg.dataHome}/cargo" -> ~/.local/share/cargo
+    # 默认 null 使用 ${config.home.homeDirectory}/.cargo
+    # 示例: "${config.xdg.dataHome}/cargo" -> ${config.xdg.dataHome}/cargo
     # 设置后会自动导出 CARGO_HOME 环境变量
     # ---------------------------------------------------------------------
     cargoHome = null;

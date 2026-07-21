@@ -16,7 +16,7 @@
     enableBashIntegration = true; # Bash shell 集成
 
     # --- 插件安装 ---
-    # 这里是把插件链接到 ~/.config/yazi/plugins/<name>.yazi
+    # 这里是把插件链接到 ${config.home.homeDirectory}/.config/yazi/plugins/<name>.yazi
     plugins = {
       git = pkgs.yaziPlugins.git; # Git 状态显示
       "full-border" = pkgs.yaziPlugins."full-border"; # 全边框

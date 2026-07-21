@@ -109,7 +109,7 @@ in
       # resource-path = [ "." "./images" "./assets" ];
 
       # data-dir: pandoc 数据目录(存放模板、过滤器、引用样式等).
-      # data-dir = "~/.local/share/pandoc";
+      # data-dir = "${config.home.homeDirectory}/.local/share/pandoc";
 
       # --- 过滤器 ---
       # filters: 默认启用的 pandoc 过滤器列表.
@@ -213,7 +213,7 @@ in
     # 5. programs.pandoc.citationStyles (路径列表, 默认 [])
     #   要安装的 CSL(Citation Style Language)引用样式文件列表.
     #   每个元素应为指向 .csl 文件的 Nix 路径. 这些文件将被安装到
-    #   ~/.local/share/pandoc/csl/ 目录下.
+    #   ${config.home.homeDirectory}/.local/share/pandoc/csl/ 目录下.
     #
     #   使用示例:
     #     citationStyles = [
