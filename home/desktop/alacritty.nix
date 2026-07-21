@@ -83,9 +83,6 @@
         { key = "PageUp"; mods = "Control|Shift"; action = "ScrollPageUp"; }
         { key = "PageDown"; mods = "Control|Shift"; action = "ScrollPageDown"; }
 
-        # --- 清屏 ---
-        { key = "L"; mods = "Control"; action = "ClearHistory"; }
-
         # --- 复制粘贴 ---
         { key = "C"; mods = "Control|Shift"; action = "Copy"; }
         { key = "V"; mods = "Control|Shift"; action = "Paste"; }

@@ -137,7 +137,6 @@ in
 
           # --- 清屏 ---
           "ctrl+shift+l=clear_screen"
-          "ctrl+l=clear_screen"
 
           # --- 剪贴板操作 ---
           "ctrl+shift+c=copy_to_clipboard"
