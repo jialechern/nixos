@@ -2,7 +2,7 @@
 
 {
   programs.fuzzel = {
-    enable = true;
+    enable = false;
 
     # --- --- --- Fuzzel 配置 --- --- ---
     settings = {

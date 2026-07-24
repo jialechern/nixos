@@ -11,6 +11,7 @@
     ./desktop/alacritty.nix
     ./desktop/fcitx5.nix
     ./desktop/fuzzel.nix
+    ./desktop/rofi.nix
     ./desktop/swaylock.nix
     ./desktop/mpv.nix
     ./desktop/zathura.nix
