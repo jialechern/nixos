@@ -1,4 +1,4 @@
-{ config, pkgs, lib, dotfilesRoot, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 let
   extraTools = with pkgs; [
@@ -70,7 +70,7 @@ in
 
   # 链接 Lua 配置文件夹
   xdg.configFile."nvim" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${dotfilesRoot}/nvim";
-    force = true;
+    source = inputs.nvim-dotfiles;
+    recursive = true;
   };
 }

@@ -1,5 +1,22 @@
 {
   "nodes": {
+    "desktop-wallpapers": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783000175,
+        "narHash": "sha256-qGvtmLFGxJ/XSrt+GCD/5BtQsJbAtTZV9gwYfE1dUNI=",
+        "ref": "nixos",
+        "rev": "20213ea177112c368acd17d13669ece71e787a55",
+        "revCount": 2,
+        "type": "git",
+        "url": "https://gitee.com/cjl-2692367185-qed/wallpapers.git"
+      },
+      "original": {
+        "ref": "nixos",
+        "type": "git",
+        "url": "https://gitee.com/cjl-2692367185-qed/wallpapers.git"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -20,6 +37,40 @@
         "type": "github"
       }
     },
+    "keepassxc-dotfiles": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783000634,
+        "narHash": "sha256-5q6nvI6I6JHp2rRh9gpBbsaBC9pORn/uxb7mhCtwQKk=",
+        "ref": "main",
+        "rev": "d23a2b82bf4d82b8b02055731275ebbe89eb46d3",
+        "revCount": 166,
+        "type": "git",
+        "url": "https://github.com/jialechern/keepass.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "https://github.com/jialechern/keepass.git"
+      }
+    },
+    "niri-dotfiles": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784866082,
+        "narHash": "sha256-MC3En1WpnoVCRHPdfVlPsYGYoaiCqjMx345musbGTdk=",
+        "ref": "main",
+        "rev": "b2b8b72b4af97b27d11c97437deab1d4a1d786ab",
+        "revCount": 22,
+        "type": "git",
+        "url": "https://gitee.com/cjl-2692367185-qed/niri.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "https://gitee.com/cjl-2692367185-qed/niri.git"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1784356753,
@@ -36,10 +87,31 @@
         "url": "https://mirrors.tuna.tsinghua.edu.cn/git/nixpkgs.git"
       }
     },
+    "nvim-dotfiles": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783668664,
+        "narHash": "sha256-UW5t4wskh1+j2gWoZek41j+4ZxnzUc9iD3bfXqWNUx4=",
+        "ref": "main",
+        "rev": "46c1ff33ed34e239c5d828afec7a512ae4c7a3ac",
+        "revCount": 317,
+        "type": "git",
+        "url": "https://gitee.com/cjl-2692367185-qed/nvim.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "https://gitee.com/cjl-2692367185-qed/nvim.git"
+      }
+    },
     "root": {
       "inputs": {
+        "desktop-wallpapers": "desktop-wallpapers",
         "home-manager": "home-manager",
+        "keepassxc-dotfiles": "keepassxc-dotfiles",
+        "niri-dotfiles": "niri-dotfiles",
         "nixpkgs": "nixpkgs",
+        "nvim-dotfiles": "nvim-dotfiles",
         "sops-nix": "sops-nix"
       }
     },

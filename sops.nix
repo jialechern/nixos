@@ -48,8 +48,15 @@
         sopsFile = ./secrets/ai_api_keys/mcp_api_keys.yaml;
       };
 
-      # 预留给未来的私密数据
-      # "secret_data" = { ... };
+      # Gitee 的完整访问令牌, 用于访问私有仓库
+      "gitee_full_token" = {
+        sopsFile = ./secrets/git_tokens/gitee.yaml;
+      };
+
+      # GitHub 只读令牌, 用于拉取私有仓库
+      "github_pull_only_token" = {
+        sopsFile = ./secrets/git_tokens/github.yaml;
+      };
     };
 
     templates = {
@@ -66,6 +73,16 @@
           TAVILY_API_KEY=${config.sops.placeholder.tavily}
           BAIDU_MAP_API_KEY=${config.sops.placeholder.baidu_map}
           BAIDU_MAPS_API_KEY=${config.sops.placeholder.baidu_map}
+        '';
+        mode = "0600";
+      };
+
+      "netrc" = {
+        path = "${config.home.homeDirectory}/.netrc";
+        content = ''
+          machine github.com
+          login oauth2
+          password ${config.sops.placeholder."github_pull_only_token"}
         '';
         mode = "0600";
       };

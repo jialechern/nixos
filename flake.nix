@@ -17,6 +17,28 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # dotfiles 配置仓库 (Gitee 国内镜像)
+    nvim-dotfiles = {
+      url = "git+https://gitee.com/cjl-2692367185-qed/nvim.git?ref=main";
+      flake = false;
+    };
+
+    niri-dotfiles = {
+      url = "git+https://gitee.com/cjl-2692367185-qed/niri.git?ref=main";
+      flake = false;
+    };
+
+    keepassxc-dotfiles = {
+      url = "git+https://github.com/jialechern/keepass.git?ref=main";
+      flake = false;
+    };
+
+    # 桌面壁纸仓库
+    desktop-wallpapers = {
+      url = "git+https://gitee.com/cjl-2692367185-qed/wallpapers.git?ref=nixos";
+      flake = false;
+    };
   };
 
   # Outputs (输出): 定义系统配置
@@ -25,6 +47,10 @@
     , nixpkgs
     , home-manager
     , sops-nix
+    , nvim-dotfiles
+    , niri-dotfiles
+    , keepassxc-dotfiles
+    , desktop-wallpapers
     , ...
     }@inputs:
     let
@@ -36,9 +62,6 @@
 
       # 引入必要的库
       lib = nixpkgs.lib;
-
-      # 必要软件配置仓库的根目录
-      dotfilesRoot = "/etc/nixos/dotfiles";
     in
     {
       # 注意这里: 从 homeConfigurations 变成了 nixosConfigurations
@@ -49,7 +72,7 @@
           inherit system;
 
           # 将 inputs 和 username 传递给所有的 NixOS 系统级模块
-          specialArgs = { inherit inputs username dotfilesRoot; };
+          specialArgs = { inherit inputs username; };
 
           modules = lib.flatten [
             # 系统的核心配置和硬件配置 (系统自动生成)
@@ -69,7 +92,7 @@
               home-manager.useUserPackages = true;
 
               # 将所有的 inputs 传递给各个 .nix 模块
-              home-manager.extraSpecialArgs = { inherit inputs username dotfilesRoot; };
+              home-manager.extraSpecialArgs = { inherit inputs username; };
 
               # 核心模块引入: 直接指向你现有的 home.nix 入口
               home-manager.users.${username} = import ./home.nix;
@@ -82,7 +105,7 @@
           inherit system;
 
           # 将 inputs 和 username 传递给所有的 NixOS 系统级模块
-          specialArgs = { inherit inputs username dotfilesRoot; };
+          specialArgs = { inherit inputs username; };
 
           modules = lib.flatten [
             # 系统的核心配置和硬件配置 (系统自动生成)
@@ -102,7 +125,7 @@
               home-manager.useUserPackages = true;
 
               # 将所有的 inputs 传递给各个 .nix 模块
-              home-manager.extraSpecialArgs = { inherit inputs username dotfilesRoot; };
+              home-manager.extraSpecialArgs = { inherit inputs username; };
 
               # 核心模块引入: 直接指向你现有的 home.nix 入口
               home-manager.users.${username} = import ./home.nix;

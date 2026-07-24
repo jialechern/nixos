@@ -1,4 +1,4 @@
-{ pkgs, config, dotfilesRoot, ... }:
+{ pkgs, config, inputs, ... }:
 
 {
   # 安装 KeePassXC 软件包
@@ -8,7 +8,7 @@
 
   # --- --- --- 链接 keepassxc 配置目录 --- --- ---
   xdg.configFile."keepassxc" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${dotfilesRoot}/keepassxc";
-    force = true;
+    source = inputs.keepassxc-dotfiles;
+    recursive = true;
   };
 }

@@ -1,9 +1,8 @@
-{ config, pkgs, lib, dotfilesRoot, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
-  # --- --- --- 链接 niri 配置目录 --- --- ---
   xdg.configFile."niri" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${dotfilesRoot}/niri";
-    force = true;
+    source = inputs.niri-dotfiles;
+    recursive = true;
   };
 }

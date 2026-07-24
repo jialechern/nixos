@@ -60,7 +60,8 @@
 
     # 定义额外的自定义目录
     extraConfig = {
-      WALLPAPERS = "${config.home.homeDirectory}/Pictures/Wallpapers";
+      # # Wallpapers 文件夹已由 flake 依赖接管
+      # WALLPAPERS = "${config.home.homeDirectory}/Wallpapers";
       PROJECTS = "${config.home.homeDirectory}/Projects";
       TEST = "${config.home.homeDirectory}/Test";
       STU = "${config.home.homeDirectory}/Stu";
@@ -104,6 +105,8 @@
   home.file = {
     # 是的 fcitx5 主题插件在需要的目录下可见
     ".local/share/fcitx5/themes".source = "${pkgs.fcitx5-nord}/share/fcitx5/themes";
+
+    "Pictures/Wallpapers".source = inputs.desktop-wallpapers;
 
     # # 构建此配置将在 Nix 存储中创建 'dotfiles/screenrc' 的副本
     # # 激活配置后, '${config.home.homeDirectory}/.screenrc' 将成为指向 Nix 存储副本的符号链接

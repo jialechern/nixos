@@ -110,9 +110,7 @@
     ```
 
     **本仓库默认配置的一些说明:**
-        - niri、nvim、alacritty、ghostty、keepassxc 这些软件的配置是独立的, 构建时需要将它们的配置文件放在 `/etc/nixos/dotfiles` 下并使用和软件相同的名称作为配置文件夹的名称
-        也可以使用 `sync-dotfiles.sh` 脚本进行安装, 具体用法见 `sync-dotfiles.sh -h`.
-        若想去除这些配置, 只需要将 `home/` 下的同名的 `*.nix` 文件删掉即可
+        - niri、nvim、keepassxc 这些软件的配置是独立的(通过 flake.nix 作为 nix 项目的依赖注入). 其中 keepassxc 这个仓库是私有的, 如果初次构建失败或是不希望配置该软件, 那么直接将对应的 keepassxc.nix 删除即可.
         - 如果不存在 `~/Pictures/Wallpapers/` 目录,
           那么在构建系统时将会自动创建这个路径, 因为这个路径被 niri 配置中的 `awww` 相关自动命令
           作为默认的获取壁纸文件的路径. 如有希望作为壁纸的图片,

@@ -2,6 +2,7 @@
 
 {
   imports = [
+    ./desktop/niri.nix
     ./desktop/gtk.nix
     ./desktop/qt.nix
     ./desktop/xdg-desktop-portal.nix
@@ -27,9 +28,6 @@
   ] ++ (builtins.filter builtins.pathExists [
     # 需要网络代理才能下载的应用列表配置
     ./desktop/applications-require-proxy.nix
-
-    # niri 配置
-    ./desktop/niri.nix
 
     # keepassxc 配置
     ./desktop/keepassxc.nix
