@@ -5,7 +5,7 @@
     enable = true;
 
     # --- --- --- 基础配置 --- --- ---
-    font = "JetBrainsMono Nerd Font 16";
+    font = "JetBrainsMono Nerd Font 18";
     location = "center";
     terminal = "${pkgs.ghostty}/bin/ghostty";
 
@@ -13,14 +13,15 @@
       modi = "drun,window,run";
       show-icons = true;
       icon-theme = "Papirus-Dark";
-      display-drun = "Apps";
-      display-window = "Windows";
-      display-run = "Run";
+      display-drun = "📦 ";
+      display-window = "🪟 ";
+      display-run = "🚀 ";
       drun-display-format = "{name}";
       window-format = "{w}  {c}  —  {t}";
       sort = true;
       sorting-method = "fzf";
       matching = "fuzzy";
+      case-sensitive = false;
     };
 
     # --- --- --- Catppuccin Mocha 调色盘主题 --- --- ---
@@ -36,11 +37,11 @@
 
       # 主窗口
       "window" = {
-        width = mkLiteral "60%";
+        width = mkLiteral "50%";
         border = mkLiteral "2px";
         border-radius = mkLiteral "8px";
         border-color = mkLiteral "#45475a";
-        background-color = mkLiteral "#1e1e2e5f";
+        background-color = mkLiteral "#1e1e2ed9";
       };
 
       # 提示符
@@ -56,7 +57,7 @@
 
       # 列表视图
       "listview" = {
-        lines = 12;
+        lines = 10;
         dynamic = false;
         fixed-height = true;
         scrollbar = true;
@@ -64,9 +65,16 @@
         background-color = mkLiteral "transparent";
       };
 
+      # 列表项图标
+      "element-icon" = {
+        size = mkLiteral "1.5em";
+      };
+
       # 列表项 — 默认状态
       "element" = {
+        children = mkLiteral "[ element-icon, element-text ]";
         padding = mkLiteral "6px 24px";
+        spacing = mkLiteral "12px";
         background-color = mkLiteral "transparent";
         text-color = mkLiteral "#cdd6f4";
         border-radius = mkLiteral "0px";
@@ -76,6 +84,7 @@
       "element selected" = {
         background-color = mkLiteral "#313244";
         text-color = mkLiteral "#cdd6f4";
+        border-radius = mkLiteral "4px";
       };
 
       # 列表项文本 — 匹配高亮
