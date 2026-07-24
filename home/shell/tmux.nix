@@ -18,29 +18,13 @@
     focusEvents = true; # 终端焦点事件透传
     clock24 = true; # 24 小时制
     aggressiveResize = true; # 窗口大小跟随最小 session
-    newSession = true; # 无 session 时自动创建
+    newSession = false; # 无 session 时不自动创建
     disableConfirmationPrompt = true; # 杀死 pane/window 时免确认
     secureSocket = true; # socket 存于 /run (Linux 默认值, 显式声明)
     sensibleOnTop = true; # sensible 插件前置, 可被 extraConfig 覆盖
 
     # --- --- --- 插件 --- --- ---
     plugins = with pkgs.tmuxPlugins; [
-      # --- 持久化 ---
-      {
-        plugin = resurrect;
-        extraConfig = ''
-          set -g @resurrect-capture-pane-contents 'on'
-          set -g @resurrect-strategy-nvim 'session'    # 恢复 nvim session
-        '';
-      }
-      {
-        plugin = continuum;
-        extraConfig = ''
-          set -g @continuum-restore 'on'               # 自动保存上一次关闭 tmux 会话前的内容, 并在打开时恢复
-          set -g @continuum-save-interval '15'         # 每 15 分钟自动保存
-        '';
-      }
-
       # --- 主题 ---
       nord
 
