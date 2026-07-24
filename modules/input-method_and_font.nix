@@ -13,7 +13,7 @@
         fcitx5-pinyin-moegirl
         fcitx5-pinyin-zhwiki
         fcitx5-material-color
-        fcitx5-nord
+        catppuccin-fcitx5
       ];
     };
   };

@@ -1,13 +1,13 @@
 { config, pkgs, lib, ... }:
 
 {
-  # 强制写入 Fcitx5 的全局配置, 主题为 Nord-Dark
+  # 强制写入 Fcitx5 的全局配置, 主题为 Catppuccin Mocha Mauve
   xdg.configFile."fcitx5/conf/classicui.conf".text = lib.mkForce ''
-    		Vertical Candidate List=False
-    		PerScreenDPI=True
-    		Theme=Nord-Dark
-            Font="JetBrainsMono Nerd Font Mono 12"
-    	'';
+  		Vertical Candidate List=False
+  		PerScreenDPI=True
+  		Theme=catppuccin-mocha-mauve
+          Font="JetBrainsMono Nerd Font Mono 12"
+  		'';
 
   # 定义输入法顺序为: 英文 -> 拼音 -> 日文
   # 这里的格式是: 输入法名称:运行布局
