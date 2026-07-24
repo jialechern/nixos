@@ -10,8 +10,8 @@
     settings = {
       # --- --- --- 终端 --- --- ---
       terminal.shell = {
-        program = "${pkgs.tmux}/bin/tmux";
-        args = ["new-session" "-A" "-s" "main"];
+        program = "${pkgs.fish}/bin/fish";
+        args = [];
       };
 
       # --- --- --- 光标 --- --- ---

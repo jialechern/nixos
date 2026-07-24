@@ -94,8 +94,8 @@ in
         "clipboard-write" = "allow";
         "clipboard-trim-trailing-spaces" = true;
         "image-storage-limit" = 320000000;
-        # 启动时自动 attach 到名为 main 的 tmux session, 不存在则创建
-        "command" = "${pkgs.tmux}/bin/tmux new-session -A -s main";
+        # 启动时直接进入 fish shell
+        "command" = "${pkgs.fish}/bin/fish";
         "shell-integration" = "detect";
         "shell-integration-features" = "cursor,no-sudo,title,path";
         "window-show-tab-bar" = "auto";
