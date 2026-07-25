@@ -34,12 +34,13 @@
         "modules-left" = [ "niri/workspaces" "niri/window" ];
         "modules-center" = [ "clock" ];
         "modules-right" = [
+          "mpris"
+          "pulseaudio"
           "tray"
           "network"
+          "bluetooth"
           "cpu"
           "memory"
-          "bluetooth"
-          "keyboard-state"
           "battery"
         ];
 
@@ -56,6 +57,70 @@
         };
 
         # ═══════════════════════════════════════════════
+        # MPRIS 媒体播放控制
+        # 依赖: playerctl (运行时通过 DBus 与 MPRIS 播放器通信)
+        # ═══════════════════════════════════════════════
+        mpris = {
+          format = "{player_icon} {dynamic}";
+          "format-paused" = "{status_icon} <i>{dynamic}</i>";
+          "format-stopped" = "";
+          "player-icons" = {
+            "default" = "";
+            "spotify" = "";
+            "firefox" = "󰈹";
+            "chromium" = "󰊯";
+            "mpv" = "";
+            "vlc" = "󰕼";
+          };
+          "status-icons" = {
+            "playing" = "";
+            "paused" = "";
+            "stopped" = "";
+          };
+          "dynamic-order" = [ "artist" "title" ];
+          "artist-len" = 9;
+          "album-len" = 12;
+          "title-len" = 15;
+          "hide-hour" = false;
+          "tooltip-format" = "{artist} — {album}\n{title}  [{length}]";
+          "on-click" = "playerctl play-pause";
+          "on-click-right" = "playerctl next";
+          "on-click-middle" = "playerctl previous";
+        };
+
+        # ═══════════════════════════════════════════════
+        # 网络状态
+        # ═══════════════════════════════════════════════
+        network = {
+          interval = 2;
+          format = "{ifname}";
+          "format-wifi" = "󰤨  {signalStrength}%";
+          "format-ethernet" = "󰈀  {bandwidthUpBits}";
+          "format-disconnected" = "󰤮  断开";
+          "format-alt" = "{ipaddr}/{cidr}";
+          "tooltip-format" = "{ifname}: {ipaddr}/{cidr}\n信号: {signalStrength}%\n上行: {bandwidthUpBits}\n下行: {bandwidthDownBits}";
+          "on-click-right" = "nm-connection-editor";
+        };
+
+        # ═══════════════════════════════════════════════
+        # PulseAudio 音量控制
+        # 依赖: pamixer, pavucontrol (运行时通过 pulse 原生协议通信)
+        # ═══════════════════════════════════════════════
+        pulseaudio = {
+          format = "{icon}  {volume}%";
+          "format-muted" = "󰝟";
+          "format-bluetooth" = "{icon} 󰂰";
+          "format-bluetooth-muted" = "󰝟";
+          "format-icons" = {
+            "default" = [ "󰕿" "󰖀" "󰕾" ];
+          };
+          "tooltip-format" = "{desc}\n音量: {volume}%";
+          "scroll-step" = 5;
+          "on-click" = "pamixer -t";
+          "on-click-right" = "pavucontrol";
+        };
+
+        # ═══════════════════════════════════════════════
         # 时钟
         # ═══════════════════════════════════════════════
         clock = {
@@ -63,8 +128,10 @@
           # 完整日期 + 时间格式
           format = " {:%Y-%m-%d  %H:%M:%S}";
           # 左键切换为短格式
-          "format-alt" = "{:%m-%d %H:%M}";
+          "format-alt" = " {:%m-%d %H:%M}";
           "tooltip-format" = "<big>{:%Y年%B}</big>\n<tt><small>{calendar}</small></tt>";
+          "on-click-right" = "gnome-calendar";
+          "on-click-middle" = "notify-send -t 5000 '当前时间' \"$(date '+%Y-%m-%d %H:%M:%S')\"";
         };
 
         # ═══════════════════════════════════════════════
@@ -73,8 +140,8 @@
         #       的工作区, 解决多显示器工作区混乱问题
         # ═══════════════════════════════════════════════
         "niri/workspaces" = {
-          # 显示图标 + 工作区索引
-          format = "{icon}  {index}";
+          # 仅显示图标, 无工作区索引号
+          format = "{icon}";
 
           # 工作区状态图标
           "format-icons" = {
@@ -83,7 +150,7 @@
             # 非活跃工作区
             "default" = "";
             # 当前活跃 (有焦点) 工作区
-            "active" = "";
+            "active" = "";
             # 紧急提示工作区
             "urgent" = "";
           };
@@ -117,21 +184,6 @@
         };
 
         # ═══════════════════════════════════════════════
-        # 网络
-        # ═══════════════════════════════════════════════
-        network = {
-          interval = 5;
-          "format-wifi" = "󰖩 {essid}";
-          "format-ethernet" = "󰈀 {ipaddr}";
-          "format-disconnected" = "󰌙 断连";
-          "tooltip-format" = "{ifname} via {gwaddr} 󰛳";
-          "tooltip-format-wifi" = "{essid} ({signaldBm}dBm)\nIP: {ipaddr}\n网关: {gwaddr}";
-          "tooltip-format-ethernet" = "{ifname}\nIP: {ipaddr}";
-          "tooltip-format-disconnected" = "网络已断开";
-          "on-click" = "nm-connection-editor";
-        };
-
-        # ═══════════════════════════════════════════════
         # CPU
         # ═══════════════════════════════════════════════
         cpu = {
@@ -145,6 +197,8 @@
             critical = 90;
           };
           "tooltip-format" = "CPU: {usage}%\n平均负载: {load1}";
+          "on-click" = "kitty --class=btop btop";
+          "on-click-right" = "foot -e htop";
         };
 
         # ═══════════════════════════════════════════════
@@ -159,6 +213,8 @@
             critical = 90;
           };
           "tooltip-format" = "已用: {used} GB\n总量: {total} GB\n可用: {avail} GB";
+          "on-click" = "kitty --class=btop btop";
+          "on-click-right" = "foot -e htop";
         };
 
         # ═══════════════════════════════════════════════
@@ -206,13 +262,12 @@
           format = "󰁾 {capacity}%";
           "format-charging" = "󰂄 {capacity}%";
           "format-plugged" = "󱐋 {capacity}%";
-          # 电量充满
           "format-full" = "󰁹 满电";
 
           # 右键切换为剩余时间预估
           "format-alt" = "{icon} {time}";
           "format-icons" = [ "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹" ];
-          "tooltip-format" = "电量: {capacity}%\n剩余时间: {time}";
+          "tooltip-format" = "电量: {capacity}%\n剩余时间: {time}\n功耗: {power} W";
         };
       };
     };
@@ -283,18 +338,21 @@
       tooltip label {
         color: @text;
         padding: 2px 0;
+        font-family: "JetBrainsMono Nerd Font", "Noto Sans CJK SC", sans-serif;
       }
 
       /* ── 所有模块通用样式 ── */
       #workspaces,
+      #mpris,
       #window,
       #clock,
-      #network,
+      #pulseaudio,
       #cpu,
       #memory,
       #bluetooth,
       #keyboard-state,
       #battery,
+      #network,
       #tray {
         margin: 3px 6px;
         padding: 0 15px;
@@ -310,22 +368,20 @@
         padding-left: 5px;
         padding-right: 5px;
       }
-      #tray {
-        padding-left: 10px;
-        padding-right: 10px;
-      }
 
       /* ══════════════════════════════════════════════════════
          工作区按钮
          ══════════════════════════════════════════════════════ */
       #workspaces button {
         all: unset;
-        min-width: 36px;
-        padding: 0 8px;
+        min-width: 40px;
+        font-size: 24px;
+        padding: 0 10px;
         margin: 4px 1px;
         border-radius: 14px;
         color: @subtext0;
         background: transparent;
+        font-weight: 500;
         transition: all 0.25s ease;
       }
 
@@ -350,8 +406,8 @@
       #workspaces button.active {
         background: rgba(203, 166, 247, 0.22);
         color: @mauve;
-        font-weight: 600;
-        box-shadow: 0px 0px 10px rgba(203, 166, 247, 0.18);
+        font-weight: 700;
+        box-shadow: 0px 0px 14px rgba(203, 166, 247, 0.25);
       }
 
       /* 紧急工作区: 红色高亮 */
@@ -377,12 +433,26 @@
         letter-spacing: 0.3px;
       }
 
-      /* 网络: 水鸭色 */
-      #network {
-        color: @teal;
+      /* MPRIS 媒体信息: 桃色, 加粗 */
+      #mpris {
+        color: @peach;
+        font-weight: 600;
+        transition: all 0.25s ease;
       }
-      #network.disconnected {
+      #mpris.paused {
+        color: @overlay0;
+        font-style: italic;
+      }
+
+      /* PulseAudio 音量: 天蓝色 */
+      #pulseaudio {
+        color: @sky;
+      }
+      #pulseaudio.muted {
         color: @red;
+      }
+      #pulseaudio.bluetooth {
+        color: @sapphire;
       }
 
       /* CPU: 蓝色 */
@@ -410,6 +480,14 @@
       /* 蓝牙: 宝蓝 */
       #bluetooth {
         color: @sapphire;
+      }
+
+      /* 网络: 绿色 */
+      #network {
+        color: @green;
+      }
+      #network.disconnected {
+        color: @red;
       }
 
       /* 键盘状态: 桃色 */

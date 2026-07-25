@@ -35,15 +35,15 @@
       # 图标最大尺寸
       max-icon-size = 64;
 
-      # --- Nord 调色盘配置 ---
-      # 背景颜色
-      background-color = "#2E34405F";
+      # --- Catppuccin Mocha 配色 ---
+      # 背景颜色 (半透 → 毛玻璃可见)
+      background-color = "#1E1E2EBF";
       # 文本颜色
-      text-color = "#ECEFF4";
+      text-color = "#CDD6F4";
       # 边框颜色
-      border-color = "#81A1C1";
+      border-color = "#CBA6F780";
       # 进度条颜色
-      progress-color = "over #434C5E";
+      progress-color = "over #45475A";
 
       # --- 交互设置 ---
       # 默认超时时间(毫秒)
@@ -56,21 +56,21 @@
     extraConfig = ''
       			# 低优先级通知
       			[urgency=low]
-      			border-color=#4C566A
+      			border-color=#6C7086
       			default-timeout=2000
 
-      			# 高优先级通知 (使用 Nord 11 Aurora Red)
+      			# 高优先级通知
       			[urgency=high]
       			width=600
       			border-size=4
       			padding=40
       			font=JetBrainsMono Nerd Font 23
-      			border-color=#BF616A5F
+      			border-color=#F38BA880
       			default-timeout=0
 
-      			# 针对特定应用 Overskride 的优化 (使用 Nord 15 Aurora Purple)
+      			# 针对特定应用 Overskride 的优化
       			[app-name=Overskride]
-      			border-color=#B48EAD
+      			border-color=#CBA6F7
       		'';
   };
 
