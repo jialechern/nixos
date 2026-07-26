@@ -1,5 +1,19 @@
 { config, pkgs, lib, ... }:
 
+let
+  catppuccin-rounded = pkgs.runCommand "catppuccin-fcitx5-rounded" { } ''
+    mkdir -p $out
+    for dir in ${pkgs.catppuccin-fcitx5}/share/fcitx5/themes/*; do
+      cp -r "$dir" "$out/$(basename "$dir")"
+      chmod -R u+w "$out/$(basename "$dir")"
+      sed -i \
+        -e 's/^# Image=panel.svg/Image=panel.svg/' \
+        -e 's/^# Image=highlight.svg/Image=highlight.svg/' \
+        -e 's/^Color=#313244$/Color=#313244d9/' \
+        "$out/$(basename "$dir")/theme.conf"
+    done
+  '';
+in
 {
   # 强制写入 Fcitx5 的全局配置, 主题为 Catppuccin Mocha Mauve
   xdg.configFile."fcitx5/conf/classicui.conf".text = lib.mkForce ''
@@ -32,6 +46,9 @@
                   Layout=
       		'';
   };
+
+  # 使得 fcitx5 主题插件在需要的目录下可见
+  home.file.".local/share/fcitx5/themes".source = "${catppuccin-rounded}";
 
   # 环境变量: 确保在 Niri/Wayland 下各类应用(QT, GTK, Electron)都能正常呼出输入法
   home.sessionVariables = {

@@ -1,19 +1,5 @@
 { config, pkgs, lib, inputs, username, ... }:
 
-let
-  catppuccin-rounded = pkgs.runCommand "catppuccin-fcitx5-rounded" { } ''
-    mkdir -p $out
-    for dir in ${pkgs.catppuccin-fcitx5}/share/fcitx5/themes/*; do
-      cp -r "$dir" "$out/$(basename "$dir")"
-      chmod -R u+w "$out/$(basename "$dir")"
-      sed -i \
-        -e 's/^# Image=panel.svg/Image=panel.svg/' \
-        -e 's/^# Image=highlight.svg/Image=highlight.svg/' \
-        -e 's/^Color=#313244$/Color=#313244d9/' \
-        "$out/$(basename "$dir")/theme.conf"
-    done
-  '';
-in
 {
   # Home Manager 需要一些关于它应该管理的路径的信息
   home.username = "${username}";
@@ -117,9 +103,6 @@ in
   # Home Manager 非常擅长管理 dot 文件 (dotfiles). 管理纯文本文件的
   # 主要方式是通过 'home.file'
   home.file = {
-    # 使得 fcitx5 主题插件在需要的目录下可见
-    ".local/share/fcitx5/themes".source = "${catppuccin-rounded}";
-
     "Pictures/Wallpapers".source = inputs.desktop-wallpapers;
 
     # # 构建此配置将在 Nix 存储中创建 'dotfiles/screenrc' 的副本
