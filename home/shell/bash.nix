@@ -43,6 +43,7 @@
       lg = "lazygit";
       rsync = "rsync -arvP";
       px = "proxychains4 -f ${config.xdg.configHome}/proxychains/proxychains.conf -q";
+      ngens = "nix profile history --profile /nix/var/nix/profiles/system";
     };
 
     # --- --- --- .bashrc 级配置(所有 Bash 调用均执行) --- --- ---
