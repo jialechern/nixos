@@ -23,6 +23,7 @@
     ./shell/proxychains.nix
     ./shell/yt-dlp.nix
     ./shell/jq.nix
+    ./shell/ttyper.nix
   ] ++ (builtins.filter builtins.pathExists [
     # neovim 配置
     ./shell/nvim.nix
@@ -55,5 +56,7 @@
     poppler-utils
     python3Packages.pdf2docx
     img2pdf
+    # 打字练习软件
+    gtypist
   ];
 }
