@@ -5,26 +5,36 @@
   #   - options:  provider 级别的全局选项 (baseURL, apiKey, timeout 等)
   #   - models:  模型列表, 每个模型的 options/variants 会覆盖 provider 级别
   #   - variants: 模型变体, 用于同一模型的不同推理模式 (思考/非思考/推理强度)
+  #   - env:    该 provider 依赖的环境变量列表, 用于校验
+  #   - whitelist: 仅展示列表中的模型, 隐藏账号下其他模型
   # ===========================================================================
 
   # --- 火山方舟 (Volcengine Ark) 配置 ---
   # 深度思考文档: https://www.volcengine.com/docs/82379/1449737
+  # 模型列表:     https://www.volcengine.com/docs/82379/1330310
+  # 模型价格:     https://www.volcengine.com/docs/82379/1544106
   volcengine = {
     npm = "@ai-sdk/openai-compatible";
     name = "VolcanoArk";
+    env = [ "VOLCANO_ARK_API_KEY" ];
+    whitelist = [
+      "doubao-seed-2-0-code-preview-260215"
+      "doubao-seed-2-0-lite-260215"
+      "doubao-seed-2-0-pro-260215"
+      "deepseek-v4-pro-260425"
+      "deepseek-v4-flash-260425"
+    ];
     options = {
-      # 火山方舟在线推理的 OpenAI-compatible 兼容接口
       baseURL = "https://ark.cn-beijing.volces.com/api/v3";
       apiKey = "{env:VOLCANO_ARK_API_KEY}";
-      # 请求超时(ms): DeepSeek V4 深度推理可能耗时数分钟, 与官方 provider 保持一致
       timeout = 600000;
-      # 流式响应的 chunk 超时(ms): 防止长时间无数据导致连接中断
+      headerTimeout = 600000;
       chunkTimeout = 60000;
     };
 
     models = {
       # =======================================================================
-      # Doubao (豆包) Seed 2.0 系列
+      # Doubao (豆包) Seed 2.0 系列 — 原生多模态模型
       # 文档: https://www.volcengine.com/docs/82379/1330310
       #
       # Doubao 深度思考默认开启 (thinking.type = enabled), 支持 4 档推理强度:
@@ -35,28 +45,51 @@
       # reasoning_effort = minimal 时等同于关闭思考, 直接回答
       # 注意: 若显式设置 thinking.type = disabled,
       #       则 reasoning_effort 仅合法取值为 minimal, 其他值会报错
+      #
+      # 豆包 Seed 2.0 定价为三档阶梯价 (元/百万 token):
+      #   [0, 32k]:     输入/缓存命中/输出
+      #   (32k, 128k]:  输入/缓存命中/输出
+      #   (128k, 256k]: 输入/缓存命中/输出
+      # cost 字段使用最低档 (0-32k) 作为基准值, 完整阶梯详见注释
       # =======================================================================
 
       # --- doubao-seed-2-0-code-preview-260215 ---
       # 特化代码生成模型, 预览版
       "doubao-seed-2-0-code-preview-260215" = {
         name = "Doubao Seed Code Preview";
+        family = "Doubao Seed 2.0";
+        release_date = "2026-02-15";
+        status = "beta";
+        reasoning = true;
+        tool_call = true;
+        attachment = true;
+        experimental = true;
 
-        limit = {
-          context = 262144; # 256K tokens 上下文
-          output = 131072; # 128K tokens 最大输出
+        # 阶梯价: 3.2 / 4.8 / 9.6 → 缓存 0.64 / 0.96 / 1.92 → 输出 16.0 / 24.0 / 48.0
+        cost = {
+          input = 3.2;
+          output = 16.0;
+          cache_read = 0.64;
         };
 
-        # 思考模式下 temperature/topP 不生效, 设置不会报错但会被忽略
+        limit = {
+          context = 262144;
+          input = 229376;
+          output = 131072;
+        };
+
+        modalities = {
+          input = [ "text" "image" ];
+          output = [ "text" ];
+        };
+
         options = {
           temperature = 0.2;
           topP = 0.9;
         };
 
         variants = {
-          # 均衡模式(默认): 代码生成首选, 兼顾质量与速度
           "default" = { reasoningEffort = "medium"; };
-          # 深度分析: 复杂项目重构与调试
           "deep-coding" = { reasoningEffort = "high"; };
         };
       };
@@ -65,22 +98,39 @@
       # 轻量级模型, 高性价比
       "doubao-seed-2-0-lite-260215" = {
         name = "Doubao Seed 2.0 Lite";
+        family = "Doubao Seed 2.0";
+        release_date = "2026-02-15";
+        status = "active";
+        reasoning = true;
+        tool_call = true;
+        attachment = true;
+        experimental = false;
 
-        limit = {
-          context = 262144; # 256K tokens
-          output = 131072; # 128K tokens 最大输出
+        # 阶梯价: 0.6 / 0.9 / 1.8 → 缓存 0.12 / 0.18 / 0.36 → 输出 3.6 / 5.4 / 10.8
+        cost = {
+          input = 0.6;
+          output = 3.6;
+          cache_read = 0.12;
         };
 
-        # Lite 本身侧重速度, 思考模式下的 temperature/topP 不生效
+        limit = {
+          context = 262144;
+          input = 229376;
+          output = 131072;
+        };
+
+        modalities = {
+          input = [ "text" "image" ];
+          output = [ "text" ];
+        };
+
         options = {
           temperature = 0.2;
           topP = 0.95;
         };
 
         variants = {
-          # 轻量思考(默认): Lite 主打极速, 推理强度不宜过高
           "default" = { reasoningEffort = "low"; };
-          # 均衡模式: 适当增加推理深度, 应对中等复杂度任务
           "thinking" = { reasoningEffort = "medium"; };
         };
       };
@@ -89,37 +139,49 @@
       # 旗舰模型, 支持 4 档推理强度
       "doubao-seed-2-0-pro-260215" = {
         name = "Doubao Seed 2.0";
+        family = "Doubao Seed 2.0";
+        release_date = "2026-02-15";
+        status = "active";
+        reasoning = true;
+        tool_call = true;
+        attachment = true;
+        experimental = false;
 
-        limit = {
-          context = 262144; # 256K tokens
-          output = 131072; # 128K tokens 最大输出
+        # 阶梯价: 3.2 / 4.8 / 9.6 → 缓存 0.64 / 0.96 / 1.92 → 输出 16.0 / 24.0 / 48.0
+        cost = {
+          input = 3.2;
+          output = 16.0;
+          cache_read = 0.64;
         };
 
-        # 思考模式下 temperature/topP/frequencyPenalty 不生效
+        limit = {
+          context = 262144;
+          input = 229376;
+          output = 131072;
+        };
+
+        modalities = {
+          input = [ "text" "image" ];
+          output = [ "text" ];
+        };
+
         options = {
           temperature = 0.3;
           topP = 0.9;
           frequencyPenalty = 0.1;
         };
 
-        # 4 档推理强度: low < medium(默认) < high; minimal = 关闭思考
         variants = {
-          # 轻量思考: 快速响应
           "fast" = { reasoningEffort = "low"; };
-          # 均衡模式(默认): 日常编码、通用任务首选
           "default" = { reasoningEffort = "medium"; };
-          # 深度分析: 复杂推理、算法、数学
           "thinking" = { reasoningEffort = "high"; };
-          # 关闭思考: 极致速度, 适合简单翻译/补全/格式转换
           "direct" = { reasoningEffort = "minimal"; };
         };
       };
 
       # =======================================================================
-      # DeepSeek V4 (火山方舟托管)
-      # 模型列表: https://www.volcengine.com/docs/82379/1330310
+      # DeepSeek V4 (火山方舟托管) — 纯文本模型
       # 深度思考: https://www.volcengine.com/docs/82379/1449737
-      # 模型价格: https://www.volcengine.com/docs/82379/1544106
       #
       # 对比 DeepSeek 官方 API, 火山方舟版额外支持 reasoning_effort 全档位:
       #   minimal / low / medium / high / max
@@ -137,42 +199,45 @@
       # 旗舰编程与推理模型, 世界知识/数学/STEM 表现最强
       "deepseek-v4-pro-260425" = {
         name = "DeepSeek V4 PRO";
+        family = "DeepSeek V4 Ark";
+        release_date = "2026-04-25";
+        status = "active";
+        reasoning = true;
+        tool_call = true;
+        attachment = false;
+        experimental = false;
 
-        limit = {
-          context = 1048576; # 1M tokens (1024K) 超长上下文
-          output = 393216; # 384K tokens 最大输出 (1024 × 384)
+        cost = {
+          input = 12.00;
+          output = 24.00;
+          cache_read = 1.00;
         };
 
-        # 工具调用后需将 assistant 消息中的 reasoning_content 原样传回 API
-        # 否则返回 HTTP 400. interleaved 告诉 OpenCode 自动处理此字段
+        limit = {
+          context = 1048576;
+          input = 1048576;
+          output = 393216;
+        };
+
+        modalities = {
+          input = [ "text" ];
+          output = [ "text" ];
+        };
+
         interleaved = {
           field = "reasoning_content";
         };
 
-        # 思考模式下 temperature/topP/frequencyPenalty/presencePenalty 不生效
-        # 设置不会报错, 但 API 会忽略. 非思考模式 (fast 变体) 下全部正常生效
         options = {
-          temperature = 0.0; # 编码场景官方推荐; 思考模式下不生效
+          temperature = 0.0;
           topP = 0.9;
         };
 
         variants = {
-          # 高推理强度(默认): 日常编码、代码审查、文档生成首选
           "default" = { reasoningEffort = "high"; };
-
-          # 最强推理: 复杂算法、数学证明、大型重构、架构决策
-          # 注: OpenCode agent 任务会被自动提升为 max
           "max-thinking" = { reasoningEffort = "max"; };
-
-          # 中等推理 (方舟独有): 速度与深度平衡, 适合中等复杂度问题
-          # DeepSeek 官方 API 不支持此档位 (会被映射为 high)
           "medium" = { reasoningEffort = "medium"; };
-
-          # 低推理强度 (方舟独有): 快速推理但仍保留思考链路
           "light" = { reasoningEffort = "low"; };
-
-          # 非思考模式: 关闭链式推理, 响应最快, 适合简单补全/翻译/轻量任务
-          # 此模式下 temperature/topP 等标准参数恢复生效
           "fast" = {
             thinking = { type = "disabled"; };
           };
@@ -185,10 +250,29 @@
       # 简单 agent 任务效果与 Pro 持平, 性价比首选
       "deepseek-v4-flash-260425" = {
         name = "DeepSeek V4 FLASH";
+        family = "DeepSeek V4 Ark";
+        release_date = "2026-04-25";
+        status = "active";
+        reasoning = true;
+        tool_call = true;
+        attachment = false;
+        experimental = false;
+
+        cost = {
+          input = 1.00;
+          output = 2.00;
+          cache_read = 0.20;
+        };
 
         limit = {
-          context = 1048576; # 1M tokens (全系标配)
-          output = 393216; # 384K tokens (与 Pro 相同)
+          context = 1048576;
+          input = 1048576;
+          output = 393216;
+        };
+
+        modalities = {
+          input = [ "text" ];
+          output = [ "text" ];
         };
 
         interleaved = {
@@ -201,16 +285,9 @@
         };
 
         variants = {
-          # 高推理强度(默认): 日常编程任务首选, 平衡质量与速度
           "default" = { reasoningEffort = "high"; };
-
-          # 最强推理: 需要深度分析但追求性价比的场景
           "max-thinking" = { reasoningEffort = "max"; };
-
-          # 中等推理 (方舟独有): 快速代码补全/简单修复
           "medium" = { reasoningEffort = "medium"; };
-
-          # 非思考模式: 极致速度, 简单任务性价比最高
           "fast" = {
             thinking = { type = "disabled"; };
           };
@@ -221,7 +298,7 @@
 
   # --- DeepSeek 官方 API 配置 ---
   # DeepSeek V4 系列: 1M 上下文 + 双模式(思考/非思考)
-  # 定价 (per 1M tokens):
+  # 定价 (per 1M tokens, USD):
   #   V4 Pro:  input $0.435(cache miss) / $0.003625(cache hit) / output $0.87
   #   V4 Flash: input $0.14(cache miss)  / $0.0028(cache hit)    / output $0.28
   # 官方文档: https://api-docs.deepseek.com/guides/thinking_mode
@@ -229,13 +306,12 @@
   deepseek = {
     npm = "@ai-sdk/openai-compatible";
     name = "DeepSeek";
+    env = [ "DEEPSEEK_API_KEY" ];
     options = {
-      # DeepSeek API 的 OpenAI 兼容端点 (v1)
       baseURL = "https://api.deepseek.com/v1";
       apiKey = "{env:DEEPSEEK_API_KEY}";
-      # 请求超时(ms): V4 深度推理可能耗时较长, OpenCode 默认 300000, 此处放宽至 600000
       timeout = 600000;
-      # 流式响应的 chunk 超时(ms): 防止长时间无数据导致连接中断
+      headerTimeout = 600000;
       chunkTimeout = 60000;
     };
 
@@ -245,55 +321,42 @@
       # =======================================================================
       "deepseek-v4-pro" = {
         name = "DeepSeek V4 PRO";
+        family = "DeepSeek V4";
+        status = "active";
+        reasoning = true;
+        tool_call = true;
+        attachment = false;
+        experimental = false;
 
-        limit = {
-          context = 1048576; # 1M tokens (官方全系标配, ≈75 万汉字)
-          output = 393216; # 384K tokens (官方最大输出, = 384 × 1024)
+        cost = {
+          input = 0.435;
+          output = 0.87;
+          cache_read = 0.003625;
         };
 
-        # 思考模式下工具调用后, API 要求后续请求必须将 assistant 消息中的
-        # reasoning_content 字段原样传回, 否则返回 HTTP 400 错误.
-        # interleaved 告诉 OpenCode 自动处理此字段的拼接与回传.
+        limit = {
+          context = 1048576;
+          input = 1048576;
+          output = 393216;
+        };
+
+        modalities = {
+          input = [ "text" ];
+          output = [ "text" ];
+        };
+
         interleaved = {
           field = "reasoning_content";
         };
 
-        # ---- 默认选项 ----
-        # V4 默认启用思考模式 (thinking mode). 在该模式下:
-        #   reasoning_effort: 可选 "high"(默认) 或 "max"
-        #     - "low"/"medium" 会被 API 映射为 "high"
-        #     - OpenCode agent 任务的 effort 会被 API 自动提升为 "max"
-        #   temperature / topP / frequencyPenalty / presencePenalty: 不生效
-        #     设置这些参数不会报错, 但 API 会忽略它们
-        #   logprobs / top_logprobs: 不支持, 会报错
-        #
-        # 非思考模式 (thinking.type = disabled):
-        #   所有标准参数恢复正常, DeepSeek 官方推荐:
-        #     - Coding/Math:       temperature = 0.0
-        #     - Data Analysis:     temperature = 1.0
-        #     - General Chat:      temperature = 1.3
-        #     - Creative Writing:  temperature = 1.5
         options = {
-          temperature = 0.0; # 编码场景官方推荐值; 思考模式下不生效
+          temperature = 0.0;
           topP = 0.9;
         };
 
         variants = {
-          # 思考模式(默认): reasoning_effort = high
-          # 适合日常编程、代码审查、文档生成
           "default" = { reasoningEffort = "high"; };
-
-          # 最强推理: reasoning_effort = max
-          # 适合复杂算法、数学证明、大型重构、架构决策
-          # 注: OpenCode agent 任务会被 API 自动提升为 max,
-          #     故此变体与 default 在 agent 场景下效果可能相同
           "max-thinking" = { reasoningEffort = "max"; };
-
-          # 非思考模式: 关闭链式推理, 响应最快, 适合简单补全/翻译/轻量任务
-          #   - temperature/topP/frequencyPenalty 等标准参数恢复生效
-          #   - 不产生 reasoning_content, 无需 interleaved 处理
-          # 注意: thinking 参数需通过 extra_body 传递, OpenCode/@ai-sdk 的底层支持
-          #       取决于具体版本, 若无效可尝试改用 OpenCode 内置的 deepseek provider
           "fast" = {
             thinking = { type = "disabled"; };
           };
@@ -306,30 +369,42 @@
       # =======================================================================
       "deepseek-v4-flash" = {
         name = "DeepSeek V4 FLASH";
+        family = "DeepSeek V4";
+        status = "active";
+        reasoning = true;
+        tool_call = true;
+        attachment = false;
+        experimental = false;
+
+        cost = {
+          input = 0.14;
+          output = 0.28;
+          cache_read = 0.0028;
+        };
 
         limit = {
-          context = 1048576; # 1M tokens (全系标配)
-          output = 393216; # 384K tokens (与 Pro 相同)
+          context = 1048576;
+          input = 1048576;
+          output = 393216;
+        };
+
+        modalities = {
+          input = [ "text" ];
+          output = [ "text" ];
         };
 
         interleaved = {
           field = "reasoning_content";
         };
 
-        # Flash 参数: 与 Pro 设置一致, 说明同上
         options = {
           temperature = 0.0;
           topP = 0.9;
         };
 
         variants = {
-          # 思考模式(默认): 日常任务首选, 平衡质量与速度
           "default" = { reasoningEffort = "high"; };
-
-          # 最强推理: 适合需要深度分析但追求性价比的场景
           "max-thinking" = { reasoningEffort = "max"; };
-
-          # 非思考模式: 极致速度, 简单任务性价比最高
           "fast" = {
             thinking = { type = "disabled"; };
           };
