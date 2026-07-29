@@ -1,6 +1,10 @@
 { config, pkgs, ... }:
 
 {
+  home.packages = with pkgs; [
+    cava # 音频组件依赖项
+  ];
+
   programs.waybar = {
     enable = true;
     systemd.enable = true;
@@ -31,16 +35,23 @@
         "margin-right" = 12;
 
         # ── 模块布局 ──
-        "modules-left" = [ "niri/workspaces" "niri/window" ];
-        "modules-center" = [ "clock" ];
-        "modules-right" = [
-          "mpris"
-          "pulseaudio"
-          "tray"
+        "modules-left" = [
+          "niri/workspaces"
           "network"
-          "bluetooth"
           "cpu"
           "memory"
+        ];
+
+        "modules-center" = [
+          "clock"
+          "cava"
+        ];
+
+        "modules-right" = [
+          "backlight"
+          "pulseaudio"
+          "bluetooth"
+          "tray"
           "battery"
         ];
 
@@ -57,35 +68,41 @@
         };
 
         # ═══════════════════════════════════════════════
-        # MPRIS 媒体播放控制
-        # 依赖: playerctl (运行时通过 DBus 与 MPRIS 播放器通信)
+        # 背光/亮度调节
+        # 依赖: sysfs (/sys/class/backlight/)
+        # 悬浮滚动滚轮即可调节亮度
         # ═══════════════════════════════════════════════
-        mpris = {
-          format = "{player_icon} {dynamic}";
-          "format-paused" = "{status_icon} <i>{dynamic}</i>";
-          "format-stopped" = "";
-          "player-icons" = {
-            "default" = "";
-            "spotify" = "";
-            "firefox" = "󰈹";
-            "chromium" = "󰊯";
-            "mpv" = "";
-            "vlc" = "󰕼";
+        backlight = {
+          format = "{icon}  {percent}%";
+          format-icons = [ "󰃞" "󰃟" "󰃠" ];
+          scroll-step = 5;
+          interval = 2;
+          tooltip-format = "亮度: {percent}%";
+        };
+
+        # ═══════════════════════════════════════════════
+        # Cava 音频频谱可视化
+        # 依赖: cava (运行时通过 PipeWire/PulseAudio 捕获音频)
+        # ═══════════════════════════════════════════════
+        cava = {
+          framerate = 30;
+          autosens = 1;
+          bars = 12;
+          lower_cutoff_freq = 50;
+          higher_cutoff_freq = 10000;
+          method = "pulse";
+          source = "auto";
+          stereo = true;
+          reverse = false;
+          bar_delimiter = 0;
+          monstercat = false;
+          waves = false;
+          noise_reduction = 0.77;
+          input_delay = 2;
+          "format-icons" = [ "▁" "▂" "▃" "▄" "▅" "▆" "▇" "█" ];
+          actions = {
+            "on-click" = "playerctl play-pause";
           };
-          "status-icons" = {
-            "playing" = "";
-            "paused" = "";
-            "stopped" = "";
-          };
-          "dynamic-order" = [ "artist" "title" ];
-          "artist-len" = 9;
-          "album-len" = 12;
-          "title-len" = 15;
-          "hide-hour" = false;
-          "tooltip-format" = "{artist} — {album}\n{title}  [{length}]";
-          "on-click" = "playerctl play-pause";
-          "on-click-right" = "playerctl next";
-          "on-click-middle" = "playerctl previous";
         };
 
         # ═══════════════════════════════════════════════
@@ -125,10 +142,10 @@
         # ═══════════════════════════════════════════════
         clock = {
           interval = 1;
-          # 完整日期 + 时间格式
-          format = " {:%Y-%m-%d  %H:%M:%S}";
-          # 左键切换为短格式
-          "format-alt" = " {:%m-%d %H:%M}";
+          # 简短格式
+          format = " {:%m-%d %H:%M}";
+          # 点击切换为完整日期 + 时间格式
+          "format-alt" = " {:%Y-%m-%d  %H:%M:%S}";
           "tooltip-format" = "<big>{:%Y年%B}</big>\n<tt><small>{calendar}</small></tt>";
           "on-click-right" = "gnome-calendar";
           "on-click-middle" = "notify-send -t 5000 '当前时间' \"$(date '+%Y-%m-%d %H:%M:%S')\"";
@@ -164,10 +181,6 @@
         # ═══════════════════════════════════════════════
         "niri/window" = {
           format = "{title}";
-
-          # 最大显示长度
-          "max-length" = 72;
-
           rewrite = {
             "(.*) - Mozilla Firefox" = "󰈹 $1";
             "(.*) - Chromium" = "󰊯 $1";
@@ -343,7 +356,8 @@
 
       /* ── 所有模块通用样式 ── */
       #workspaces,
-      #mpris,
+      #backlight,
+      #cava,
       #window,
       #clock,
       #pulseaudio,
@@ -358,7 +372,7 @@
         padding: 0 15px;
         background: rgba(49, 50, 68, 0.72);
         color: @text;
-        border-radius: 20px;
+        border-radius: 8px;
         box-shadow: 0px 2px 4px 2px rgba(0, 0, 0, 0.28);
         transition: all 0.25s ease;
       }
@@ -378,7 +392,7 @@
         font-size: 24px;
         padding: 0 10px;
         margin: 4px 1px;
-        border-radius: 14px;
+        border-radius: 8px;
         color: @subtext0;
         background: transparent;
         font-weight: 500;
@@ -420,7 +434,7 @@
          各模块主题色
          ══════════════════════════════════════════════════════ */
 
-      /* 窗口标题: 正文色 */
+      /* 窗口标题: 正文色, 固定宽度 */
       #window {
         color: @text;
         font-style: italic;
@@ -433,15 +447,16 @@
         letter-spacing: 0.3px;
       }
 
-      /* MPRIS 媒体信息: 桃色, 加粗 */
-      #mpris {
-        color: @peach;
+      /* 背光/亮度: 黄色 */
+      #backlight {
+        color: @yellow;
+      }
+
+      /* Cava 音频频谱: 青绿色 */
+      #cava {
+        color: @teal;
         font-weight: 600;
         transition: all 0.25s ease;
-      }
-      #mpris.paused {
-        color: @overlay0;
-        font-style: italic;
       }
 
       /* PulseAudio 音量: 天蓝色 */
