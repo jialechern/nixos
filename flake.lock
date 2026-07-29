@@ -57,11 +57,11 @@
     "niri-dotfiles": {
       "flake": false,
       "locked": {
-        "lastModified": 1784953708,
-        "narHash": "sha256-Vqq7lD8O13TLnE360eWbCEX9CwwciVEzAAYEf13ceJw=",
+        "lastModified": 1785339417,
+        "narHash": "sha256-d4No+7A0uRefDSElqAj4vIC4XObSFPqBkGZfh3OemNw=",
         "ref": "main",
-        "rev": "d9badd70f6483ad2d7834dcd02782dd6a9d53595",
-        "revCount": 25,
+        "rev": "55c3d84221a9a93938d64c82a177d9a1fd31d0df",
+        "revCount": 26,
         "type": "git",
         "url": "https://gitee.com/cjl-2692367185-qed/niri.git"
       },

@@ -59,6 +59,10 @@
       set -g fish_cursor_replace underscore
       # 外部命令执行时 → 竖线
       set -g fish_cursor_external line
+
+      # Alt+t: 打开/切回 main tmux session (insert 与 default 模式均绑定)
+      bind -M insert \et 'tmux new-session -A -s main'
+      bind -M default \et 'tmux new-session -A -s main'
     '';
 
     # --- Shell 最后初始化 ---
@@ -108,6 +112,8 @@
       rsync = "rsync -arvP";
       px = "proxychains4 -f ${config.xdg.configHome}/proxychains/proxychains.conf -q";
       ngens = "nix profile history --profile /nix/var/nix/profiles/system";
+      cliph = "cliphist list | fzf | cliphist decode | wl-copy";
+      tm = "tmux new-session -A -s main";
     };
 
     # --- 键绑定 ---

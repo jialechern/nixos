@@ -8,7 +8,7 @@
   ];
 
   # --- --- --- 环境变量与 PATH --- --- ---
-  home.sessionVariables = {};
+  home.sessionVariables = { };
 
 
   home.sessionPath = [
@@ -49,6 +49,8 @@
       rsync = "rsync -arvP";
       px = "proxychains4 -f ${config.xdg.configHome}/proxychains/proxychains.conf -q";
       ngens = "nix profile history --profile /nix/var/nix/profiles/system";
+      cliph = "cliphist list | fzf | cliphist decode | wl-copy";
+      tm = "tmux new-session -A -s main";
     };
 
     # 需要最先加载的 zsh 配置
@@ -75,15 +77,20 @@
       			zle -N zle-line-init
       			
       			# PATH 追加
-    			export PATH=$HOME/.local/bin:$HOME/Projects/bin:$PATH
-    			[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+            export PATH=$HOME/.local/bin:$HOME/Projects/bin:$PATH
+            [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 
-    			# 一键清理 NixOS 旧系统世代与 Nix Store 垃圾
-    			nclean() {
-    			  echo "=> 清理 NixOS 旧世代 & 垃圾回收 Nix Store ..."
-    			  sudo nix-collect-garbage -d
-    			  echo "=> 清理完成。"
-    			}
-    		'';
+            # 一键清理 NixOS 旧系统世代与 Nix Store 垃圾
+            nclean() {
+              echo "=> 清理 NixOS 旧世代 & 垃圾回收 Nix Store ..."
+              sudo nix-collect-garbage -d
+              echo "=> 清理完成。"
+            }
+
+            # Alt+t: 打开/切回 main tmux session
+            tmux-main-session() { tmux new-session -A -s main }
+            zle -N tmux-main-session
+            bindkey '\et' tmux-main-session
+    '';
   };
 }

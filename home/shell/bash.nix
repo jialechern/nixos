@@ -44,6 +44,8 @@
       rsync = "rsync -arvP";
       px = "proxychains4 -f ${config.xdg.configHome}/proxychains/proxychains.conf -q";
       ngens = "nix profile history --profile /nix/var/nix/profiles/system";
+      cliph = "cliphist list | fzf | cliphist decode | wl-copy";
+      tm = "tmux new-session -A -s main";
     };
 
     # --- --- --- .bashrc 级配置(所有 Bash 调用均执行) --- --- ---
@@ -77,6 +79,9 @@
       # 局限性: Readline 无 vi-mode-change 钩子, 进入 normal 模式时光标仍为竖线
       # 替代方案: 使用 ble.sh (Bash Line Editor) 可支持模式感知光标
       PROMPT_COMMAND='printf "\\e[6 q"'
+
+      # Alt+t: 打开/切回 main tmux session
+      bind -x '"\et":"tmux new-session -A -s main"'
     '';
   };
 
