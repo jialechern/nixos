@@ -100,8 +100,9 @@
           noise_reduction = 0.77;
           input_delay = 2;
           "format-icons" = [ "▁" "▂" "▃" "▄" "▅" "▆" "▇" "█" ];
+          "on-click" = "playerctl play-pause";
           actions = {
-            "on-click" = "playerctl play-pause";
+            "on-click-right" = "mode";
           };
         };
 
