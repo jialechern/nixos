@@ -5,7 +5,7 @@
     enable = true;
 
     # --- --- --- 基础配置 --- --- ---
-    font = "JetBrainsMono Nerd Font 20";
+    font = "JetBrainsMono Nerd Font 16";
     location = "center";
     terminal = "${pkgs.ghostty}/bin/ghostty";
 
@@ -30,8 +30,8 @@
         # 全局变量定义
         "*" = {
           # Catppuccin Mocha 基础色
-          background = mkLiteral "#1e1e2e";
-          "background-alt" = mkLiteral "#313244";
+          background = mkLiteral "#313244";
+          "background-alt" = mkLiteral "#45475a";
           foreground = mkLiteral "#cdd6f4";
           selected = mkLiteral "#89b4fa";
           active = mkLiteral "#a6e3a1";
@@ -70,7 +70,7 @@
           transparency = mkLiteral "\"real\"";
           anchor = mkLiteral "center";
           fullscreen = false;
-          width = mkLiteral "800px";
+          width = mkLiteral "600px";
           "x-offset" = mkLiteral "0px";
           "y-offset" = mkLiteral "0px";
 
@@ -81,15 +81,15 @@
           "border-radius" = mkLiteral "10px";
           "border-color" = mkLiteral "@border-colour";
           cursor = mkLiteral "\"default\"";
-          "background-color" = mkLiteral "@background-colour";
+          "background-color" = mkLiteral "rgba(49, 50, 68, 0.88)";
         };
 
         # 主容器
         "mainbox" = {
           enabled = true;
-          spacing = mkLiteral "12px";
+          spacing = mkLiteral "8px";
           margin = mkLiteral "0px";
-          padding = mkLiteral "40px";
+          padding = mkLiteral "24px";
           border = mkLiteral "0px solid";
           "border-radius" = mkLiteral "0px 0px 0px 0px";
           "border-color" = mkLiteral "@border-colour";
@@ -100,7 +100,7 @@
         # 输入栏
         "inputbar" = {
           enabled = true;
-          spacing = mkLiteral "15px";
+          spacing = mkLiteral "10px";
           margin = mkLiteral "0px";
           padding = mkLiteral "0px";
           border = mkLiteral "0px solid";
@@ -114,10 +114,10 @@
         # 搜索图标
         "textbox-prompt-colon" = {
           enabled = true;
-          padding = mkLiteral "8px 12px";
+          padding = mkLiteral "6px 10px";
           expand = false;
           str = mkLiteral "\"  \"";
-          font = mkLiteral "\"JetBrainsMono Nerd Font 18\"";
+          font = mkLiteral "\"JetBrainsMono Nerd Font 15\"";
           "background-color" = mkLiteral "inherit";
           "text-color" = mkLiteral "inherit";
         };
@@ -125,7 +125,7 @@
         # 输入框
         "entry" = {
           enabled = true;
-          padding = mkLiteral "8px 0px";
+          padding = mkLiteral "6px 0px";
           "background-color" = mkLiteral "inherit";
           "text-color" = mkLiteral "inherit";
           cursor = mkLiteral "text";
@@ -166,7 +166,7 @@
         "listview" = {
           enabled = true;
           columns = 1;
-          lines = 10;
+          lines = 8;
           cycle = true;
           dynamic = true;
           scrollbar = true;
@@ -175,7 +175,7 @@
           "fixed-height" = true;
           "fixed-columns" = true;
 
-          spacing = mkLiteral "8px";
+          spacing = mkLiteral "6px";
           margin = mkLiteral "0px";
           padding = mkLiteral "0px";
           border = mkLiteral "0px solid";
@@ -188,7 +188,7 @@
 
         # 滚动条
         "scrollbar" = {
-          "handle-width" = mkLiteral "6px";
+          "handle-width" = mkLiteral "5px";
           "handle-color" = mkLiteral "@handle-colour";
           "border-radius" = mkLiteral "10px";
           "background-color" = mkLiteral "@alternate-background";
@@ -197,9 +197,9 @@
         # 元素基础
         "element" = {
           enabled = true;
-          spacing = mkLiteral "12px";
+          spacing = mkLiteral "8px";
           margin = mkLiteral "0px";
-          padding = mkLiteral "8px 16px";
+          padding = mkLiteral "6px 12px";
           border = mkLiteral "0px solid";
           "border-radius" = mkLiteral "10px";
           "border-color" = mkLiteral "@border-colour";
@@ -258,7 +258,7 @@
         "element-icon" = {
           "background-color" = mkLiteral "transparent";
           "text-color" = mkLiteral "inherit";
-          size = mkLiteral "28px";
+          size = mkLiteral "22px";
           cursor = mkLiteral "inherit";
         };
 
@@ -276,7 +276,7 @@
         "mode-switcher" = {
           enabled = true;
           expand = true;
-          spacing = mkLiteral "12px";
+          spacing = mkLiteral "8px";
           margin = mkLiteral "0px";
           padding = mkLiteral "0px";
           border = mkLiteral "0px solid";
@@ -288,7 +288,7 @@
 
         # 按钮
         "button" = {
-          padding = mkLiteral "6px 12px";
+          padding = mkLiteral "4px 10px";
           border = mkLiteral "0px solid";
           "border-radius" = mkLiteral "10px";
           "border-color" = mkLiteral "@border-colour";
@@ -315,7 +315,7 @@
         };
 
         "textbox" = {
-          padding = mkLiteral "8px 10px";
+          padding = mkLiteral "6px 8px";
           border = mkLiteral "0px solid";
           "border-radius" = mkLiteral "10px";
           "border-color" = mkLiteral "@border-colour";
