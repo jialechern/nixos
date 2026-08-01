@@ -7,6 +7,9 @@
   #   - variants: 模型变体, 用于同一模型的不同推理模式 (思考/非思考/推理强度)
   #   - env:    该 provider 依赖的环境变量列表, 用于校验
   #   - whitelist: 仅展示列表中的模型, 隐藏账号下其他模型
+  #
+  # status 字段仅接受 opencode schema 定义的四个枚举值:
+  #   "alpha" | "beta" | "deprecated" | "active"
   # ===========================================================================
 
   # --- 火山方舟 (Volcengine Ark) 配置 ---
@@ -183,9 +186,11 @@
       # DeepSeek V4 (火山方舟托管) — 纯文本模型
       # 深度思考: https://www.volcengine.com/docs/82379/1449737
       #
+      # 注意: 火山方舟仍为预览版 (260425), 尚未跟进 DeepSeek 官方 Flash 正式版 (2026-07-31)
+      #
       # 对比 DeepSeek 官方 API, 火山方舟版额外支持 reasoning_effort 全档位:
       #   minimal / low / medium / high / max
-      # (DeepSeek 官方仅 high/max, low/medium 会被映射为 high)
+      # (DeepSeek 官方仅 high/max, low/medium 会被映射为 high —— 详见下方官方 provider 注释)
       #
       # 定价 (在线推理, 元/百万token):
       #   V4 Pro:  输入 ¥12.00 / 缓存命中 ¥1.00 / 输出 ¥24.00
@@ -298,11 +303,34 @@
 
   # --- DeepSeek 官方 API 配置 ---
   # DeepSeek V4 系列: 1M 上下文 + 双模式(思考/非思考)
-  # 定价 (per 1M tokens, USD):
-  #   V4 Pro:  input $0.435(cache miss) / $0.003625(cache hit) / output $0.87
-  #   V4 Flash: input $0.14(cache miss)  / $0.0028(cache hit)    / output $0.28
-  # 官方文档: https://api-docs.deepseek.com/guides/thinking_mode
-  #         https://api-docs.deepseek.com/quick_start/pricing
+  # 官方 pricing 页面 (2026-08-01 核实): https://api-docs.deepseek.com/quick_start/pricing
+  #   - Base URL (OpenAI 格式):    https://api.deepseek.com  (含 /v1 别名亦可用, 但以官方最新文档为准)
+  #   - Base URL (Anthropic 格式): https://api.deepseek.com/anthropic
+  #   - 并发限额: Flash 2500 / Pro 500
+  #   - Chat Prefix Completion(Beta) 思考/非思考模式均支持; FIM Completion(Beta) 仅非思考模式支持
+  #   - "Responses API" 相关说法未在官方文档中找到依据, 可能是过时或非官方来源信息, 使用前建议自行核实
+  #
+  # reasoning_effort 映射 (官方 Thinking Mode 文档, 不区分 Pro/Flash, 统一规则):
+  #   https://api-docs.deepseek.com/guides/thinking_mode
+  #   low  → high   (映射, 非直通)
+  #   medium → high (映射, 非直通)
+  #   high → high   (直通, 思考模式默认档位)
+  #   xhigh → max   (映射, 非直通)
+  #   max  → max    (直通)
+  #   ⚠️ 即 "low"/"medium" variant 在服务端实际等效于 "high", 并不会更快或更省
+  #
+  # ⚠️ 重要: 官方文档脚注明确说明, 对于 Claude Code、OpenCode 等复杂 agent 请求,
+  #          reasoning_effort 会被服务端自动强制设为 max, 不论客户端传入什么值。
+  #          这意味着下面给 opencode 配置的 light/medium/fast 等 variant
+  #          在实际 opencode 会话中可能完全不生效, 一直按 max 档位计费与推理。
+  #          如果需要控制成本/延迟, 目前没有已知的绕过方式, 需自行观察账单确认。
+  #
+  # 思考模式下 temperature/topP/presencePenalty/frequencyPenalty 均不生效
+  # (设置不会报错, 但无效果) —— 仅在 "fast" (thinking.type = disabled) variant 下才实际生效
+  #
+  # deepseek-v4-flash 的 "-0731" checkpoint / public beta 说法未在官方 Change Log 中找到
+  # 对应条目 (官方最新记录仍是 2026-04-24 发布 V4 Pro/Flash), 该信息来源存疑, release_date
+  # 暂保留原值, 但不作为官方事实引用
   deepseek = {
     npm = "@ai-sdk/openai-compatible";
     name = "DeepSeek";
@@ -318,11 +346,15 @@
     models = {
       # =======================================================================
       # deepseek-v4-pro (1.6T 总参 / 49B 激活参数, MoE 架构)
+      # 官方 status: preview → schema 不接受 "preview", 改为 "beta"
+      # 不支持 Responses API (相关说法未经官方文档证实, 见上方 provider 级注释)
+      # Chat Prefix Completion (Beta) 和 FIM Completion (Beta, 仅非思考模式) 均支持
       # =======================================================================
       "deepseek-v4-pro" = {
         name = "DeepSeek V4 PRO";
         family = "DeepSeek V4";
-        status = "active";
+        release_date = "2026-04-24";
+        status = "beta";
         reasoning = true;
         tool_call = true;
         attachment = false;
@@ -354,9 +386,12 @@
           topP = 0.9;
         };
 
+        # low/medium 会被服务端映射为 high, xhigh 会被映射为 max —— 详见 provider 级注释
         variants = {
           "default" = { reasoningEffort = "high"; };
           "max-thinking" = { reasoningEffort = "max"; };
+          "xhigh" = { reasoningEffort = "xhigh"; }; # 等效于 max, 保留仅为语义清晰
+          "light" = { reasoningEffort = "low"; }; # ⚠️ 实际等效于 high, 并不会更快/更省
           "fast" = {
             thinking = { type = "disabled"; };
           };
@@ -365,12 +400,15 @@
 
       # =======================================================================
       # deepseek-v4-flash (284B 总参 / 13B 激活参数, MoE 架构)
-      # 定位: 快速/经济型, 推理能力接近 Pro, 简单 agent 任务与 Pro 持平
+      # release_date / "public beta" 说法未经官方 Change Log 证实, 谨慎参考
+      # 定位: 快速/经济型, 推理能力接近 Pro
+      # reasoning_effort 映射规则与 Pro 相同 (官方文档统一规则, 不区分模型) —— 见 provider 级注释
       # =======================================================================
       "deepseek-v4-flash" = {
         name = "DeepSeek V4 FLASH";
         family = "DeepSeek V4";
-        status = "active";
+        release_date = "2026-07-31";
+        status = "beta";
         reasoning = true;
         tool_call = true;
         attachment = false;
@@ -402,9 +440,12 @@
           topP = 0.9;
         };
 
+        # low/medium 会被服务端映射为 high, xhigh 会被映射为 max —— 详见 provider 级注释
         variants = {
           "default" = { reasoningEffort = "high"; };
           "max-thinking" = { reasoningEffort = "max"; };
+          "xhigh" = { reasoningEffort = "xhigh"; }; # 等效于 max, 保留仅为语义清晰
+          "light" = { reasoningEffort = "low"; }; # ⚠️ 实际等效于 high, 并不会更快/更省
           "fast" = {
             thinking = { type = "disabled"; };
           };
