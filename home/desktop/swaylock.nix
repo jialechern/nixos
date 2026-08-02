@@ -56,14 +56,14 @@
       # --- 文本颜色 ---
       text-color = "cdd6f4"; # Text — 主文本色
       text-clear-color = "a6e3a1"; # Green — 密码正确
-      text-ver-color = "89b4fa"; # Blue — 正在验证中
+      text-ver-color = "cba6f7"; # Mauve — 正在验证中
       text-wrong-color = "f38ba8"; # Red — 密码错误
       text-caps-lock-color = "fab387"; # Peach — 大小写锁定
 
       # --- 圆环(外圈)颜色 ---
       ring-color = "b4befe"; # Lavender — 默认外圈
       ring-clear-color = "a6e3a1"; # Green — 密码正确
-      ring-ver-color = "89b4fa"; # Blue — 正在验证
+      ring-ver-color = "cba6f7"; # Mauve — 正在验证
       ring-wrong-color = "f38ba8"; # Red — 密码错误
       ring-caps-lock-color = "fab387"; # Peach — 大小写锁定
 
@@ -77,7 +77,7 @@
       # --- 分割线颜色(line-uses-ring=true 时这些仅用于特定状态覆盖) ---
       line-color = "45475a"; # Surface1 — 默认分割线
       line-clear-color = "a6e3a1"; # Green — 正确
-      line-ver-color = "89b4fa"; # Blue — 验证中
+      line-ver-color = "cba6f7"; # Mauve — 验证中
       line-wrong-color = "f38ba8"; # Red — 错误
       line-caps-lock-color = "fab387"; # Peach — 大小写锁定
 

@@ -53,13 +53,13 @@
         theme[title]="#cdd6f4"
 
         # 快捷键高亮颜色
-        theme[hi_fg]="#89b4fa"
+        theme[hi_fg]="#cba6f7"
 
         # 进程列表中选中项的背景色
         theme[selected_bg]="#45475a"
 
         # 进程列表中选中项的前景色
-        theme[selected_fg]="#89b4fa"
+        theme[selected_fg]="#cba6f7"
 
         # 非活跃/禁用文字颜色
         theme[inactive_fg]="#7f849c"

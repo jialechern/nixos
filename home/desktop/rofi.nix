@@ -30,10 +30,10 @@
         # 全局变量定义
         "*" = {
           # Catppuccin Mocha 基础色
-          background = mkLiteral "#313244";
-          "background-alt" = mkLiteral "#45475a";
+          background = mkLiteral "#1e1e2e";
+          "background-alt" = mkLiteral "#313244";
           foreground = mkLiteral "#cdd6f4";
-          selected = mkLiteral "#89b4fa";
+          selected = mkLiteral "#cba6f7";
           active = mkLiteral "#a6e3a1";
           urgent = mkLiteral "#f38ba8";
 
@@ -81,7 +81,7 @@
           "border-radius" = mkLiteral "10px";
           "border-color" = mkLiteral "@border-colour";
           cursor = mkLiteral "\"default\"";
-          "background-color" = mkLiteral "rgba(49, 50, 68, 0.88)";
+          "background-color" = mkLiteral "rgba(30, 30, 46, 0.88)";
         };
 
         # 主容器

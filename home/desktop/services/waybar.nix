@@ -314,7 +314,7 @@ in
       #tray {
         margin: 3px 6px;
         padding: 0 15px;
-        background: rgba(49, 50, 68, 0.72);
+        background: rgba(30, 30, 46, 0.72);
         color: @text;
         border-radius: 8px;
         box-shadow: 0px 2px 4px 2px rgba(0, 0, 0, 0.28);
