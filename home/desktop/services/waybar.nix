@@ -1,8 +1,12 @@
 { config, pkgs, ... }:
 
+let
+  term-run = "ghostty -e";
+in
 {
   home.packages = with pkgs; [
     cava # 音频组件依赖项
+    calcurse # 时钟右键打开的终端日历
   ];
 
   programs.waybar = {
@@ -51,13 +55,10 @@
           "backlight"
           "pulseaudio"
           "bluetooth"
+          "keyboard-state"
           "tray"
           "battery"
         ];
-
-        # IPC 接口: 允许外部程序控制 waybar
-        ipc = true;
-        id = "bar-0";
 
         # ═══════════════════════════════════════════════
         # 系统托盘
@@ -101,9 +102,6 @@
           input_delay = 2;
           "format-icons" = [ "▁" "▂" "▃" "▄" "▅" "▆" "▇" "█" ];
           "on-click" = "playerctl play-pause";
-          actions = {
-            "on-click-right" = "mode";
-          };
         };
 
         # ═══════════════════════════════════════════════
@@ -122,7 +120,7 @@
 
         # ═══════════════════════════════════════════════
         # PulseAudio 音量控制
-        # 依赖: pamixer, pavucontrol (运行时通过 pulse 原生协议通信)
+        # 依赖: wpctl (wireplumber), pavucontrol (运行时通过 pulse 原生协议通信)
         # ═══════════════════════════════════════════════
         pulseaudio = {
           format = "{icon}  {volume}%";
@@ -134,7 +132,7 @@
           };
           "tooltip-format" = "{desc}\n音量: {volume}%";
           "scroll-step" = 5;
-          "on-click" = "pamixer -t";
+          "on-click" = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
           "on-click-right" = "pavucontrol";
         };
 
@@ -148,7 +146,7 @@
           # 点击切换为完整日期 + 时间格式
           "format-alt" = " {:%Y-%m-%d  %H:%M:%S}";
           "tooltip-format" = "<big>{:%Y年%B}</big>\n<tt><small>{calendar}</small></tt>";
-          "on-click-right" = "gnome-calendar";
+          "on-click-right" = "${term-run} calcurse";
           "on-click-middle" = "notify-send -t 5000 '当前时间' \"$(date '+%Y-%m-%d %H:%M:%S')\"";
         };
 
@@ -178,41 +176,20 @@
         };
 
         # ═══════════════════════════════════════════════
-        # 当前窗口标题
-        # ═══════════════════════════════════════════════
-        "niri/window" = {
-          format = "{title}";
-          rewrite = {
-            "(.*) - Mozilla Firefox" = "󰈹 $1";
-            "(.*) - Chromium" = "󰊯 $1";
-            "(.*) - Google Chrome" = "󰊯 $1";
-            "(.*) - Visual Studio Code" = "󰨞 $1";
-            "(.*) - VSCodium" = "󰨞 $1";
-            "(.*) - Code" = "󰨞 $1";
-            "(.*) - Discord" = "󰙯 $1";
-            "(.*) - Spotify" = "󰓇 $1";
-            "(.*) - kitty" = " $1";
-            "(.*) - alacritty" = " $1";
-            "(.*) - ghostty" = " $1";
-          };
-        };
-
-        # ═══════════════════════════════════════════════
         # CPU
         # ═══════════════════════════════════════════════
         cpu = {
           interval = 2;
           format = "󰍛 {usage}%";
           # 左键切换为负载均值 (1分钟)
-          "format-alt" = "󰍛 {load1}";
+          "format-alt" = "󰍛 {load}";
           # 负载阈值, 超过后自动添加对应的 CSS 类
           states = {
             warning = 70;
             critical = 90;
           };
-          "tooltip-format" = "CPU: {usage}%\n平均负载: {load1}";
-          "on-click" = "kitty --class=btop btop";
-          "on-click-right" = "foot -e htop";
+          "on-click" = "${term-run} btop";
+          "on-click-right" = "${term-run} btop";
         };
 
         # ═══════════════════════════════════════════════
@@ -227,8 +204,8 @@
             critical = 90;
           };
           "tooltip-format" = "已用: {used} GB\n总量: {total} GB\n可用: {avail} GB";
-          "on-click" = "kitty --class=btop btop";
-          "on-click-right" = "foot -e htop";
+          "on-click" = "${term-run} btop";
+          "on-click-right" = "${term-run} btop";
         };
 
         # ═══════════════════════════════════════════════
@@ -335,14 +312,6 @@
         transition-duration: 0.3s;
       }
 
-      /* ── 无窗口时隐藏窗口标题模块 ── */
-      window#waybar.empty #window {
-        background: transparent;
-        box-shadow: none;
-        padding: 0;
-        margin: 0;
-      }
-
       /* ── 工具提示 ── */
       tooltip {
         background: rgba(30, 30, 46, 0.96);
@@ -359,7 +328,6 @@
       #workspaces,
       #backlight,
       #cava,
-      #window,
       #clock,
       #pulseaudio,
       #cpu,
@@ -435,12 +403,6 @@
          各模块主题色
          ══════════════════════════════════════════════════════ */
 
-      /* 窗口标题: 正文色, 固定宽度 */
-      #window {
-        color: @text;
-        font-style: italic;
-      }
-
       /* 时钟: 薰衣草色, 加粗 */
       #clock {
         color: @lavender;
@@ -457,7 +419,6 @@
       #cava {
         color: @teal;
         font-weight: 600;
-        transition: all 0.25s ease;
       }
 
       /* PulseAudio 音量: 天蓝色 */
@@ -518,9 +479,7 @@
         color: @subtext1;
       }
       #battery.charging,
-      #battery.plugged {
-        color: @green;
-      }
+      #battery.plugged,
       #battery.full {
         color: @green;
       }
