@@ -7,12 +7,6 @@
     file
   ];
 
-  # --- Catppuccin Mocha 语法高亮主题 ---
-  # 官方 yazi 主题的 syntect_theme 硬编码指向此路径 (见 yazi/catppuccin-mocha-mauve.toml)
-  # 文件取自 catppuccin/bat 官方仓库
-  home.file."yazi/Catppuccin-mocha.tmTheme".source =
-    ./yazi/Catppuccin-mocha.tmTheme;
-
   # --- yazi 主配置 ---
   programs.yazi = {
     enable = true; # 启用 yazi
@@ -39,10 +33,14 @@
     # --- 主题包 ---
     # Catppuccin Mocha (mauve 强调色) 官方主题, 内容取自 catppuccin/yazi 仓库
     # 已移除 [app] 背景段以保留终端透明背景, 详见文件内注释
+    # tmtheme.xml 是 yazi 26.x 从 flavors/<name>.yazi/ 自动加载的语法高亮主题
+    # (文件取自 catppuccin/bat 官方仓库), 与 flavor.toml 放在同一 flavor 目录下
     flavors = {
-      "catppuccin-mocha" = pkgs.writeTextDir "flavor.toml" (
-        builtins.readFile ./yazi/catppuccin-mocha-mauve.toml
-      );
+      "catppuccin-mocha" = pkgs.runCommand "catppuccin-mocha-yazi-flavor" { } ''
+        mkdir -p "$out"
+        cp ${./yazi/catppuccin-mocha-mauve.toml} "$out/flavor.toml"
+        cp ${./yazi/Catppuccin-mocha.tmTheme} "$out/tmtheme.xml"
+      '';
     };
 
     # --- yazi.toml ---
