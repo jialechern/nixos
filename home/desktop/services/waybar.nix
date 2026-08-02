@@ -55,7 +55,6 @@ in
           "backlight"
           "pulseaudio"
           "bluetooth"
-          "keyboard-state"
           "tray"
           "battery"
         ];
@@ -188,8 +187,6 @@ in
             warning = 70;
             critical = 90;
           };
-          "on-click" = "${term-run} btop";
-          "on-click-right" = "${term-run} btop";
         };
 
         # ═══════════════════════════════════════════════
@@ -204,8 +201,6 @@ in
             critical = 90;
           };
           "tooltip-format" = "已用: {used} GB\n总量: {total} GB\n可用: {avail} GB";
-          "on-click" = "${term-run} btop";
-          "on-click-right" = "${term-run} btop";
         };
 
         # ═══════════════════════════════════════════════
@@ -220,25 +215,6 @@ in
           "tooltip-format-enumerate-connected" = "   {device_alias}";
           "tooltip-format-enumerate-connected-battery" = "   {device_alias} 电量 {device_battery_percentage}%";
           "on-click" = "overskride";
-        };
-
-        # ═══════════════════════════════════════════════
-        # 键盘状态指示 (NumLock / CapsLock)
-        # ═══════════════════════════════════════════════
-        "keyboard-state" = {
-          numlock = true;
-          capslock = true;
-
-          # 分键显示 (Waybar 0.10+)
-          format = {
-            numlock = "N {icon}";
-            capslock = "C {icon}";
-          };
-
-          "format-icons" = {
-            locked = "";
-            unlocked = "";
-          };
         };
 
         # ═══════════════════════════════════════════════
@@ -333,7 +309,6 @@ in
       #cpu,
       #memory,
       #bluetooth,
-      #keyboard-state,
       #battery,
       #network,
       #tray {
@@ -465,11 +440,6 @@ in
       }
       #network.disconnected {
         color: @red;
-      }
-
-      /* 键盘状态: 桃色 */
-      #keyboard-state {
-        color: @peach;
       }
 
       /* ══════════════════════════════════════════════════════
