@@ -11,8 +11,11 @@
 
     # 主题、图标及字体配置
     theme = {
-      name = "Nordic";
-      package = pkgs.nordic;
+      name = "catppuccin-mocha-mauve-standard";
+      package = pkgs.catppuccin-gtk.override {
+        variant = "mocha";
+        accents = [ "mauve" ];
+      };
     };
 
     iconTheme = {
@@ -57,7 +60,13 @@
     };
 
     # GTK 4.0 特定配置
-    gtk4.theme = null;
+    gtk4.theme = {
+      name = "catppuccin-mocha-mauve-standard";
+      package = pkgs.catppuccin-gtk.override {
+        variant = "mocha";
+        accents = [ "mauve" ];
+      };
+    };
     gtk4.extraConfig = {
       # 开启光标闪烁
       gtk-cursor-blink = 1;
@@ -84,6 +93,6 @@
 
   # 深色模式的环境变量支持
   home.sessionVariables = {
-    GTK_THEME = "Nordic";
+    GTK_THEME = "catppuccin-mocha-mauve-standard";
   };
 }

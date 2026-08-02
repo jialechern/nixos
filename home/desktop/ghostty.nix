@@ -184,5 +184,5 @@ in
   # --- --- --- 光标拖尾特效着色器 --- --- ---
   # 构建时读取 shader 内容并嵌入
   home.file."${config.xdg.configHome}/ghostty/${cursorSmearShader}".text =
-    builtins.readFile ../../scripts/${cursorSmearShader};
+    builtins.readFile ./ghostty/${cursorSmearShader};
 }

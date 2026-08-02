@@ -28,7 +28,10 @@
     seahorse # 图形化 keyring 管理工具
 
     # --- 字体、主题与图标 ---
-    nordic # GTK 主题
+    (pkgs.catppuccin-gtk.override {
+      variant = "mocha";
+      accents = [ "mauve" ];
+    }) # GTK 主题
     papirus-icon-theme # 图标主题
     noto-fonts-cjk-sans # 核心中文字体
     noto-fonts-color-emoji # 表情符号支持

@@ -7,6 +7,12 @@
     file
   ];
 
+  # --- Catppuccin Mocha 语法高亮主题 ---
+  # 官方 yazi 主题的 syntect_theme 硬编码指向此路径 (见 yazi/catppuccin-mocha-mauve.toml)
+  # 文件取自 catppuccin/bat 官方仓库
+  home.file."yazi/Catppuccin-mocha.tmTheme".source =
+    ./yazi/Catppuccin-mocha.tmTheme;
+
   # --- yazi 主配置 ---
   programs.yazi = {
     enable = true; # 启用 yazi
@@ -31,8 +37,12 @@
     };
 
     # --- 主题包 ---
+    # Catppuccin Mocha (mauve 强调色) 官方主题, 内容取自 catppuccin/yazi 仓库
+    # 已移除 [app] 背景段以保留终端透明背景, 详见文件内注释
     flavors = {
-      nord = pkgs.yaziPlugins.nord; # Nord 主题
+      "catppuccin-mocha" = pkgs.writeTextDir "flavor.toml" (
+        builtins.readFile ./yazi/catppuccin-mocha-mauve.toml
+      );
     };
 
     # --- yazi.toml ---
@@ -275,16 +285,26 @@
     # --- 主题 ---
     theme = {
       flavor = {
-        dark = "nord"; # 深色模式使用 nord
-        light = "nord"; # 浅色模式也使用 nord
+        dark = "catppuccin-mocha"; # 深色模式使用 Catppuccin Mocha
+        light = "catppuccin-mocha"; # 浅色模式也使用 Catppuccin Mocha
       };
 
+      # 在官方主题基础上微调 (用户 theme.toml 优先级高于 flavor)
       mgr = {
-        cwd = { fg = "cyan"; };
-        find_keyword = { fg = "yellow"; bold = true; italic = true; underline = true; };
-        find_position = { fg = "magenta"; bg = "reset"; bold = true; italic = true; };
-        marker_copied = { fg = "lightgreen"; bg = "lightgreen"; };
-        marker_cut = { fg = "lightred"; bg = "lightred"; };
+        # 当前路径: Mocha Teal
+        cwd = { fg = "#94e2d5"; };
+        # 搜索关键词: Mocha Yellow
+        find_keyword = { fg = "#f9e2af"; bold = true; italic = true; underline = true; };
+        # 搜索位置: Mocha Pink
+        find_position = { fg = "#f5c2e7"; bg = "reset"; bold = true; italic = true; };
+        # 复制标记: Mocha Green
+        marker_copied = { fg = "#a6e3a1"; bg = "#a6e3a1"; };
+        # 剪切标记: Mocha Red
+        marker_cut = { fg = "#f38ba8"; bg = "#f38ba8"; };
+        # 已标记: Mocha Teal
+        marker_marked = { fg = "#94e2d5"; bg = "#94e2d5"; };
+        # 已选中: Mocha Mauve
+        marker_selected = { fg = "#cba6f7"; bg = "#cba6f7"; };
       };
     };
   };

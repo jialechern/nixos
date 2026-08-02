@@ -9,7 +9,7 @@ let
       ];
       doCheck = false;
     }
-    (builtins.readFile ../../scripts/fzf-previewer); # 预览脚本位置
+    (builtins.readFile ./fzf/fzf-previewer); # 预览脚本位置
 
   # 通用 fzf 默认选项, 应用于所有 fzf 调用(包括 Ctrl+T、Alt+C)
   defaultConfig = [
