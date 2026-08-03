@@ -58,13 +58,8 @@ in
 
   # --- shell 别名 ---
   programs.bash.shellAliases = {
-    code = ''${selectFreeModel} _code() { if [ -n "$MODEL" ]; then opencode --port --model "$MODEL" "$@"; else opencode --port "$@"; fi; }; _code'';
-    ag = ''${selectFreeModel} _ag() { if [ -n "$MODEL" ]; then opencode --model "$MODEL" "$@"; else opencode "$@"; fi; }; _ag'';
+    code = ''${selectFreeModel} _code() { if [ -n "$MODEL" ]; then opencode --model "$MODEL" "$@"; else opencode "$@"; fi; }; _code'';
     oclean = "for s in $(opencode session list | awk 'NR > 2 {print $1}'); do opencode session delete $s; done";
-  };
-
-  programs.fish.shellAliases = {
-    # code / ag 由 functions 实现以支持 $argv 参数透传
   };
 
   # oclean 含 for 循环块, fish 的 alias 包装会与 end 冲突, 改用 function
@@ -74,19 +69,8 @@ in
     end
   '';
 
-  # code: 启动 opencode HTTP server, 免费模型优先
+  # code: 启动 opencode TUI, 免费模型优先
   programs.fish.functions.code = ''
-    set -l free_models (opencode models 2>/dev/null | grep -i free)
-    if test (count $free_models) -gt 0
-      set -l MODEL $free_models[(random 1 (count $free_models))]
-      command opencode --port --model $MODEL $argv
-    else
-      command opencode --port $argv
-    end
-  '';
-
-  # ag: 启动 opencode TUI, 免费模型优先
-  programs.fish.functions.ag = ''
     set -l free_models (opencode models 2>/dev/null | grep -i free)
     if test (count $free_models) -gt 0
       set -l MODEL $free_models[(random 1 (count $free_models))]
@@ -97,8 +81,7 @@ in
   '';
 
   programs.zsh.shellAliases = {
-    code = ''${selectFreeModel} _code() { if [ -n "$MODEL" ]; then opencode --port --model "$MODEL" "$@"; else opencode --port "$@"; fi; }; _code'';
-    ag = ''${selectFreeModel} _ag() { if [ -n "$MODEL" ]; then opencode --model "$MODEL" "$@"; else opencode "$@"; fi; }; _ag'';
+    code = ''${selectFreeModel} _code() { if [ -n "$MODEL" ]; then opencode --model "$MODEL" "$@"; else opencode "$@"; fi; }; _code'';
     oclean = "for s in $(opencode session list | awk 'NR > 2 {print $1}'); do opencode session delete $s; done";
   };
 }

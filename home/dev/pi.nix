@@ -70,6 +70,7 @@ in
       postBuild = ''
         wrapProgram $out/bin/pi \
           --run '
+            export PI_OFFLINE=1
             SECRET_FILE="$HOME/.config/pi/secrets.env"
             if [ -f "$SECRET_FILE" ]; then
               set -a
@@ -147,7 +148,7 @@ in
         # 待办清单 (34K+/mo, MIT): todo 工具 + /todos 命令 + 编辑器上方实时面板
         # 清单从会话历史重建, /reload 与上下文压缩后依然保留, 长任务进度一目了然
         # 面板折叠键默认 ctrl+shift+t, 与本配置的 app.session.tree 冲突,
-        # 已在 ~/.config/rpiv-todo/config.json 改绑 alt+t
+        # 已在 ~/.config/rpiv-todo/config.json 改绑 ctrl+t
         "npm:@juicesharp/rpiv-todo"
       ];
 
@@ -165,30 +166,6 @@ in
     #       常用默认键 (up/down/enter/escape 等), 与 vim 习惯不符的默认键则有意重绑
     # -------------------------------------------------------------------------
     keybindings = {
-      # --- 编辑区光标移动 (vim/neovim 风格) ---
-      "tui.editor.cursorUp" = [ "up" "ctrl+p" ]; # 上移
-      "tui.editor.cursorDown" = [ "down" "ctrl+n" ]; # 下移
-      "tui.editor.cursorLeft" = [ "left" "ctrl+h" ]; # 左移
-      "tui.editor.cursorRight" = [ "right" "ctrl+l" ]; # 右移
-      "tui.editor.cursorWordLeft" = [ "ctrl+left" "ctrl+b" ]; # 单词左移 (vim b 的 ctrl 版本)
-      "tui.editor.cursorWordRight" = [ "ctrl+right" "ctrl+w" ]; # 单词右移 (vim w 的 ctrl 版本; 原删词默认键 ctrl+w 改作此用)
-
-      # --- 编辑区删除 (vim 风格) ---
-      # 注: deleteCharBackward/Forward 的默认键 ctrl+h/ctrl+d 已分别让位给
-      #     上方的 cursorLeft (vim h) 与下方的 deleteWordForward (vim dw),
-      #     故此处显式重绑为单键, 避免同键匹配两个动作
-      "tui.editor.deleteCharBackward" = [ "backspace" ]; # 删除前一字符
-      "tui.editor.deleteCharForward" = [ "delete" ]; # 删除后一字符
-      "tui.editor.deleteWordBackward" = [ "ctrl+backspace" ]; # 删除前一个单词 (vim 插入模式 ctrl+w; 此处绑定终端等效键 ctrl+backspace)
-      "tui.editor.deleteWordForward" = [ "ctrl+d" "alt+delete" ]; # 删除后一个单词 (vim dw)
-      "tui.editor.deleteToLineStart" = "ctrl+u"; # 删除到行首
-      # "tui.editor.deleteToLineEnd" = "ctrl+k"; # 删除到行尾
-
-      # --- 编辑区撤销/粘贴 ---
-      "tui.editor.undo" = "ctrl+-"; # 撤销
-      "tui.editor.yank" = "ctrl+y"; # 粘贴最近删除内容
-      "tui.editor.yankPop" = "alt+y"; # 循环切换删除历史
-
       # --- 输入 ---
       "tui.input.newLine" = [ "shift+enter" "ctrl+j" ]; # 插入换行
       "tui.input.submit" = "enter"; # 提交输入
@@ -200,24 +177,16 @@ in
       "tui.select.confirm" = "enter"; # 确认选择
       "tui.select.cancel" = [ "escape" ]; # 取消选择
 
-      # --- 会话管理 (仿 opencode 的 <leader> 键位) ---
-      "app.session.new" = "ctrl+shift+n"; # 新建会话 (/new)
-      "app.session.resume" = "ctrl+shift+r"; # 打开会话恢复选择器 (/resume)
-      "app.session.tree" = "ctrl+shift+t"; # 打开会话树 (/tree)
-      "app.session.fork" = "ctrl+shift+f"; # 分叉当前会话 (/fork)
-
       # --- 应用操作 ---
       "app.interrupt" = "escape"; # 取消/中止
       "app.exit" = "ctrl+q"; # 退出 (输入为空时)
-      "app.editor.external" = "ctrl+shift+e"; # 在外部编辑器中撰写
-      "app.model.select" = "ctrl+\\"; # 打开模型选择器
-      "app.model.cycleForward" = "ctrl+/"; # 循环到下一个模型
-      "app.model.cycleBackward" = "shift+ctrl+/"; # 循环到上一个模型
+      "app.model.cycleForward" = "ctrl+\\"; # 循环到下一个模型
+      "app.model.cycleBackward" = "ctrl+shift+\\"; # 循环到上一个模型
       "app.thinking.cycle" = "shift+tab"; # 循环思考等级
-      "app.thinking.toggle" = "ctrl+t"; # 折叠/展开思考块
-      "app.message.copy" = "ctrl+x"; # 复制最后一条助手消息
-      "app.message.followUp" = "alt+enter"; # 排队跟进消息
-      "app.message.dequeue" = "alt+up"; # 撤回排队消息到输入框
+      "app.thinking.toggle" = "ctrl+f"; # 折叠/展开思考块
+      # "app.message.copy" = "ctrl+x"; # 复制最后一条助手消息
+      "app.message.followUp" = "ctrl+enter"; # 排队跟进消息
+      "app.message.dequeue" = "ctrl+up"; # 撤回排队消息到输入框
     };
 
     # -------------------------------------------------------------------------
@@ -326,7 +295,7 @@ in
               # (官方将于 2026-08 初更新 pro 的映射, 届时以官方手册为准)
               thinkingLevelMap = {
                 "minimal" = null;
-                "low" = "low"; # 服务端实际映射为 high, 与官方表保持一致
+                "low" = "low"; # pi 发送 reasoning_effort=low, 服务端内部将 low 映射为 high
                 "medium" = null;
                 "high" = "high";
                 "xhigh" = null; # 服务端等效于 high, 隐藏避免误解
@@ -355,6 +324,14 @@ in
   };
 
   # ---------------------------------------------------------------------------
+  # 提示词模板 (prompt templates): 输入 /名称 展开, 与 opencode 的 command 对应
+  #   /trans → 高质量中文翻译   /impl → 需求转结构化实现提示词
+  # 文档: https://pi.dev/docs/latest/prompt-templates
+  # ---------------------------------------------------------------------------
+  home.file."${piConfigDir}/prompts/trans.md".source = ./pi/prompts/trans.md;
+  home.file."${piConfigDir}/prompts/impl.md".source = ./pi/prompts/impl.md;
+
+  # ---------------------------------------------------------------------------
   # 自定义主题: Catppuccin Mocha (mauve 强调色), 与系统主题风格统一
   # 文档: https://pi.dev/docs/latest/themes (51 个必填 token, 热重载生效)
   # ---------------------------------------------------------------------------
@@ -372,14 +349,30 @@ in
     tavilyApiKey = "$TAVILY_API_KEY";
     # Firecrawl: 普通抓取失败时的兜底抽取 (默认缓存优先, 不会主动外发请求)
     firecrawlApiKey = "$FIRECRAWL_API_KEY";
+    # 使用 web-search 工具时, 不再请求确认
+    workflow = "none";
   };
 
   # ---------------------------------------------------------------------------
   # rpiv-todo 配置 (XDG): 折叠面板的快捷键改绑
-  #   默认 ctrl+shift+t 与本配置的 app.session.tree (会话树) 冲突, 改为 alt+t
   # 文档: https://github.com/juicesharp/rpiv-mono/tree/main/packages/rpiv-todo
   # ---------------------------------------------------------------------------
   home.file.".config/rpiv-todo/config.json".text = builtins.toJSON {
-    collapseKey = "alt+t";
+    collapseKey = "ctrl+shift+f";
+  };
+
+  # ---------------------------------------------------------------------------
+  # shell 别名: ag = pi (通用 agent 日常入口)
+  # ---------------------------------------------------------------------------
+  programs.bash.shellAliases = {
+    ag = "pi";
+  };
+
+  programs.zsh.shellAliases = {
+    ag = "pi";
+  };
+
+  programs.fish.shellAliases = {
+    ag = "pi";
   };
 }

@@ -2,64 +2,6 @@
   # =========================================================
   # 自定义命令
   # =========================================================
-  #
-  # 命令: /git-commit
-  # 功能: 根据 git diff HEAD 生成符合 Conventional Commits 规范的提交信息
-  # 用法: /git-commit [补充说明]
-  # 示例: /git-commit 旧快捷键与终端冲突, 迫不得已换绑
-  #
-  "git-commit" = {
-    # 在 TUI 命令面板中显示的描述
-    description = "根据 git diff 生成符合 Conventional Commits 规范的提交信息";
-
-    # 提示词模板
-    # $ARGUMENTS 会被替换为命令后的全部参数文本 (无参数时为空),
-    # 用作用户补充说明, 弥补 diff 无法体现的变更动机与背景
-    template = ''
-      请根据以下 git diff HEAD 的输出，生成一份规范的 git commit 信息。
-
-      用户补充说明 (可能为空):
-      <user-note>
-      $ARGUMENTS
-      </user-note>
-
-      补充说明的处理规则:
-      - 若补充说明非空, 它是理解本次变更动机与背景的第一手信息,
-        其可信度高于你对 diff 的推测, 必须将其体现在 subject 或 body 的变更原因中
-      - 若补充说明与 diff 内容有出入, 以补充说明为准描述动机, 以 diff 为准描述实际改动
-      - 若补充说明为空, 则完全依据 diff 自行推断
-
-      要求：
-      1. 严格遵循 Conventional Commits 规范: <type>(<scope>): <description>
-      2. type 从下列中选择: feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert
-      3. 若变更范围明确，使用 scope 进行标识 (例: fix(auth): 修复登录验证码失效问题)
-      4. description 使用中文编写，简洁明了，以句号结尾，建议不超过 50 字
-      5. body 使用中文详细描述:
-         - 变更内容: 改了什么、怎么改的
-         - 变更原因: 为什么这样改 (优先采用补充说明中给出的原因)
-         - 影响范围: 对哪些模块或功能有影响
-         body 与 subject 之间留一空行
-      6. 若存在破坏性变更，在 footer 中添加 BREAKING CHANGE 段落后跟中文说明
-      7. 若有关联的 issue 或 PR，在 footer 中以 Closes #xxx / Refs #xxx 格式引用
-      8. 仅输出 commit message 本身，不要包裹在 markdown code block 中，不要添加任何额外解释
-
-      输出格式：
-        <type>(<scope>): <中文简述>
-
-        <中文详细描述>
-
-        <footer>
-
-      以下是 git diff HEAD 的输出：
-
-      !`git diff HEAD`
-    '';
-
-    # 以子任务方式执行，结果返回到当前会话且不污染主上下文
-    subtask = true;
-  };
-
-  # =========================================================
   # 命令: /impl
   # 功能: 将需求描述转换为可直接交付 LLM 实现的结构化提示词
   # 用法: /impl <需求描述>

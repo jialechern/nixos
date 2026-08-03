@@ -28,6 +28,9 @@
     # 开发环境
     ./home/dev.nix
 
+    # 共享 Agent Skills (ai agent 共用)
+    ./home/skills.nix
+
     # 其它程序配置
     ./home/other.nix
 
