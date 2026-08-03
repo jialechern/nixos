@@ -56,6 +56,8 @@
       set -s extended-keys on
       set -as terminal-features 'xterm*:extkeys'
       set -as terminal-features 'tmux*:extkeys'
+      # 扩展键位编码使用 csi-u 格式 (tmux 3.4+)
+      set -g extended-keys-format csi-u
 
       # ============================================================
       # 外观设置

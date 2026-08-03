@@ -77,6 +77,17 @@
         mode = "0600";
       };
 
+      "pi-secrets.env" = {
+        path = "${config.home.homeDirectory}/.config/pi/secrets.env";
+        content = ''
+          # --- 火山方舟 ---
+          VOLCANO_ARK_API_KEY=${config.sops.placeholder.ark}
+          # --- DeepSeek 开放平台 ---
+          DEEPSEEK_API_KEY=${config.sops.placeholder.deepseek}
+        '';
+        mode = "0600";
+      };
+
       "netrc" = {
         path = "${config.home.homeDirectory}/.netrc";
         content = ''
