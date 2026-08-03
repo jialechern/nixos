@@ -84,6 +84,9 @@
           VOLCANO_ARK_API_KEY=${config.sops.placeholder.ark}
           # --- DeepSeek 开放平台 ---
           DEEPSEEK_API_KEY=${config.sops.placeholder.deepseek}
+          # --- pi-web-access 搜索 (与 opencode MCP 共用 key) ---
+          TAVILY_API_KEY=${config.sops.placeholder.tavily}
+          FIRECRAWL_API_KEY=${config.sops.placeholder.firecrawl}
         '';
         mode = "0600";
       };
