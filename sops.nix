@@ -32,10 +32,6 @@
         sopsFile = ./secrets/ai_api_keys/module_api_keys.yaml;
       };
 
-      "baidu_map" = {
-        sopsFile = ./secrets/ai_api_keys/mcp_api_keys.yaml;
-      };
-
       "context7" = {
         sopsFile = ./secrets/ai_api_keys/mcp_api_keys.yaml;
       };
@@ -67,12 +63,11 @@
           VOLCANO_ARK_API_KEY=${config.sops.placeholder.ark}
           # --- DeepSeek 开放平台 ---
           DEEPSEEK_API_KEY=${config.sops.placeholder.deepseek}
-          # --- MCP ---
-          CONTEXT7_API_KEY=${config.sops.placeholder.context7}
-          FIRECRAWL_API_KEY=${config.sops.placeholder.firecrawl}
+          # --- pi-web-access 搜索 ---
           TAVILY_API_KEY=${config.sops.placeholder.tavily}
-          BAIDU_MAP_API_KEY=${config.sops.placeholder.baidu_map}
-          BAIDU_MAPS_API_KEY=${config.sops.placeholder.baidu_map}
+          FIRECRAWL_API_KEY=${config.sops.placeholder.firecrawl}
+          # --- context7 文档查询 ---
+          CONTEXT7_API_KEY=${config.sops.placeholder.context7}
         '';
         mode = "0600";
       };
@@ -84,7 +79,7 @@
           VOLCANO_ARK_API_KEY=${config.sops.placeholder.ark}
           # --- DeepSeek 开放平台 ---
           DEEPSEEK_API_KEY=${config.sops.placeholder.deepseek}
-          # --- pi-web-access 搜索 (与 opencode MCP 共用 key) ---
+          # --- pi-web-access 搜索 ---
           TAVILY_API_KEY=${config.sops.placeholder.tavily}
           FIRECRAWL_API_KEY=${config.sops.placeholder.firecrawl}
           # --- context7 文档查询 ---
