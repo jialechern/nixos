@@ -85,6 +85,27 @@ let
     "tavily-crawl"
   ];
 
+  # ---------------------------------------------------------------------------
+  # upstash/context7 — Context7 官方仓库自带的 Agent Skills (Apache-2.0):
+  #   - context7-cli: ctx7 CLI 全能指南 (查文档 / skills 管理 / MCP setup), 带 references
+  #   - find-docs: 聚焦的文档查找工作流 (ctx7 CLI: library → docs 两步法)
+  #   - context7-mcp: MCP 方式的文档查询 (resolve-library-id → query-docs),
+  #     与 pi 的 @upstash/context7-pi 扩展工具一致
+  #     注意: CLI 方式用 npx ctx7@latest 或全局安装; MCP 方式需 context7 MCP server;
+  #     CONTEXT7_API_KEY 环境变量可提高速率限制 (sops 已配置)
+  # ---------------------------------------------------------------------------
+  context7Skills = pkgs.fetchFromGitHub {
+    owner = "upstash";
+    repo = "context7";
+    rev = "594a73133e14631af8c915a1b4f2c8039c964fe1";
+    hash = "sha256-Msvr7srpy+2HzxYKsPzo0hhzW7E1/ktTwdBEtuFMgRE=";
+  };
+  context7SkillNames = [
+    "context7-cli"
+    "find-docs"
+    "context7-mcp"
+  ];
+
   # ===========================================================================
   # skill 运行时依赖 (打包与 skill 一起维护, 职责跟随 skill 归属)
   # ---------------------------------------------------------------------------
@@ -141,7 +162,7 @@ let
   # 统一生成 home.file 条目, 均部署到 ~/.agents/skills/<name>
   # (pi / opencode / Claude Code 都会自动发现该目录, 一份源码多工具生效)
   # ===========================================================================
-  skills = localSkills ++ anthropicSkillNames ++ firecrawlSkillNames ++ tavilySkillNames;
+  skills = localSkills ++ anthropicSkillNames ++ firecrawlSkillNames ++ tavilySkillNames ++ context7SkillNames;
 
   srcFor = name:
     if builtins.elem name localSkills then
@@ -150,6 +171,8 @@ let
       "${firecrawlSkills}/skills/${name}"
     else if builtins.elem name tavilySkillNames then
       "${tavilySkills}/skills/${name}"
+    else if builtins.elem name context7SkillNames then
+      "${context7Skills}/skills/${name}"
     else
       "${anthropicSkills}/skills/${name}";
 in
