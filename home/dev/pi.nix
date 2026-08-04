@@ -78,7 +78,6 @@ in
       postBuild = ''
         wrapProgram $out/bin/pi \
           --run '
-            export PI_OFFLINE=1
             SECRET_FILE="$HOME/.config/pi/secrets.env"
             if [ -f "$SECRET_FILE" ]; then
               set -a

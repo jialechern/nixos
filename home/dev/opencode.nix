@@ -49,6 +49,8 @@ in
               source "$SECRET_FILE"
               set +a
             fi
+            # 启用 opencode 内置 websearch 工具 (Exa AI, 无需 API key)
+            export OPENCODE_ENABLE_EXA=1
           '
       '';
     };
