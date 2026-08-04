@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   # ---------------------------------------------------------------------------
@@ -7,54 +7,62 @@ let
   # ---------------------------------------------------------------------------
   piConfigDir = "${config.home.homeDirectory}/.pi/agent";
 
-  # ===========================================================================
-  # 火山方舟 (Volcengine Ark) 思考档位映射
-  # 深度思考文档: https://www.volcengine.com/docs/82379/1449737
-  # 方舟版 DeepSeek V4 支持 reasoning_effort 全档位: minimal/low/medium/high/max
-  # (对比 DeepSeek 官方仅 low/high/max, 见下方官方模型注释)
-  # 注: pi 的 "off" 档未显式映射 —— 方舟版需 thinking.type=disabled 才真正关闭思考,
-  #     此处交由 pi 默认行为处理 (默认档位为 max, 不影响日常使用)
-  # ===========================================================================
-  arkDeepSeekThinking = {
-    "minimal" = "minimal";
-    "low" = "low";
-    "medium" = "medium";
-    "high" = "high";
-    "xhigh" = null; # 方舟无此档位, 从 UI 中隐藏
-    "max" = "max";
+  # 导入子模块配置 (参照 opencode.nix 的模块化模式)
+  extensionsCfg =
+    if builtins.pathExists ./pi/extensions.nix
+    then import ./pi/extensions.nix
+    else { };
+  keybindings =
+    if builtins.pathExists ./pi/keybindings.nix
+    then import ./pi/keybindings.nix
+    else { };
+  models =
+    if builtins.pathExists ./pi/models.nix
+    then import ./pi/models.nix
+    else { };
+  promptHomeFiles =
+    if builtins.pathExists ./pi/prompt-templates.nix
+    then (import ./pi/prompt-templates.nix) piConfigDir
+    else { };
+  extensionHomeFiles =
+    if builtins.pathExists ./pi/extension-configs.nix
+    then import ./pi/extension-configs.nix
+    else { };
+
+  baseSettings = {
+    # --- 模型与思考 ---
+    defaultProvider = "deepseek"; # 默认提供商: DeepSeek 官方开放平台
+    defaultModel = "deepseek-v4-flash"; # 默认模型: DeepSeek V4 Flash (2026-07-31 官方正式发布)
+    defaultThinkingLevel = "max"; # 默认思考等级: 最高级 (官方支持 low/high/max, max 直通)
+
+    # --- UI 与显示 ---
+    theme = "catppuccin-mocha-mauve"; # 自定义 Catppuccin Mocha (mauve 强调色) 主题
+
+    # --- 自动压缩 (官方文档示例推荐值) ---
+    compaction = {
+      enabled = true;
+      reserveTokens = 16384; # 为 LLM 回复预留的 token
+      keepRecentTokens = 20000; # 保留不摘要的最近 token
+    };
+
+    # --- 重试 (官方文档示例推荐值) ---
+    retry = {
+      enabled = true;
+      maxRetries = 3;
+    };
+
+    # --- Ctrl+P 循环切换的模型白名单 (模式匹配, 同 --models 格式) ---
+    enabledModels = [
+      "deepseek-*"
+      "doubao-seed-2-0-*"
+    ];
+
+    # --- 网络代理 (可选) ---
+    # 国内访问海外 API 时可取消下面注释 (本机透明代理默认 127.0.0.1:20172):
+    # httpProxy = "http://127.0.0.1:20172";
   };
 
-  # 豆包 (Doubao) 仅 4 档: minimal < low < medium < high, 不支持 max
-  # 官方文档说明: reasoning_effort = minimal 时等同于关闭思考, 直接回答
-  doubaoThinking = {
-    "off" = "minimal"; # 豆包以 minimal 档实现"关闭思考"
-    "minimal" = "minimal";
-    "low" = "low";
-    "medium" = "medium";
-    "high" = "high";
-    "xhigh" = null;
-    "max" = null;
-  };
-
-  # 豆包 Seed 2.0 系列通用模型参数 (上下文/输出上限源自 opencode/provider.nix)
-  mkDoubaoModel = { id, name }: {
-    inherit id name;
-    reasoning = true;
-    input = [ "text" "image" ]; # 原生多模态模型
-    contextWindow = 262144;
-    maxTokens = 131072;
-    thinkingLevelMap = doubaoThinking;
-  };
-
-  # 方舟版 DeepSeek V4 通用模型参数
-  mkArkDeepSeekModel = { id, name }: {
-    inherit id name;
-    reasoning = true;
-    input = [ "text" ];
-    contextWindow = 1048576;
-    maxTokens = 393216;
-    thinkingLevelMap = arkDeepSeekThinking;
-  };
+  settings = lib.recursiveUpdate baseSettings extensionsCfg;
 in
 {
   programs.pi-coding-agent = {
@@ -90,236 +98,7 @@ in
     # 配置目录 (见文件头注释)
     configDir = piConfigDir;
 
-    # -------------------------------------------------------------------------
-    # settings.json: ~/.pi/agent/settings.json
-    # 文档: https://pi.dev/docs/latest/settings
-    # -------------------------------------------------------------------------
-    settings = {
-      # --- 模型与思考 ---
-      defaultProvider = "deepseek"; # 默认提供商: DeepSeek 官方开放平台
-      defaultModel = "deepseek-v4-flash"; # 默认模型: DeepSeek V4 Flash (2026-07-31 官方正式发布)
-      defaultThinkingLevel = "max"; # 默认思考等级: 最高级 (官方支持 low/high/max, max 直通)
-
-      # --- UI 与显示 ---
-      theme = "catppuccin-mocha-mauve"; # 自定义 Catppuccin Mocha (mauve 强调色) 主题
-
-      # --- 自动压缩 (官方文档示例推荐值) ---
-      compaction = {
-        enabled = true;
-        reserveTokens = 16384; # 为 LLM 回复预留的 token
-        keepRecentTokens = 20000; # 保留不摘要的最近 token
-      };
-
-      # --- 重试 (官方文档示例推荐值) ---
-      retry = {
-        enabled = true;
-        maxRetries = 3;
-      };
-
-      # --- Ctrl+P 循环切换的模型白名单 (模式匹配, 同 --models 格式) ---
-      enabledModels = [
-        "deepseek-*"
-        "doubao-seed-2-0-*"
-      ];
-
-      # --- 扩展包资源 (npm/git 包) ---
-      # 声明后 pi 首次启动时会自动通过 npm 安装到 ~/.pi/agent/npm/ 并加载
-      # (需要网络; 若国内拉取失败, 请配置 npm 镜像或临时注释对应条目)
-      packages = [
-        # 现代 agent 机制: Codex 风格只读计划模式 (plan-mode, 15K+/mo, MIT)
-        # 用法: /plan <prompt> 进入计划模式 → 只读探索/提问 → plan_mode_complete 产出计划
-        #       → 选择 implement / export / save。计划模式下编辑/写入被禁, bash 限为只读子集
-        # 要求 pi >= 0.80.6 (当前 nixpkgs 0.83.0 满足)
-        # 可选配置: ~/.pi/agent/pi-plan-mode.json (默认即可用)
-        "npm:@narumitw/pi-plan-mode"
-
-        # 子代理 (社区最热扩展之一, 172K+/mo, MIT): 把任务委托给专注的子会话
-        # 内置 agent: scout / researcher / planner / worker / reviewer / oracle / delegate 等
-        # 用法: 自然语言 "用 reviewer 审查这个改动", 或 /run /chain /parallel 命令
-        # 子代理默认继承当前模型; 调优可加 settings.subagents (如 defaultModel/defaultThinking)
-        "npm:pi-subagents"
-
-        # 网页访问 (175K+/mo, MIT): 搜索/抓取/GitHub 克隆/PDF/视频理解
-        # 工具: web_search / fetch_content / source_check / get_search_content, 另有 /websearch 交互式策展
-        # 搜索 provider 在 ~/.pi/web-search.json 配置 (下方 home.file, 复用 sops 的 Tavily/Firecrawl key)
-        # 注意: 与 pi-deepseek-search 的 web_search 工具重名, 二者不要同时安装
-        "npm:pi-web-access"
-
-        # 待办清单 (34K+/mo, MIT): todo 工具 + /todos 命令 + 编辑器上方实时面板
-        # 清单从会话历史重建, /reload 与上下文压缩后依然保留, 长任务进度一目了然
-        # 面板折叠键默认 ctrl+shift+t, 与本配置的 app.session.tree 冲突,
-        # 已在 ~/.config/rpiv-todo/config.json 改绑 ctrl+t
-        "npm:@juicesharp/rpiv-todo"
-
-        # Context7 文档查询 (Upstash 官方, MIT): resolve-library-id + query-docs 工具
-        # 在 pi 请求触发查询上下文文档和最新示例代码
-        # 用法: agent 自动调用 (需要 skill 触发) 或 /c7-docs <library> <question>
-        # API key 由 pi 包装脚本从 ~/.config/pi/secrets.env 注入 (CONTEXT7_API_KEY)
-        "npm:@upstash/context7-pi"
-      ];
-
-      # --- 网络代理 (可选) ---
-      # 国内访问海外 API 时可取消下面注释 (本机透明代理默认 127.0.0.1:20172):
-      # httpProxy = "http://127.0.0.1:20172";
-    };
-
-    # -------------------------------------------------------------------------
-    # keybindings.json: ~/.pi/agent/keybindings.json
-    # 文档: https://pi.dev/docs/latest/keybindings
-    # 风格: 编辑区为 vim 移动语义 + ctrl 修饰键 (ctrl+h/l/b/w 对应 vim 的 h/l/b/w),
-    #       会话管理仿 opencode 的 <leader> 键位, 改用 ctrl+shift 前缀
-    # 注意: 对某个动作自定义键位会整体替换其默认键位, 故列表中保留不冲突的
-    #       常用默认键 (up/down/enter/escape 等), 与 vim 习惯不符的默认键则有意重绑
-    # -------------------------------------------------------------------------
-    keybindings = {
-      # --- 输入 ---
-      "tui.input.newLine" = [ "shift+enter" "ctrl+j" ]; # 插入换行
-      "tui.input.submit" = "enter"; # 提交输入
-      "tui.input.tab" = "tab"; # Tab / 自动补全
-
-      # --- 选择列表 (模型选择器 /model、会话恢复等通用列表) ---
-      "tui.select.up" = [ "up" "ctrl+p" ]; # 上移
-      "tui.select.down" = [ "down" "ctrl+n" ]; # 下移
-      "tui.select.confirm" = "enter"; # 确认选择
-      "tui.select.cancel" = [ "escape" ]; # 取消选择
-
-      # --- 应用操作 ---
-      "app.interrupt" = "escape"; # 取消/中止
-      "app.exit" = "ctrl+q"; # 退出 (输入为空时)
-      "app.model.cycleForward" = "ctrl+\\"; # 循环到下一个模型
-      "app.model.cycleBackward" = "ctrl+shift+\\"; # 循环到上一个模型
-      "app.thinking.cycle" = "shift+tab"; # 循环思考等级
-      "app.thinking.toggle" = "ctrl+f"; # 折叠/展开思考块
-      # "app.message.copy" = "ctrl+x"; # 复制最后一条助手消息
-      "app.message.followUp" = "ctrl+enter"; # 排队跟进消息
-      "app.message.dequeue" = "ctrl+up"; # 撤回排队消息到输入框
-    };
-
-    # -------------------------------------------------------------------------
-    # models.json: ~/.pi/agent/models.json
-    # 自定义模型提供商文档: https://pi.dev/docs/latest/models
-    # -------------------------------------------------------------------------
-    models = {
-      providers = {
-        # =====================================================================
-        # 火山方舟 (Volcengine Ark) — 自定义提供商
-        # 模型列表: https://www.volcengine.com/docs/82379/1330310
-        # 与 home/dev/opencode/provider.nix 中的 volcengine 配置保持一致
-        # 注意: 方舟价格以人民币计价, pi 成本按 USD/百万 token 显示, 故此处不填 cost 避免误导
-        # =====================================================================
-        volcengine = {
-          baseUrl = "https://ark.cn-beijing.volces.com/api/v3";
-          api = "openai-completions";
-          apiKey = "$VOLCANO_ARK_API_KEY"; # 由 ~/.config/pi/secrets.env (sops) 注入
-          # 方舟不支持 developer role, 系统提示词以 system role 发送
-          compat = {
-            supportsDeveloperRole = false;
-          };
-          models = [
-            # --- doubao-seed-2-0-code-preview-260215 (特化代码生成, 预览版) ---
-            (mkDoubaoModel {
-              id = "doubao-seed-2-0-code-preview-260215";
-              name = "Doubao Seed 2.0 Code Preview";
-            })
-
-            # --- doubao-seed-2-0-lite-260215 (轻量级, 高性价比) ---
-            (mkDoubaoModel {
-              id = "doubao-seed-2-0-lite-260215";
-              name = "Doubao Seed 2.0 Lite";
-            })
-
-            # --- doubao-seed-2-0-pro-260215 (旗舰, 4 档推理强度) ---
-            (mkDoubaoModel {
-              id = "doubao-seed-2-0-pro-260215";
-              name = "Doubao Seed 2.0 Pro";
-            })
-
-            # --- deepseek-v4-pro-260425 (方舟托管, 预览版) ---
-            (mkArkDeepSeekModel {
-              id = "deepseek-v4-pro-260425";
-              name = "DeepSeek V4 PRO (Ark)";
-            })
-
-            # --- deepseek-v4-flash-260425 (方舟托管, 预览版) ---
-            (mkArkDeepSeekModel {
-              id = "deepseek-v4-flash-260425";
-              name = "DeepSeek V4 Flash (Ark)";
-            })
-          ];
-        };
-
-        # =====================================================================
-        # DeepSeek 官方开放平台 — 内置 provider 补充
-        # 官方手册: https://api-docs.deepseek.com/guides/thinking_mode
-        # 思考档位: 仅 low/high/max (minimal/medium 无效, xhigh 服务端映射为 high)
-        #   请求档位 low → flash 直通 / pro 映射 high; high → high; max → max
-        # 关闭思考: thinking.type = "disabled" (内置 provider 已处理)
-        # 仅声明 models 数组, 内置模型保留、同 id 覆盖, 认证仍走 DEEPSEEK_API_KEY
-        # =====================================================================
-        deepseek = {
-          models = [
-            # --- deepseek-v4-flash: 2026-07-31 官方正式发布 (默认模型) ---
-            # 官方 Change Log (2026-07-31): V4-Flash-0731 正式发布上线, API 模型名不变
-            #   https://api-docs.deepseek.com/updates
-            # 284B 总参 / 13B 激活, MoE 架构; agent 基准已超 V4-Pro-Preview, 性价比首选
-            {
-              id = "deepseek-v4-flash";
-              name = "DeepSeek V4 Flash";
-              reasoning = true;
-              input = [ "text" ];
-              contextWindow = 1048576; # 官方 1M 上下文
-              maxTokens = 393216; # 官方最大输出 384K (393216 = 384 * 1024)
-              # 官方映射 (flash 专属): low→low, high→high, xhigh→high, max→max (minimal/medium 无效)
-              thinkingLevelMap = {
-                "minimal" = null;
-                "low" = "low";
-                "medium" = null;
-                "high" = "high";
-                "xhigh" = null; # 服务端等效于 high, 隐藏避免误解
-                "max" = "max";
-              };
-              # 官方定价 (per 1M tokens, 2026-08-03 核实): 输入 $0.14 / 缓存命中 $0.0028 / 输出 $0.28
-              # 参考: https://api-docs.deepseek.com/quick_start/pricing
-              cost = {
-                input = 0.14;
-                output = 0.28;
-                cacheRead = 0.0028;
-                cacheWrite = 0; # 官方无缓存写入费用
-              };
-            }
-
-            # --- deepseek-v4-pro: 旗舰编程与推理模型 ---
-            # 1.6T 总参 / 49B 激活, MoE 架构
-            {
-              id = "deepseek-v4-pro";
-              name = "DeepSeek V4 PRO";
-              reasoning = true;
-              input = [ "text" ];
-              contextWindow = 1048576;
-              maxTokens = 393216;
-              # 官方映射: low→high, high→high, xhigh→high, max→max (minimal/medium 无效)
-              # (官方将于 2026-08 初更新 pro 的映射, 届时以官方手册为准)
-              thinkingLevelMap = {
-                "minimal" = null;
-                "low" = "low"; # pi 发送 reasoning_effort=low, 服务端内部将 low 映射为 high
-                "medium" = null;
-                "high" = "high";
-                "xhigh" = null; # 服务端等效于 high, 隐藏避免误解
-                "max" = "max";
-              };
-              # 官方定价 (per 1M tokens, 2026-08-03 核实): 输入 $0.435 / 缓存命中 $0.003625 / 输出 $0.87
-              # 参考: https://api-docs.deepseek.com/quick_start/pricing
-              cost = {
-                input = 0.435;
-                output = 0.87;
-                cacheRead = 0.003625;
-                cacheWrite = 0; # 官方无缓存写入费用
-              };
-            }
-          ];
-        };
-      };
-    };
+    inherit settings keybindings models;
 
     # -------------------------------------------------------------------------
     # AGENTS.md: 全局上下文 (作用于所有项目)
@@ -330,42 +109,19 @@ in
   };
 
   # ---------------------------------------------------------------------------
-  # 提示词模板 (prompt templates): 输入 /名称 展开, 与 opencode 的 command 对应
-  #   /trans → 高质量中文翻译   /impl → 需求转结构化实现提示词
-  # 文档: https://pi.dev/docs/latest/prompt-templates
+  # home.file 汇总:
+  #   - 自定义主题 (Catppuccin Mocha mauve)
+  #   - 扩展配置 (web-search / rpiv-todo → pi/extension-configs.nix)
+  #   - 提示词模板 (/trans /impl → pi/prompt-templates.nix)
   # ---------------------------------------------------------------------------
-  home.file."${piConfigDir}/prompts/trans.md".source = ./pi/prompts/trans.md;
-  home.file."${piConfigDir}/prompts/impl.md".source = ./pi/prompts/impl.md;
-
-  # ---------------------------------------------------------------------------
-  # 自定义主题: Catppuccin Mocha (mauve 强调色), 与系统主题风格统一
-  # 文档: https://pi.dev/docs/latest/themes (51 个必填 token, 热重载生效)
-  # ---------------------------------------------------------------------------
-  home.file."${piConfigDir}/themes/catppuccin-mocha-mauve.json".source =
-    ./pi/catppuccin-mocha-mauve.json;
-
-  # ---------------------------------------------------------------------------
-  # pi-web-access 搜索配置 (全局, 非 pi 配置目录):
-  #   复用 sops 注入的 TAVILY_API_KEY / FIRECRAWL_API_KEY, $VAR 在请求时解析
-  #   (环境变量由 pi 包装脚本从 ~/.config/pi/secrets.env 注入, 见 sops.nix 模板)
-  # 文档: https://github.com/nicobailon/pi-web-access (Configuration 一节)
-  # ---------------------------------------------------------------------------
-  home.file.".pi/web-search.json".text = builtins.toJSON {
-    # Tavily: 主要搜索 provider (与 opencode 的 MCP 共用同一把 key)
-    tavilyApiKey = "$TAVILY_API_KEY";
-    # Firecrawl: 普通抓取失败时的兜底抽取 (默认缓存优先, 不会主动外发请求)
-    firecrawlApiKey = "$FIRECRAWL_API_KEY";
-    # 使用 web-search 工具时, 不再请求确认
-    workflow = "none";
-  };
-
-  # ---------------------------------------------------------------------------
-  # rpiv-todo 配置 (XDG): 折叠面板的快捷键改绑
-  # 文档: https://github.com/juicesharp/rpiv-mono/tree/main/packages/rpiv-todo
-  # ---------------------------------------------------------------------------
-  home.file.".config/rpiv-todo/config.json".text = builtins.toJSON {
-    collapseKey = "ctrl+shift+f";
-  };
+  home.file = lib.mkMerge [
+    promptHomeFiles
+    extensionHomeFiles
+    {
+      "${piConfigDir}/themes/catppuccin-mocha-mauve.json".source =
+        ./pi/catppuccin-mocha-mauve.json;
+    }
+  ];
 
   # ---------------------------------------------------------------------------
   # shell 别名: ag = pi (通用 agent 日常入口)
