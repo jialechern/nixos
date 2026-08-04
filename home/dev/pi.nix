@@ -150,6 +150,12 @@ in
         # 面板折叠键默认 ctrl+shift+t, 与本配置的 app.session.tree 冲突,
         # 已在 ~/.config/rpiv-todo/config.json 改绑 ctrl+t
         "npm:@juicesharp/rpiv-todo"
+
+        # Context7 文档查询 (Upstash 官方, MIT): resolve-library-id + query-docs 工具
+        # 在 pi 请求触发查询上下文文档和最新示例代码
+        # 用法: agent 自动调用 (需要 skill 触发) 或 /c7-docs <library> <question>
+        # API key 由 pi 包装脚本从 ~/.config/pi/secrets.env 注入 (CONTEXT7_API_KEY)
+        "npm:@upstash/context7-pi"
       ];
 
       # --- 网络代理 (可选) ---

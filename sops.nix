@@ -87,6 +87,8 @@
           # --- pi-web-access 搜索 (与 opencode MCP 共用 key) ---
           TAVILY_API_KEY=${config.sops.placeholder.tavily}
           FIRECRAWL_API_KEY=${config.sops.placeholder.firecrawl}
+          # --- context7 文档查询 ---
+          CONTEXT7_API_KEY=${config.sops.placeholder.context7}
         '';
         mode = "0600";
       };
