@@ -28,18 +28,18 @@
     # 开发环境
     ./home/dev.nix
 
-    # 共享 Agent Skills (ai agent 共用)
-    ./home/skills.nix
-
     # 其它程序配置
     ./home/other.nix
 
   ] ++ (builtins.filter builtins.pathExists [
-    # sops-nix 配置
+    # 桌面环境配置(部分需要网络代理, 非必要时可删除, 或是删除其中部分模块)
+    ./home/desktop.nix
+
+    # sops-nix 配置(需要网络代理, 非必要时可删除)
     ./sops.nix
 
-    # 桌面环境配置
-    ./home/desktop.nix
+    # 共享 Agent Skills (ai agent 共用, 可能需要网络代理)
+    ./home/skills.nix
   ]);
 
   # --- --- --- 生成标准家目录 --- --- ---

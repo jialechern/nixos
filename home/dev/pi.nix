@@ -7,7 +7,7 @@ let
   # ---------------------------------------------------------------------------
   piConfigDir = "${config.home.homeDirectory}/.pi/agent";
 
-  # 导入子模块配置 (参照 opencode.nix 的模块化模式)
+  # 导入子模块配置
   extensionsCfg =
     if builtins.pathExists ./pi/extensions.nix
     then import ./pi/extensions.nix
