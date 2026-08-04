@@ -33,15 +33,99 @@ let
     "skill-creator"
   ];
 
+  # ---------------------------------------------------------------------------
+  # firecrawl/skills — Firecrawl 官方 Agent Skills 仓库:
+  #   - firecrawl-build-search: 集成 Firecrawl /search 的联网搜索 skill
+  #     (搜索 → 结果排序 → 可选 hydrate 抓取正文), 适合"以查询为起点"的场景
+  #     注意: 需要 FIRECRAWL_API_KEY 环境变量 (ISC 许可)
+  # ---------------------------------------------------------------------------
+  firecrawlSkills = pkgs.fetchFromGitHub {
+    owner = "firecrawl";
+    repo = "skills";
+    rev = "7ad43730e76913c4d1e9f94bf6fa6f82e38fc12b";
+    hash = "sha256-7wb6OEoeJnrljZ62F79psyHFCAWKMeWuBdpz/XzDSJw=";
+  };
+  firecrawlSkillNames = [ "firecrawl-build-search" ];
+
+  # ---------------------------------------------------------------------------
+  # tavily-ai/skills — Tavily 官方 Agent Skills 仓库:
+  #   - tavily-search: 通过 Tavily CLI (tvly) 的联网搜索 skill
+  #     (LLM 优化结果, 支持时间范围/域名过滤/多深度), 适合"搜索/查资料/找最新信息"
+  #     注意: 需要安装 tvly CLI 并登录 (MIT 许可)
+  # ---------------------------------------------------------------------------
+  tavilySkills = pkgs.fetchFromGitHub {
+    owner = "tavily-ai";
+    repo = "skills";
+    rev = "ea5e8201b0d3ed9c10b70b71187589bd761fe2d2";
+    hash = "sha256-Y0eLc5afmz8IrFzB6f8WuTsEn6pmCzo8SMQ+OljIFKo=";
+  };
+  tavilySkillNames = [ "tavily-search" ];
+
+  # ===========================================================================
+  # skill 运行时依赖 (打包与 skill 一起维护, 职责跟随 skill 归属)
+  # ---------------------------------------------------------------------------
+  # tvly — Tavily CLI, tavily-search skill 的运行时依赖
+  # 上游: github.com/tavily-ai/tavily-cli (MIT) + 依赖 tavily-python (MIT)
+  # nixpkgs 未收录这两个包, 故从源码声明式打包 (rev 锁定, 更新时替换 rev + hash)
+  # 认证方式 (按优先级): TAVILY_API_KEY 环境变量 > ~/.tavily/config.json (tvly login) > MCP OAuth token
+  # ---------------------------------------------------------------------------
+  # Tavily Python SDK, tavily-cli 的运行时依赖
+  tavilyPython = pkgs.python3Packages.buildPythonPackage {
+    pname = "tavily-python";
+    version = "0.7.27";
+    src = pkgs.fetchFromGitHub {
+      owner = "tavily-ai";
+      repo = "tavily-python";
+      rev = "de924695765d5cf28bd1975c1cfca0cd07cd7005";
+      hash = "sha256-dCegpLNWjFbuBb9bKGGZS3NKy4R92l/X0Cjz9ToQZHU=";
+    };
+    format = "setuptools";
+    propagatedBuildInputs = with pkgs.python3Packages; [
+      requests
+      tiktoken
+      httpx
+    ];
+    doCheck = false; # 上游无本地可跑的测试
+  };
+
+  # Tavily CLI, 提供 tvly 命令
+  tavilyCli = pkgs.python3Packages.buildPythonApplication {
+    pname = "tavily-cli";
+    version = "0.1.6";
+    src = pkgs.fetchFromGitHub {
+      owner = "tavily-ai";
+      repo = "tavily-cli";
+      rev = "577c8c9ac9d644eb2affcc8b99d03254ab123e71";
+      hash = "sha256-wL7Ak8fKUxttBgzAadbq759IgKx9omHTaJPxn1klT4g=";
+    };
+    format = "pyproject";
+    build-system = [ pkgs.python3Packages.hatchling ];
+    propagatedBuildInputs = with pkgs.python3Packages; [
+      tavilyPython
+      click
+      rich
+      httpx
+      requests
+      urllib3
+      certifi
+      psutil
+    ];
+    doCheck = false; # 上游无本地可跑的测试
+  };
+
   # ===========================================================================
   # 统一生成 home.file 条目, 均部署到 ~/.agents/skills/<name>
   # (pi / opencode / Claude Code 都会自动发现该目录, 一份源码多工具生效)
   # ===========================================================================
-  skills = localSkills ++ anthropicSkillNames;
+  skills = localSkills ++ anthropicSkillNames ++ firecrawlSkillNames ++ tavilySkillNames;
 
   srcFor = name:
     if builtins.elem name localSkills then
       ./skills/${name}
+    else if builtins.elem name firecrawlSkillNames then
+      "${firecrawlSkills}/skills/${name}"
+    else if builtins.elem name tavilySkillNames then
+      "${tavilySkills}/skills/${name}"
     else
       "${anthropicSkills}/skills/${name}";
 in
@@ -50,4 +134,7 @@ in
     name = ".agents/skills/${name}";
     value.source = srcFor name;
   }) skills);
+
+  # tavily-search skill 的运行时依赖 (tvly CLI)
+  home.packages = [ tavilyCli ];
 }
