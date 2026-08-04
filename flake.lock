@@ -112,7 +112,25 @@
         "niri-dotfiles": "niri-dotfiles",
         "nixpkgs": "nixpkgs",
         "nvim-dotfiles": "nvim-dotfiles",
+        "scripts": "scripts",
         "sops-nix": "sops-nix"
+      }
+    },
+    "scripts": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785815775,
+        "narHash": "sha256-anNuaCX4wcvu90SlPgfComyqXZ1bZuUi6Tw/uiDeXY4=",
+        "ref": "main",
+        "rev": "7b58feaf40581e63c6a4ad92a453edacc7fb0d8d",
+        "revCount": 9,
+        "type": "git",
+        "url": "https://gitee.com/cjl-2692367185-qed/scripts.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "https://gitee.com/cjl-2692367185-qed/scripts.git"
       }
     },
     "sops-nix": {

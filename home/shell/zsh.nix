@@ -12,9 +12,8 @@
 
 
   home.sessionPath = [
-    "$HOME/.local/bin"
-    "$HOME/Projects/bin"
-    "$HOME/.cargo/bin"
+    "${config.home.homeDirectory}/.local/bin"
+    "${config.home.homeDirectory}/.cargo/bin"
   ];
 
   # --- --- --- zsh 配置 --- --- ---
@@ -77,7 +76,7 @@
       			zle -N zle-line-init
       			
       			# PATH 追加
-            export PATH=$HOME/.local/bin:$HOME/Projects/bin:$PATH
+            export PATH=$HOME/.local/bin:$PATH
             [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 
             # 一键清理 NixOS 旧系统世代与 Nix Store 垃圾

@@ -87,8 +87,7 @@
 
   # --- --- --- PATH 路径管理 --- --- ---
   home.sessionPath = [
-    "$HOME/.local/bin"
-    "$HOME/Projects/bin"
-    "$HOME/.cargo/bin"
+    "${config.home.homeDirectory}/.local/bin"
+    "${config.home.homeDirectory}/.cargo/bin"
   ];
 }

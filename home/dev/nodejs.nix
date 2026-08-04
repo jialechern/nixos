@@ -36,10 +36,10 @@
 
   # 配套配置环境变量
   home.sessionVariables = {
-    NODE_PATH = "$HOME/.npm-global/lib/node_modules";
+    NODE_PATH = "${config.home.homeDirectory}/.npm-global/lib/node_modules";
   };
 
   home.sessionPath = [
-    "$HOME/.npm-global/bin"
+    "${config.home.homeDirectory}/.npm-global/bin"
   ];
 }

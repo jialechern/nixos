@@ -108,6 +108,10 @@
   home.file = {
     "Pictures/Wallpapers".source = inputs.desktop-wallpapers;
 
+    # 个人脚本: 从 flake inputs.scripts 仓库符号链接
+    ".local/bin/by-proxies-run".source = "${inputs.scripts}/by-proxies-run";
+    ".local/bin/play-musics".source = "${inputs.scripts}/play-musics";
+
     # # 使用示例:
     # # 构建此配置将在 Nix 存储中创建 'dotfiles/screenrc' 的副本
     # # 激活配置后, '${config.home.homeDirectory}/.screenrc' 将成为指向 Nix 存储副本的符号链接
