@@ -1,6 +1,6 @@
 ---
 name: nixos-tooling
-description: "在 NixOS 上查找并快速获取/运行 CLI 工具的标准流程: 先确认系统是否已安装, 再在 nixpkgs 中检索包名 (attrpath), 然后通过 nix shell / nix run 创建临时环境运行而不改动系统配置, 需要持久安装时提醒用户修改 home-manager 配置。当需要执行某个命令但 command -v 找不到该工具、需要特定版本的软件、想临时试用软件而不污染系统, 或因国内网络无法访问软件/服务需要走代理 (proxychains4 或 HTTP_PROXY 环境变量, 127.0.0.1:20172) 时使用本 skill。"
+description: "在 NixOS 上查找并快速获取/运行 CLI 工具的标准流程: 先确认系统是否已安装, 再在 nixpkgs 中检索包名 (attrpath), 然后通过 nix shell / nix run 创建临时环境运行而不改动系统配置, 需要持久安装时提醒用户修改 home-manager 配置。当需要执行某个命令但 command -v 找不到该工具、需要特定版本的软件、想临时试用软件而不污染系统, 或因国内网络无法访问软件/服务需要走代理 (优先用 by-proxies-run 脚本, 其次 proxychains4 或 HTTP_PROXY 环境变量, 127.0.0.1:20172) 时使用本 skill。"
 license: MIT
 compatibility: NixOS (flakes 已启用)
 metadata:
@@ -108,7 +108,39 @@ nix shell git+https://mirrors.tuna.tsinghua.edu.cn/git/nixpkgs.git?ref=nixos-uns
 curl -x http://127.0.0.1:20172 -sI -m 8 https://www.google.com
 ```
 
-### 1. 方案 A — 环境变量 (推荐, 适用于走 HTTP(S) 协议的工具)
+### 1. 方案 A — by-proxies-run (最推荐, 最干净)
+
+`by-proxies-run` 是本机声明式安装的代理运行脚本, 为单个命令创建临时代理环境,
+执行完毕后不污染当前 shell:
+
+```bash
+# 使用 v2raya 预设代理配置 (本机默认, 127.0.0.1:20172)
+by-proxies-run -p v2raya --exec "<命令>"
+
+# 使用 clash 预设
+by-proxies-run -p clash --exec "<命令>"
+
+# 手动指定代理地址
+by-proxies-run --http 127.0.0.1:20172 --exec "<命令>"
+
+# 指定不走代理的域名
+by-proxies-run -p v2raya -n localhost,*.local --exec "<命令>"
+
+# 预览会执行的命令 (不解执行):
+by-proxies-run -p v2raya --exec "<命令>" --dry-run
+
+# 完整示例:
+by-proxies-run -p v2raya --exec "curl -s https://api.github.com/repos/NixOS/nixpkgs"
+```
+
+相比手动设环境变量, `by-proxies-run` 自动处理了 `HTTP_PROXY`/`HTTPS_PROXY`/
+`ALL_PROXY`/`NO_PROXY` 的注入, 并且退出后不留痕迹。
+
+脚本位置: `~/.local/bin/by-proxies-run` (由 /etc/nixos flake 声明式管理)。
+
+### 2. 方案 B — 环境变量 (备选, 适用于走 HTTP(S) 协议的工具)
+
+若 `by-proxies-run` 不可用, 手动设置:
 
 ```bash
 export HTTPS_PROXY=http://127.0.0.1:20172
@@ -125,7 +157,7 @@ export NO_PROXY=localhost,127.0.0.1,::1
   - pip: `pip install --proxy=http://127.0.0.1:20172 ...`
   - curl/wget: `-x http://127.0.0.1:20172`
 
-### 2. 方案 B — proxychains4 (透明转发, 适用于不读取代理变量的程序)
+### 3. 方案 C — proxychains4 (最后手段, 适用于不读取代理变量的程序)
 
 ```bash
 proxychains4 <命令>
@@ -133,10 +165,10 @@ proxychains4 <命令>
 
 - 系统已装 proxychains-ng, 配置由 home-manager 声明式部署在
   `~/.proxychains/proxychains.conf` (指向 127.0.0.1:20172)
-- 若报找不到配置/连到错误端口: 检查该文件是否存在, 不存在则退回方案 A
-- 通过 LD_PRELOAD 实现, 少数程序会检测或绕过, 对这类程序无效 → 退回方案 A
+- 若报找不到配置/连到错误端口: 检查该文件是否存在, 不存在则退回方案 B
+- 通过 LD_PRELOAD 实现, 少数程序会检测或绕过, 对这类程序无效 → 退回方案 B
 
-### 3. 代理不可用时
+### 4. 代理不可用时
 
 - 检查 v2raya 是否在监听: `ss -tlnp | grep 20172`
 - 代理未运行时, 向用户报告并停止重试, 不要反复等待超时

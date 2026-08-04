@@ -1,6 +1,6 @@
 ---
 name: git-commit
-description: "根据 git 变更生成符合 Conventional Commits 规范的中文提交信息并提交。当用户要求提交代码、生成 commit message、或处理 git 提交相关任务时使用本 skill。会先检查 git status 与 diff, 生成规范提交信息, 经用户确认后执行 git commit (不 push)。"
+description: "根据 git 变更生成符合 Conventional Commits 规范的中文提交信息并提交。当用户要求提交代码、生成 commit message、提到 git commit、或需要整理变更记录时务必使用本 skill。会先检查 git status 与 diff, 生成规范提交信息, 经用户确认后执行 git commit (不 push)。支持常规提交与 --amend 修正。"
 license: MIT
 compatibility: git 仓库
 metadata:
@@ -19,7 +19,9 @@ git log --oneline -5   # 参考仓库最近的提交风格
 ```
 
 - 已暂存 (staged) 变更存在且无未暂存变更 → 基于暂存区
-- 否则基于全部变更 (相对 HEAD)
+- 有暂存 + 未暂存混合时: 展示两者给用户, 询问本次提交范围 (仅暂存 / 全部)
+- 未跟踪文件: 如有属于本次变更的, 提示用户是否 `git add`, 不要静默暂存
+- 全无变更: 告知用户并停止
 
 ### 2. 获取差异
 
@@ -39,7 +41,7 @@ git diff --cached      # 仅暂存区 (用户已明确 stage 时)
 
 1. 严格遵循 Conventional Commits: `<type>(<scope>): <description>`
 2. type 从: feat, fix, docs, style, refactor, perf, test, chore, ci, build,
-   revert
+   revert, merge
 3. 变更范围明确时加 scope (例: `fix(auth): 修复登录验证码失效问题`)
 4. description 使用中文, 简洁明了, 以句号结尾, 不超过 50 字
 5. body 使用中文描述: 变更内容 (改了什么、怎么改的) / 变更原因 (为什么这样改) /
@@ -54,8 +56,17 @@ git diff --cached      # 仅暂存区 (用户已明确 stage 时)
 - **明确征得确认后才执行** `git commit`
 - 执行时保证信息与展示一致 (可用 `git commit -m <subject> -m <body>` 分段提交)
 
+### 5. 修正上次提交 (--amend)
+
+若用户要求修正上次提交 (amend):
+
+- 先 `git log -1 --format='%H %s'` 确认当前 HEAD 内容
+- 生成修正后的 message, 与用户确认后执行 `git commit --amend -m ...`
+- 若用户已在 amend 前 push 过, 明确警告 force push 风险
+
 ## 注意事项
 
 - 未跟踪的新文件若属于本次变更应加入暂存区, 但 `git add` 前先与用户确认
 - 不要提交与本次变更无关的文件
 - 不要执行 `git push` (除非用户明确要求)
+- 本仓库使用中文 commit message, 匹配现有的 Conventional Commits 风格
