@@ -40,11 +40,6 @@
         sopsFile = ./secrets/ai_api_keys/mcp_api_keys.yaml;
       };
 
-      # Gitee 的完整访问令牌, 用于访问私有仓库
-      "gitee_full_token" = {
-        sopsFile = ./secrets/git_tokens/gitee.yaml;
-      };
-
       # GitHub 只读令牌, 用于拉取私有仓库
       "github_pull_only_token" = {
         sopsFile = ./secrets/git_tokens/github.yaml;
