@@ -14,6 +14,11 @@
     # 缓存路径也建议统一管理
     cache=${config.home.homeDirectory}/.cache/npm
     
+    # --- 镜像源配置 ---
+    # 阿里云 npmmirror (原淘宝 npm, 官方维护, ~10 分钟同步官方源, 国内事实标准)
+    # 需要回官方源时: npm install --registry=https://registry.npmjs.org <pkg>
+    registry=https://registry.npmmirror.com
+    
     # --- 安装与执行配置 ---
     # 隐藏赞助信息
     fund=false
