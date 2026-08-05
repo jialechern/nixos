@@ -17,4 +17,28 @@
   ".config/rpiv-todo/config.json".text = builtins.toJSON {
     collapseKey = "ctrl+shift+f";
   };
+
+  # pi-permission-system 权限策略 (温和默认):
+  #   - 工具与 bash 默认放行 (适配通用助手/系统管理场景)
+  #   - 敏感路径 (env/ssh) 全局拒绝, 所有工具与 bash 一视同仁
+  #   - 危险 bash 命令: rm -rf / sudo 需确认, mkfs 直接拒绝
+  # 文档: https://github.com/gotgenes/pi-packages/tree/main/packages/pi-permission-system
+  ".pi/agent/extensions/pi-permission-system/config.json".text = builtins.toJSON {
+    permission = {
+      "*" = "allow";
+      path = {
+        "*" = "allow";
+        "*.env" = "deny";
+        "*.env.*" = "deny";
+        "*.env.example" = "allow";
+        "~/.ssh/*" = "deny";
+      };
+      bash = {
+        "*" = "allow";
+        "rm -rf *" = "ask";
+        "sudo *" = "ask";
+        "mkfs*" = "deny";
+      };
+    };
+  };
 }
