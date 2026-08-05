@@ -28,10 +28,6 @@
         sopsFile = ./secrets/ai_api_keys/module_api_keys.yaml;
       };
 
-      "deepseek" = {
-        sopsFile = ./secrets/ai_api_keys/module_api_keys.yaml;
-      };
-
       "context7" = {
         sopsFile = ./secrets/ai_api_keys/mcp_api_keys.yaml;
       };
@@ -61,9 +57,7 @@
         content = ''
           # --- 火山方舟 ---
           VOLCANO_ARK_API_KEY=${config.sops.placeholder.ark}
-          # --- DeepSeek 开放平台 ---
-          DEEPSEEK_API_KEY=${config.sops.placeholder.deepseek}
-          # --- pi-web-access 搜索 ---
+          # --- 联网搜索 ---
           TAVILY_API_KEY=${config.sops.placeholder.tavily}
           FIRECRAWL_API_KEY=${config.sops.placeholder.firecrawl}
           # --- context7 文档查询 ---
@@ -77,9 +71,7 @@
         content = ''
           # --- 火山方舟 ---
           VOLCANO_ARK_API_KEY=${config.sops.placeholder.ark}
-          # --- DeepSeek 开放平台 ---
-          DEEPSEEK_API_KEY=${config.sops.placeholder.deepseek}
-          # --- pi-web-access 搜索 ---
+          # --- pi-web-access 联网搜索 ---
           TAVILY_API_KEY=${config.sops.placeholder.tavily}
           FIRECRAWL_API_KEY=${config.sops.placeholder.firecrawl}
           # --- context7 文档查询 ---
