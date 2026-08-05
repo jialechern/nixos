@@ -58,5 +58,12 @@
     # 按需触发 (lite/balanced/deep 三种深度), 子代理分阶段审计 + PoC + 报告
     # 注意: 目前为 0.0.x 早期版本, 完整审计可能耗时数小时
     "npm:@vigolium/piolium"
+
+    # 行模式流式输出 (MIT): 给 -p/--print 增加 --stream 标志, 实时输出
+    # thinking/文本/工具活动 (无 TUI 无 JSON 包装), 不重复打印最终回复
+    # 实现: 拦截 prompt 后 spawn 子进程跑 `pi --mode json -p`, 美化事件流
+    # 用法: pi -p "prompt" --stream (非 TTY 时自动激活; 交互模式下为 no-op)
+    # 要求 Node >= 22.19.0; 注意: 0.1.0 早期版本 (2026-07-17 发布)
+    "npm:pi-print-stream"
   ];
 }
