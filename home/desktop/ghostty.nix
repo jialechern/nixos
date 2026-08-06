@@ -67,7 +67,7 @@ in
         # 颜色与外观
         # ---------------------------------------------------------
         "theme" = "Catppuccin Mocha";
-        "background-opacity" = 0.3;
+        "background-opacity" = 0.7;
         # 1.4 (2026-09) 支持 ext-background-effect 后可直接 background-blur = true
         "background-blur" = false;
         "unfocused-split-opacity" = 1.0;

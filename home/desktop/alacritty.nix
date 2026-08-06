@@ -66,7 +66,7 @@
       window = {
         padding = { x = 13; y = 7; }; # 内边距
         decorations = "None";         # niri 平铺 WM 下隐藏标题栏
-        opacity = 0.3;                # 30% 不透明度(即 70% 透明)
+        opacity = 0.7;                # 不透明度
         blur = true;                  # 背景模糊 (需 winit 支持 ext-background-effect, niri >= 26.04)
       };
 
