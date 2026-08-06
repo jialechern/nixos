@@ -60,15 +60,18 @@ in
         "notify-on-command-finish" = "unfocused";
         # 运行超过 10 秒的命令才触发通知, 避免干扰
         "notify-on-command-finish-after" = "10s";
+        # 通知方式: 响铃 + 桌面通知 (默认只有响铃, 需显式开启 notify)
+        "notify-on-command-finish-action" = "bell,notify";
 
         # ---------------------------------------------------------
         # 颜色与外观
         # ---------------------------------------------------------
         "theme" = "Catppuccin Mocha";
         "background-opacity" = 0.3;
+        # 1.4 (2026-09) 支持 ext-background-effect 后可直接 background-blur = true
         "background-blur" = false;
         "unfocused-split-opacity" = 1.0;
-        # # 使 Neovim / Tmux 底部状态栏也继承透明背景
+        # 使 Neovim / Tmux 底部状态栏也继承透明背景
         # "background-opacity-cells" = true;
 
         # ---------------------------------------------------------
@@ -89,6 +92,8 @@ in
         # 终端行为与兼容性
         # ---------------------------------------------------------
         "scrollback-limit" = 10000000;
+        # "scrollbar" = true;               # 1.3.0 原生滚动条
+        "scroll-to-bottom" = "keystroke,output"; # 有新输出时自动滚到底部 (1.3.0)
         "link-url" = true;
         "link-previews" = true;
         "clipboard-write" = "allow";
@@ -97,7 +102,7 @@ in
         # 启动时直接进入 fish shell
         "command" = "${pkgs.fish}/bin/fish";
         "shell-integration" = "detect";
-        "shell-integration-features" = "cursor,no-sudo,title,path";
+        "shell-integration-features" = "cursor,no-sudo,title,path,ssh-env,ssh-terminfo";
         "window-show-tab-bar" = "auto";
         # 标签页栏置于底部
         "gtk-tabs-location" = "bottom";
@@ -113,6 +118,12 @@ in
         "window-inherit-working-directory" = true;
         "window-decoration" = false;
         "quit-after-last-window-closed" = true;
+
+        # ---------------------------------------------------------
+        # 快速终端 (Quick Terminal)
+        # ---------------------------------------------------------
+        "gtk-quick-terminal-layer" = "overlay";   # 悬浮在顶层
+        "gtk-quick-terminal-namespace" = "ghostty:quick-terminal";
 
         "keybind" = [
           # --- 窗口管理 ---
@@ -159,6 +170,15 @@ in
 
           # --- 浮动终端 (Ghostty 专有) ---
           "ctrl+shift+t=toggle_quick_terminal"
+
+          # --- 回滚搜索 (1.3.0) ---
+          "ctrl+shift+s=start_search"
+          "ctrl+shift+z=search_selection"      # 搜索当前选区 (类似 vim *)
+          # "enter=navigate_search:next"
+          # "shift+enter=navigate_search:previous"
+
+          # --- 透明度 ---
+          "alt+shift+o=toggle_background_opacity"  # 一键切换透明/不透明
         ];
       }
 
