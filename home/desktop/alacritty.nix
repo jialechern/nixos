@@ -8,11 +8,19 @@
     theme = "catppuccin_mocha";  # Catppuccin Mocha 主题
 
     settings = {
+      # --- --- --- IPC (守护进程模式) --- --- ---
+      # ipc_socket 默认开启, 可在 niri 快捷键/脚本中使用:
+      #   alacritty msg create-window --working-directory <目录>   # 按指定目录开新窗口
+      #   alacritty msg config --load <file>                       # 运行时加载配置
+      #   alacritty msg get-config                                 # 查看生效配置 (0.16+)
+      # 文档: https://alacritty.org/cmd-alacritty-msg.html
+
       # --- --- --- 终端 --- --- ---
       terminal.shell = {
         program = "${pkgs.fish}/bin/fish";
         args = [];
       };
+      terminal.osc52 = "CopyPaste";     # SSH 远程会话可读写本地剪贴板 (个人桌面机可接受)
 
       # --- --- --- 光标 --- --- ---
       cursor = {
@@ -30,6 +38,22 @@
       selection.semantic_escape_chars = ",│`|:\"'()[]{}<>\t";
       # 去除了 Alacritty 默认值中括号周围的空格, 以适配中文内容
 
+      # --- --- --- 颜色 --- --- ---
+      # colors.transparent_background_colors = true; # 所有单元格背景随 opacity 透明, 透明终端效果更完整
+
+      # --- --- --- 回滚 --- --- ---
+      scrolling.history = 100000;       # 回滚缓冲上限 (默认 10000, 上限 100000)
+
+      # --- --- --- 鼠标 --- --- ---
+      mouse = {
+        hide_when_typing = true;        # 打字时自动隐藏鼠标指针
+        bindings = [
+          # Shift+滚轮: 逐行滚动 (Alacritty 0.17+, 若锁定版本更旧需移除)
+          { mouse = "WheelUp"; mods = "Shift"; action = "ScrollLineUp"; }
+          { mouse = "WheelDown"; mods = "Shift"; action = "ScrollLineDown"; }
+        ];
+      };
+
       # --- --- --- 字体 --- --- ---
       font = {
         size = lib.mkDefault 23.0;    # 可由 per-host 模块覆盖为不同的字体大小
@@ -43,6 +67,7 @@
         padding = { x = 13; y = 7; }; # 内边距
         decorations = "None";         # niri 平铺 WM 下隐藏标题栏
         opacity = 0.3;                # 30% 不透明度(即 70% 透明)
+        blur = true;                  # 背景模糊 (需 winit 支持 ext-background-effect, niri >= 26.04)
       };
 
       # --- --- --- URL 提示 --- --- ---
@@ -56,6 +81,16 @@
             persist = false;
             mouse.enabled = true;
             binding = { key = "O"; mods = "Control|Shift"; };
+            regex = ''(ipfs:|ipns:|magnet:|mailto:|gemini://|gopher://|https://|http://|news:|file:|git://|ssh:|ftp://)[^\u0000-\u001F\u007F-\u009F<>\"\\s{-}\\^⟨⟩`\\\\]+'';
+          }
+          # 复制 URL 到剪贴板 (Ctrl+Shift+Y)
+          {
+            action = "Copy";
+            hyperlinks = true;
+            post_processing = true;
+            persist = false;
+            mouse.enabled = true;
+            binding = { key = "Y"; mods = "Control|Shift"; };
             regex = ''(ipfs:|ipns:|magnet:|mailto:|gemini://|gopher://|https://|http://|news:|file:|git://|ssh:|ftp://)[^\u0000-\u001F\u007F-\u009F<>\"\\s{-}\\^⟨⟩`\\\\]+'';
           }
         ];
