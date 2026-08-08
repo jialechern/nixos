@@ -24,5 +24,7 @@
     ./modules/software_and_tool.nix
     # 引入 steam 通用配置
     ./modules/steam.nix
+    # 引入主机名注入 Home Manager 的桥接配置
+    ./modules/home-manager-hostname.nix
   ];
 }
