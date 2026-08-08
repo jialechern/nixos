@@ -316,7 +316,7 @@ in
         padding: 0 15px;
         background: rgba(30, 30, 46, 0.72);
         color: @text;
-        border-radius: 8px;
+        border-radius: 12px;
         box-shadow: 0px 2px 4px 2px rgba(0, 0, 0, 0.28);
         transition: all 0.25s ease;
       }
@@ -336,7 +336,7 @@ in
         font-size: 24px;
         padding: 0 10px;
         margin: 4px 1px;
-        border-radius: 8px;
+        border-radius: 12px;
         color: @subtext0;
         background: transparent;
         font-weight: 500;
@@ -470,7 +470,7 @@ in
       /* 需注意的托盘项: 红色微光 */
       #tray > .needs-attention {
         background: rgba(243, 139, 168, 0.22);
-        border-radius: 8px;
+        border-radius: 12px;
       }
     '';
   };
