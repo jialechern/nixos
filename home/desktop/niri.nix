@@ -20,27 +20,44 @@
 
       // --- --- --- 外接显示器配置 --- --- ---
 
-      // 外接显示器 (HDMI-A-2)
+      // 外接显示器 (HDMI-A-2, 计划改用 MiniDP)
       // 华硕 TUF Gaming VG27AQML5A: 27 英寸 QHD (2560x1440) Fast IPS 电竞屏
-      // 官方最大刷新率 300Hz (需 DP 1.4 / HDMI 2.1 链路),
-      // 本机 HDMI 口为 2.0 规格, 链路协商下 QHD 最高仅 144Hz
-      // 可用模式可通过 `niri msg outputs` 查询
-      output "HDMI-A-2" {
-          // 原生分辨率 + 当前 HDMI 链路下的最高刷新率
-          // 注意: 刷新率须与 `niri msg outputs` 输出完全一致 (精确到三位小数)
-          mode "2560x1440@144.000"
+      // 官方最大刷新率 300Hz (需 DP 1.4 / HDMI 2.1 链路, 300Hz 依赖 DSC)
+      // 本机 HDMI 口为 2.0 规格, QHD 最高仅 144Hz;
+      // GTX 1650 Ti (图灵) 支持 DP 1.4 + DSC, 换用 MiniDP 后可达到 300Hz
+      // 可用模式可通过 `niri msg outputs` 查询; 换线后用该命令确认 300Hz 已生效
+      // 注意: 按 "制造商 型号 序列号" 匹配 (而非连接器名), 更换接口后配置依然生效
+      output "ASUSTek COMPUTER INC VG27AQML5A W7LMAS012273" {
+          // 原生分辨率; 省略刷新率时 niri 自动选择当前链路下的最高刷新率
+          // (HDMI: 144Hz, MiniDP: 300Hz, 无需在更换线材后修改配置)
+          mode "2560x1440"
           scale 1.0
           // 物理上位于笔记本左侧, 故置于全局坐标空间最左侧 (x=0 为全局原点)
           position x=0 y=0
-          // 该显示器支持 FreeSync/G-SYNC (见 `niri msg outputs` 中 VRR 支持情况), 启用可变刷新率
-          // 若出现闪烁等异常, 可删除此行, 或改用 on-demand=true 仅对匹配窗口启用
-          variable-refresh-rate
+          // VRR (FreeSync/G-Sync): 该屏 EDID 在 HDMI 上也上报 VRR 支持, 但 NVIDIA 驱动
+          // 不支持 HDMI 链路上的 VRR (G-Sync 仅限 DP)。此前启用 variable-refresh-rate 时,
+          // niri 在 HDMI 上持续尝试 VRR, 静止画面 (如视频暂停帧) 处会反复 modeset 黑闪;
+          // 已用 `niri msg output HDMI-A-2 vrr off` 实测确认, 关闭后恢复正常。
+          // 换用 MiniDP 后取消下一行注释即可重新启用 (DP + NVIDIA 才是正常的 G-Sync 链路)
+          // variable-refresh-rate
+          // 若低帧率时光标卡顿, 可加 debug { disable-cursor-plane } 并重连显示器
+          // 外接屏禁用热角 (25.11+), 避免误触 overview; 全局 gestures 开启后同样生效
+          hot-corners {
+              off
+          }
+          // 10bit 色深 (该屏原生 10bit, 华硕官方规格): niri 暂不支持此属性
+          // (docs 标注 Since: next release, 当前 26.04 遇到未知属性会导致整份配置解析失败)
+          // 升级到支持版本后取消注释即可; 注意 HDMI 2.0 下 10bit@144Hz 带宽不足 (需 4:2:2),
+          // 建议换 MiniDP 后再启用
+          /- max-bpc 10
       }
 
       // 笔记本内置屏幕 (eDP-1)
       // 位于外接屏右侧: x = 外接屏逻辑宽度 2560 (scale 1.0 时逻辑尺寸 = 物理分辨率)
       output "eDP-1" {
-          mode "1920x1080@60.056"
+          // 刷新率必须与 `niri msg outputs` 完全一致 (精确到三位小数), 否则模式静默不生效;
+          // 若面板支持更高刷新率 (如 144Hz 版), 可省略 @60.056 让 niri 自动选最高
+          mode "1920x1080"
           scale 1.0
           position x=2560 y=0
           // 启动时将焦点置于内置屏
