@@ -23,7 +23,6 @@
     ./shell/proxychains.nix
     ./shell/yt-dlp.nix
     ./shell/jq.nix
-    ./shell/ttyper.nix
   ] ++ (builtins.filter builtins.pathExists [
     # neovim 配置
     ./shell/nvim.nix
@@ -52,11 +51,10 @@
     nix-output-monitor
     # 命令行艺术字体生成工具
     figlet
+    cmatrix
     # pdf 处理工具
     poppler-utils
     python3Packages.pdf2docx
     img2pdf
-    # 打字练习软件
-    gtypist
   ];
 }
