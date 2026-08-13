@@ -51,11 +51,11 @@ let
       maxRetries = 3;
     };
 
-    # --- Ctrl+P 循环切换的模型白名单 (模式匹配, 同 --models 格式) ---
-    enabledModels = [
-      "deepseek-*"
-      "doubao-seed-2-0-*"
-    ];
+    # --- 模型范围 ---
+    # 注意: enabledModels 若匹配到任何模型, pi 的 /model 选择器会默认进入 scoped
+    # 视图 (仅显示白名单内模型), Ctrl+P/Ctrl+\ 轮换也只在白名单内循环。
+    # 这里不再设置, 保持 "all" 范围: /model 显示所有已配置 provider 的完整模型列表。
+    # 如需限制轮换范围, 可在 pi 内用 /scoped-models 按会话调整。
 
     # --- 网络代理 (可选) ---
     # 国内访问海外 API (如 OpenCode Zen/Go ...) 时启用, 走本机代理 127.0.0.1:20172
