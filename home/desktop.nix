@@ -9,6 +9,7 @@
     ./desktop/default-application.nix
     ./desktop/ghostty.nix
     ./desktop/alacritty.nix
+    ./desktop/kitty.nix
     ./desktop/fcitx5.nix
     ./desktop/rofi.nix
     ./desktop/swaylock.nix

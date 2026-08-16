@@ -48,17 +48,17 @@
       end
 
       # -------- VI 模式光标形状(仅支持支持 DECSCUSR 的终端)--------
-      # 普通模式     → 方块
-      set -g fish_cursor_default block
-      # 插入模式     → 竖线
-      set -g fish_cursor_insert line
-      # 可视模式     → 方块
-      set -g fish_cursor_visual block
-      # 替换模式     → 下划线
-      set -g fish_cursor_replace_one underscore
-      set -g fish_cursor_replace underscore
-      # 外部命令执行时 → 竖线
-      set -g fish_cursor_external line
+      # 普通模式     → 方块 (闪烁)
+      set -g fish_cursor_default block blink
+      # 插入模式     → 竖线 (闪烁)
+      set -g fish_cursor_insert line blink
+      # 可视模式     → 方块 (闪烁)
+      set -g fish_cursor_visual block blink
+      # 替换模式     → 下划线 (闪烁)
+      set -g fish_cursor_replace_one underscore blink
+      set -g fish_cursor_replace underscore blink
+      # 外部命令执行时 → 竖线 (闪烁)
+      set -g fish_cursor_external line blink
 
       # Alt+t: 打开/切回 main tmux session (insert 与 default 模式均绑定)
       bind -M insert \et 'tmux new-session -A -s main'
