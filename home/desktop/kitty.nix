@@ -96,6 +96,7 @@ in
         # 标签页栏: 位置与风格
         tab_bar_edge = "top";        # 标签页栏置于顶部
         tab_bar_style = "powerline"; # Powerline 风格 (可选: fade / slant / separator / powerline / custom / hidden)
+        tab_powerline_style = "slanted"; # powerline 箭头字形: angled(锐角) / slanted(斜切) / round(圆角)
         # 标签页栏配色
         active_tab_background = "#89b4fa";   # 活动标签: 蓝
         active_tab_foreground = "#1e1e2e";   # 活动标签文字: 深色
