@@ -86,6 +86,12 @@ in
         # 终端行为与兼容性
         # ---------------------------------------------------------
         scrollback_lines = 100000; # 回滚缓冲上限
+        # 用 nvim 浏览回滚历史 (vi 模式), 由 show_scrollback (默认 ctrl+shift+h, 另绑定 alt+s>alt+v) 调用
+        # 官方 0.48 文档示例: nvim_open_term 渲染 ANSI 颜色, q 直接退出, 打开时定位到上次光标行
+        scrollback_pager = "nvim --cmd 'set eventignore=FileType' +'nnoremap q ZQ' +'call nvim_open_term(0, {})' +'set nomodified nolist' +'$' -";
+        # 单独给 pager 使用的历史缓冲上限 (MB), 0 = 全部传入
+        # 约 1MB/万行: 32MB 足够容纳 10 万行回滚, 同时防止缓冲异常增长拖慢打开
+        scrollback_pager_history_size = 32;
         shell = "${pkgs.fish}/bin/fish"; # 启动时直接进入 fish shell
         # 标签页栏: 位置与风格
         tab_bar_edge = "top";        # 标签页栏置于顶部
@@ -188,6 +194,8 @@ in
       "alt+s>alt+l" = "launch --cwd=current --location=vsplit"; # 右分屏
       "alt+s>alt+k" = "combine : launch --cwd=current --location=hsplit : layout_action rotate 180"; # 上分屏
       "alt+s>alt+j" = "launch --cwd=current --location=hsplit"; # 下分屏
+      # 用 nvim (scrollback_pager) 浏览完整回滚历史, vi 键位导航
+      "alt+s>alt+v" = "show_scrollback";
 
       # --- 焦点切换 ---
       "alt+h" = "neighboring_window left";
