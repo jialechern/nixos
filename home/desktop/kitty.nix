@@ -240,6 +240,22 @@ in
       "alt+9" = "goto_tab 9";
       "alt+0" = "goto_tab 0"; # 0/负数 = 上一个标签页
 
+      # --- 移动窗口到其他 tab ---
+      # detach_window: 将当前窗口移入目标 tab (kitty 官方"移出窗口"机制;
+      # 最后一个窗口被移走的 tab 会被自动关闭; 移动后焦点跟随到目标 tab)
+      "alt+shift+n" = "detach_window tab-right"; # 移入下一个 tab (与 alt+n 同序, 循环)
+      "alt+shift+p" = "detach_window tab-left"; # 移入上一个 tab (与 alt+p 同序, 循环)
+      # 按编号移动: rc 匹配表达式 index:N 为 0 起, 而标签栏 goto_tab 为 1 起, 故 N 对应 index:N-1
+      "alt+shift+1" = "remote_control detach-window --self --target-tab index:0";
+      "alt+shift+2" = "remote_control detach-window --self --target-tab index:1";
+      "alt+shift+3" = "remote_control detach-window --self --target-tab index:2";
+      "alt+shift+4" = "remote_control detach-window --self --target-tab index:3";
+      "alt+shift+5" = "remote_control detach-window --self --target-tab index:4";
+      "alt+shift+6" = "remote_control detach-window --self --target-tab index:5";
+      "alt+shift+7" = "remote_control detach-window --self --target-tab index:6";
+      "alt+shift+8" = "remote_control detach-window --self --target-tab index:7";
+      "alt+shift+9" = "remote_control detach-window --self --target-tab index:8";
+
       # --- 最大化 / 布局 ---
       "alt+f" = "toggle_layout stack"; # 最大化/还原当前窗口
       "alt+shift+/" = "next_layout"; # 轮换布局
