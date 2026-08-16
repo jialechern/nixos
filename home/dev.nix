@@ -25,5 +25,7 @@
     gnumake # 很多插件编译时需要用到 make
     binutils # 提供 ld, ar 等二进制工具
     deno # JS/TS 运行时
+    # 基准测试工具
+    hyperfine
   ];
 }
