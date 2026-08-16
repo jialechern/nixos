@@ -78,7 +78,7 @@ in
         cursor_trail = 1;
         # 衰减时间 (最快/最慢, 秒) 与启动阈值 (最小移动格数):
         cursor_trail_decay = "0.1 0.4";
-        cursor_trail_start_threshold = 2;
+        cursor_trail_start_threshold = 0;
         # 拖尾颜色默认跟随光标颜色 (cursor_trail_color = none), 配合 cursor = none
         # 反色效果, 拖尾即随光标所在字符的颜色变化
 

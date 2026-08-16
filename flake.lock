@@ -57,11 +57,11 @@
     "niri-dotfiles": {
       "flake": false,
       "locked": {
-        "lastModified": 1786209051,
-        "narHash": "sha256-DQW2EDBQCFTlcuLLizmvEwt6VRDx/gWt9yYxcUh5Foo=",
+        "lastModified": 1786872119,
+        "narHash": "sha256-+HXckmbDPPT5ILxhL0lDEBCBwxq7d3Nrr+V3nm35CEk=",
         "ref": "main",
-        "rev": "f96c5c321217f8e273fa1e5643b4cde0e8d8d1e9",
-        "revCount": 27,
+        "rev": "086e05c5a1d6d83908e4ffcee4512a143ce8aa18",
+        "revCount": 28,
         "type": "git",
         "url": "https://gitee.com/cjl-2692367185-qed/niri.git"
       },
@@ -90,11 +90,11 @@
     "nvim-dotfiles": {
       "flake": false,
       "locked": {
-        "lastModified": 1783668664,
-        "narHash": "sha256-UW5t4wskh1+j2gWoZek41j+4ZxnzUc9iD3bfXqWNUx4=",
+        "lastModified": 1786872434,
+        "narHash": "sha256-gCFW15tSjlW0QlO+QcAWqFoJGc3DC4g28umjudsyz7g=",
         "ref": "main",
-        "rev": "46c1ff33ed34e239c5d828afec7a512ae4c7a3ac",
-        "revCount": 317,
+        "rev": "499fcc263af1a84a9255df3a06a0f9cfd4d6da88",
+        "revCount": 318,
         "type": "git",
         "url": "https://gitee.com/cjl-2692367185-qed/nvim.git"
       },
