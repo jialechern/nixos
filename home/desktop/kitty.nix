@@ -20,7 +20,7 @@ in
         # 字体配置
         # ---------------------------------------------------------
         font_family = "JetBrainsMono Nerd Font Mono";
-        font_size = lib.mkDefault 23.0; # 可由 per-host 模块覆盖为不同的字体大小
+        font_size = 23.0; # 如需按主机覆盖, 可在 per-host 模块中用 lib.mkMerge 覆盖
         # 不禁用编程连字
         disable_ligatures = "never";
 
@@ -88,7 +88,7 @@ in
         scrollback_lines = 100000; # 回滚缓冲上限
         # 用 nvim 浏览回滚历史 (vi 模式), 由 show_scrollback (默认 ctrl+shift+h, 另绑定 alt+s>alt+v) 调用
         # 官方 0.48 文档示例: nvim_open_term 渲染 ANSI 颜色, q 直接退出, 打开时定位到上次光标行
-        scrollback_pager = "nvim --cmd 'set eventignore=FileType' +'nnoremap q ZQ' +'call nvim_open_term(0, {})' +'set nomodified nolist' +'$' -";
+        scrollback_pager = "${pkgs.neovim}/bin/nvim --cmd 'set eventignore=FileType' +'nnoremap q ZQ' +'call nvim_open_term(0, {})' +'set nomodified nolist' +'$' -";
         # 单独给 pager 使用的历史缓冲上限 (MB), 0 = 全部传入
         # 约 1MB/万行: 32MB 足够容纳 10 万行回滚, 同时防止缓冲异常增长拖慢打开
         scrollback_pager_history_size = 32;
@@ -97,6 +97,9 @@ in
         tab_bar_edge = "top";        # 标签页栏置于顶部
         tab_bar_style = "powerline"; # Powerline 风格 (可选: fade / slant / separator / powerline / custom / hidden)
         tab_powerline_style = "slanted"; # powerline 箭头字形: angled(锐角) / slanted(斜切) / round(圆角)
+        # 标签标题加序号, 呼应 alt+1..9 切换键
+        # 铃铛/活动符号会被 kitty 自动前置 (红色); 命令进度百分比随之牺牲
+        tab_title_template = "{index}:{title}";
         # 标签页栏配色
         active_tab_background = "#89b4fa";   # 活动标签: 蓝
         active_tab_foreground = "#1e1e2e";   # 活动标签文字: 深色
@@ -140,7 +143,8 @@ in
       # --- Linux 专有配置 ---
       (lib.mkIf isLinux {
         # 背景模糊 (Wayland 合成器需支持 ext-background-effect, niri >= 26.04)
-        # 仅当 background_opacity < 1 时生效; 整数为模糊半径, 64 以内性能良好
+        # 仅当 background_opacity < 1 时生效; 注: Wayland 下数值仅作开关 (≥1 即启用),
+        # 实际模糊强度由合成器决定 (官方文档仅 macOS 支持调节模糊半径)
         background_blur = 8;
       })
     ];
