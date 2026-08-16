@@ -64,14 +64,18 @@
       			stty -ixon
       			bindkey -M viins '^Q' vi-cmd-mode
 
-      			# vi 模式光标形状: 插入=竖线, 普通/可视=方块
+      			# vi 模式光标形状 (DECSCUSR, 与 fish 一致: 全部闪烁)
+      			# 插入=闪烁竖线(5), 普通/可视=闪烁方块(1)
       			zle-keymap-select() {
-      			  printf '\e[%d q' $(( $KEYMAP == vicmd ? 2 : 6 ))
+      			  case $KEYMAP in
+      			    vicmd)             printf '\e[1 q' ;;
+      			    main|viins)        printf '\e[5 q' ;;
+      			  esac
       			}
       			zle -N zle-keymap-select
 
-      			# 启动时确保光标为竖线 (默认进入插入模式)
-      			zle-line-init() { printf '\e[6 q' }
+      			# 启动时确保光标为闪烁竖线 (默认进入插入模式)
+      			zle-line-init() { printf '\e[5 q' }
       			zle -N zle-line-init
       			
       			# PATH 追加

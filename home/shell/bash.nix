@@ -74,10 +74,11 @@
       # <C-q> 从插入模式进入 Normal(vi-movement) 模式
       bind -m vi-insert '"\C-q": vi-movement-mode'
 
-      # vi 模式光标: 每次显示提示符时设竖线 (bash 默认为插入模式)
-      # 局限性: Readline 无 vi-mode-change 钩子, 进入 normal 模式时光标仍为竖线
-      # 替代方案: 使用 ble.sh (Bash Line Editor) 可支持模式感知光标
-      PROMPT_COMMAND='printf "\\e[6 q"'
+      # vi 模式光标: readline 8.0+ (bash 5.0+ 自带) 的 vi-ins/cmd-mode-string,
+      # 模式切换时实时发送 DECSCUSR, 解决原方案"进入 normal 光标不变"的局限
+      bind 'set show-mode-in-prompt on'
+      bind 'set vi-ins-mode-string \1\e[5 q\2' # 插入模式: 闪烁竖线
+      bind 'set vi-cmd-mode-string \1\e[1 q\2' # 普通模式: 闪烁方块
 
       # Alt+t: 打开/切回 main tmux session
       bind -x '"\et":"tmux new-session -A -s main"'
