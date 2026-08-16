@@ -76,6 +76,14 @@
   programs.fish.enable = true;
   programs.zsh.enable = true;
   programs.bash.enable = true;
+  # nix-ld: 让未打包的预编译二进制 (标准 ELF 解释器路径) 直接在宿主机运行
+  # 缺库时往 libraries 里加; 需要完整 FHS 路径的程序仍用 `fhs` 沙箱
+  programs.nix-ld = {
+    enable = true;
+    # 缺什么库加什么包: 这里追加的会和 nixpkgs 默认清单合并
+    libraries = with pkgs; [
+    ];
+  };
   # 开启文档功能(man)
   documentation = {
     enable = true;
