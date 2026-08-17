@@ -68,5 +68,20 @@
     # /bg 启动即返回, 完成时 footer 通知; bg_delegate 上下文感知的只读调查代理
     # 注意: 需 Node >= 22.19.0; 任务非沙箱 (等同普通 shell 权限); Shift+↓ 打开任务栏
     "npm:pi-background-tasks"
+
+    # 缓存命中优化 (MIT): 提高 provider 侧 KV/prompt 缓存命中率, 直接省输入 token
+    # 场景: 本机 pi 走 openai-completions 通道 (volcengine 方舟, 及未来任何
+    #        OpenAI 兼容通道); DeepSeek 官方 / 豆包 / 方舟均支持上下文缓存
+    # 做法: 稳定系统提示词前置、压缩 skill 列表、补 prompt_cache_key 会话兜底
+    # 验证: footer 显示每日缓存命中率; /cache-optimizer doctor 诊断,
+    #       /cache-optimizer fix 可在备份+确认下自动补 DeepSeek 推理/cache compat
+    # 注意: 只动 ~/.pi/agent/models.json (经 fix 命令), 不碰 nix 声明
+    "npm:pi-cache-optimizer"
+
+    # 工具输出压缩 (MIT): 本地确定性压缩 bash 工具输出, 减少上下文体积
+    # 场景: 去 ANSI、聚合 test/build/git/linter 输出、grep 按文件分组、超长截断
+    # 注意: 默认 read 保持精确 (不丢代码行, 编辑安全); rtk 二进制为可选项,
+    #       不装也走纯压缩流水线; /rtk 打开设置, /rtk stats 看节省量
+    "npm:pi-rtk-optimizer"
   ];
 }
