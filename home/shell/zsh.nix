@@ -45,7 +45,7 @@
     shellAliases = {
       ff = "fastfetch";
       rsync = "rsync -arvP";
-      px = "proxychains4 -f ${config.xdg.configHome}/proxychains/proxychains.conf -q";
+      px = "proxychains4 -q";
       ngens = "nix profile history --profile /nix/var/nix/profiles/system";
       cliph = "cliphist list | fzf | cliphist decode | wl-copy";
       tm = "tmux new-session -A -s main";
