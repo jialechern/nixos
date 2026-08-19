@@ -16,7 +16,8 @@
   # 让局域网内其他设备的 <主机名>.local 可直接解析, 而不必记 IP。
   # 典型场景: 树莓派(Raspberry Pi OS 默认启用 avahi) -> raspberrypi.local。
   services.avahi.enable = true;
-  services.avahi.nssmdns4 = true; # 通过 nss-mdns 把 .local 解析交给 avahi (仅 IPv4 足够)
+  services.avahi.nssmdns4 = true; # 通过 nss-mdns 把 .local 解析交给 avahi (IPv4)
+  services.avahi.nssmdns6 = true; # 通过 nss-mdns 把 .local 解析交给 avahi (IPv6)
   services.avahi.publish = {
     enable = true; # 发布本机 <hostname>.local, 方便其他设备(如树莓派)反向访问
     addresses = true; # 发布本机 IP 地址记录, 否则其他设备只能发现名字、解析不到 IP
