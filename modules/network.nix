@@ -21,6 +21,21 @@
     enable = true; # 发布本机 <hostname>.local, 方便其他设备(如树莓派)反向访问
     addresses = true; # 发布本机 IP 地址记录, 否则其他设备只能发现名字、解析不到 IP
   };
+  # --- 入站防火墙放行 (NixOS 原生命令式防火墙, iptables 后端) ---
+  # 注意: 部分服务模块会自动放行自己的端口, 无需在此重复:
+  #   - services.openssh.enable -> 自动放行 22
+  #   - programs.steam          -> 自动放行 27036/27037/10400/10401
+  networking.firewall.allowedTCPPorts = [
+    22    # SSH (openssh 也会自动放, 这里显式声明维护意图)
+    5353  # mDNS 的 TCP fallback (非必需, 仅个别实现做大记录响应时用)
+    20172 # v2raya HTTP 代理 (局域网设备经由此机代理上网, 需配合把监听地址改为 0.0.0.0)
+  ];
+  networking.firewall.allowedUDPPorts = [
+    5353 # mDNS 广播/响应 (必须)
+  ];
+  # 默认对未放行端口为 DROP (静默丢弃), 更安全; 若想明确拒绝、让端口扫描
+  # 更容易探出已开放端口, 可改为 networking.firewall.rejectPackets = true;
+
   # 本地域名解析
   networking.hosts = {
     # "127.0.0.1" = [ "localhost" "${config.networking.hostName}.localdomain" "${config.networking.hostName}" ];
