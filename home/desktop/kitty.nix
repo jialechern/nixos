@@ -215,6 +215,11 @@ in
       "alt+shift+k" = "move_window up"; # 与上方窗口交换
       "alt+shift+j" = "move_window down"; # 与下方窗口交换
 
+      # --- 标签页交换 (移动) ---
+      # move_tab_backward/forward: 在标签栏中前后移动活动标签 (与相邻标签交换位置)。
+      "alt+s>alt+p" = "move_tab_backward"; # 标签编号减一 (与左边相邻标签交换位置)
+      "alt+s>alt+n" = "move_tab_forward"; # 标签编号加一 (与右边相邻标签交换位置)
+
       # --- 调整窗口尺寸 ---
       # kitty 的 resize_window 是调整当前窗口大小 (等价于移动分割线);
       # 无 shift = 水平方向, 有 shift = 垂直方向; equal 增大, minus 减小
