@@ -90,11 +90,11 @@
     "nvim-dotfiles": {
       "flake": false,
       "locked": {
-        "lastModified": 1786872434,
-        "narHash": "sha256-gCFW15tSjlW0QlO+QcAWqFoJGc3DC4g28umjudsyz7g=",
+        "lastModified": 1787324257,
+        "narHash": "sha256-XzmuIZDfK6KXNNgCIMjkXaBJvD180FUr/rFwo1Q9kLs=",
         "ref": "main",
-        "rev": "499fcc263af1a84a9255df3a06a0f9cfd4d6da88",
-        "revCount": 318,
+        "rev": "ff46ada0db35f7485b34d0470dfdaa850d7858ed",
+        "revCount": 319,
         "type": "git",
         "url": "https://gitee.com/cjl-2692367185-qed/nvim.git"
       },
