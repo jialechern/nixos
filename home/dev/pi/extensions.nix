@@ -10,6 +10,13 @@
     # 可选配置: ~/.pi/agent/pi-plan-mode.json (默认即可用)
     "npm:@narumitw/pi-plan-mode"
 
+    # 自主单目标执行 (与 pi-plan-mode 同作者, 共享互斥协议, 可安全共存)
+    # 用法: /goal <prompt> 设定目标 → 从空闲边界自动续跑直到完成/阻塞/安全上限
+    # 防失控: 25 轮响应上限 + 3 轮无进展保护 + 可选 token 预算;
+    # 状态跨 reload / resume / compaction / fork 持久
+    # 要求 pi >= 0.80.6 (当前 0.84.2 满足)
+    "npm:@narumitw/pi-goal"
+
     # 子代理 (社区最热扩展之一, 172K+/mo, MIT): 把任务委托给专注的子会话
     # 内置 agent: scout / researcher / planner / worker / reviewer / oracle / delegate 等
     # 用法: 自然语言 "用 reviewer 审查这个改动", 或 /run /chain /parallel 命令
@@ -24,8 +31,8 @@
 
     # 待办清单 (34K+/mo, MIT): todo 工具 + /todos 命令 + 编辑器上方实时面板
     # 清单从会话历史重建, /reload 与上下文压缩后依然保留, 长任务进度一目了然
-    # 面板折叠键默认 ctrl+shift+t, 与本配置的 app.session.tree 冲突,
-    # 已在 ~/.config/rpiv-todo/config.json 改绑 ctrl+shift+f
+    # 面板折叠键在 ~/.config/rpiv-todo/config.json 绑定为 ctrl+shift+f
+    # (该键与内置 tui.altScreen.search 冲突, 后者已在 keybindings.nix 改绑 ctrl+shift+h)
     "npm:@juicesharp/rpiv-todo"
 
     # Context7 文档查询 (Upstash 官方, MIT): resolve-library-id + query-docs 工具
@@ -68,20 +75,5 @@
     # /bg 启动即返回, 完成时 footer 通知; bg_delegate 上下文感知的只读调查代理
     # 注意: 需 Node >= 22.19.0; 任务非沙箱 (等同普通 shell 权限); Shift+↓ 打开任务栏
     "npm:pi-background-tasks"
-
-    # 缓存命中优化 (MIT): 提高 provider 侧 KV/prompt 缓存命中率, 直接省输入 token
-    # 场景: 本机 pi 走 openai-completions 通道 (volcengine 方舟, 及未来任何
-    #        OpenAI 兼容通道); DeepSeek 官方 / 豆包 / 方舟均支持上下文缓存
-    # 做法: 稳定系统提示词前置、压缩 skill 列表、补 prompt_cache_key 会话兜底
-    # 验证: footer 显示每日缓存命中率; /cache-optimizer doctor 诊断,
-    #       /cache-optimizer fix 可在备份+确认下自动补 DeepSeek 推理/cache compat
-    # 注意: 只动 ~/.pi/agent/models.json (经 fix 命令), 不碰 nix 声明
-    "npm:pi-cache-optimizer"
-
-    # 工具输出压缩 (MIT): 本地确定性压缩 bash 工具输出, 减少上下文体积
-    # 场景: 去 ANSI、聚合 test/build/git/linter 输出、grep 按文件分组、超长截断
-    # 注意: 默认 read 保持精确 (不丢代码行, 编辑安全); rtk 二进制为可选项,
-    #       不装也走纯压缩流水线; /rtk 打开设置, /rtk stats 看节省量
-    "npm:pi-rtk-optimizer"
   ];
 }

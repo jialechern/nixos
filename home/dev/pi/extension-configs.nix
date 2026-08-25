@@ -9,10 +9,17 @@
     firecrawlApiKey = "$FIRECRAWL_API_KEY";
     # 使用 web-search 工具时, 不再请求确认
     workflow = "none";
+    # 快捷键: curate (审查搜索结果) 原默认 ctrl+shift+s, 被内置转录搜索占用
+    # (见 keybindings.nix 的 tui.altScreen.search), 设为 off 禁用该键;
+    # activity 保持默认 ctrl+shift+w
+    shortcuts = {
+      curate = "off";
+    };
   };
 
-  # rpiv-todo 配置: 折叠面板的快捷键改绑
-  # 默认 ctrl+shift+t 与本配置的 app.session.tree 冲突, 改为 ctrl+shift+f
+  # rpiv-todo 配置: 折叠面板的快捷键
+  # 绑定 ctrl+shift+f; 该键与内置 tui.altScreen.search 冲突,
+  # 后者已在 keybindings.nix 改绑到 ctrl+shift+s
   # 文档: https://github.com/juicesharp/rpiv-mono/tree/main/packages/rpiv-todo
   ".config/rpiv-todo/config.json".text = builtins.toJSON {
     collapseKey = "ctrl+shift+f";

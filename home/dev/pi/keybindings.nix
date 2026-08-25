@@ -14,6 +14,12 @@
   "tui.select.confirm" = "enter"; # 确认选择
   "tui.select.cancel" = [ "escape" ]; # 取消选择
 
+  # --- 转录搜索 (全屏/滚动视口) ---
+  # 内置默认 ctrl+shift+f 被 rpiv-todo 的面板折叠键占用 (见 extension-configs.nix),
+  # 改绑到 ctrl+shift+s; 该键原为 pi-web-access 的 curate 快捷键,
+  # 已在 extension-configs.nix 的 web-search.json 生成配置中将其设为 off 腾出
+  "tui.altScreen.search" = "ctrl+shift+s"; # 搜索转录内容
+
   # --- 应用操作 ---
   # 会话选择器专用键: 原默认 ctrl+p (切换路径显示) / ctrl+n (仅命名会话过滤)
   # 与 tui.select.up/down 冲突, 换绑到 ctrl+shift+p / ctrl+shift+n
