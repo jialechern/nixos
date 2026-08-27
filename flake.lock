@@ -40,11 +40,11 @@
     "keepassxc-dotfiles": {
       "flake": false,
       "locked": {
-        "lastModified": 1786633047,
-        "narHash": "sha256-O+yGoxwR4OIvJAbIascofsAS+WFZYXNAiyy026q49RM=",
+        "lastModified": 1787829393,
+        "narHash": "sha256-1q/LJvl2mjQJghkna3DQUuNm6CIvrEhDjYiMJEah4X8=",
         "ref": "main",
-        "rev": "516b13b02b0dad21e3fe067982a2197d07768f10",
-        "revCount": 167,
+        "rev": "d36f8be8b6c10de53e3a1b056de458c9c7a1f858",
+        "revCount": 168,
         "type": "git",
         "url": "https://github.com/jialechern/keepass.git"
       },
