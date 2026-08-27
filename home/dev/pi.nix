@@ -60,7 +60,7 @@ let
     # --- 网络代理 (可选) ---
     # 国内访问海外 API (如 OpenCode Zen/Go ...) 时启用, 走本机代理 127.0.0.1:20172
     # pi 会将其应用为 HTTP_PROXY / HTTPS_PROXY (仅全局设置, 项目设置可覆盖)
-    httpProxy = "http://127.0.0.1:20172";
+    # httpProxy = "http://127.0.0.1:20172";
   };
 
   settings = lib.recursiveUpdate baseSettings extensionsCfg;
