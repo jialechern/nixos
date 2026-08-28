@@ -35,6 +35,8 @@
       "*" = "allow";
       path = {
         "*" = "allow";
+        "*.git" = "deny";
+        "*.gitignore" = "ask";
         "*.env" = "deny";
         "*.env.*" = "deny";
         "*.env.example" = "allow";
@@ -42,7 +44,8 @@
       };
       bash = {
         "*" = "allow";
-        "rm -rf *" = "ask";
+        "rm *" = "ask";
+        "git *" = "ask";
         "sudo *" = "ask";
         "mkfs*" = "deny";
       };

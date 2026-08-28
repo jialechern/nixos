@@ -111,6 +111,7 @@
     # 个人脚本: 从 flake inputs.scripts 仓库符号链接
     ".local/bin/by-proxies-run".source = "${inputs.scripts}/by-proxies-run";
     ".local/bin/play-musics".source = "${inputs.scripts}/play-musics";
+    ".local/bin/pi-ext".source = "${inputs.scripts}/pi-ext";
 
     # # 使用示例:
     # # 构建此配置将在 Nix 存储中创建 'dotfiles/screenrc' 的副本
