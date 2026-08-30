@@ -24,8 +24,8 @@
   # 会话选择器专用键: 原默认 ctrl+p (切换路径显示) / ctrl+n (仅命名会话过滤)
   # 与 tui.select.up/down 冲突, 换绑到 ctrl+shift+p / ctrl+shift+n
   # (两者当前均空闲; 如需完全禁用可改为 [])
-  "app.session.togglePath" = "ctrl+]"; # 切换路径显示
-  "app.session.toggleNamedFilter" = "ctrl+["; # 仅显示命名会话
+  "app.session.togglePath" = "ctrl+."; # 切换路径显示
+  "app.session.toggleNamedFilter" = "ctrl+,"; # 仅显示命名会话
   "app.interrupt" = "escape"; # 取消/中止
   "app.exit" = "ctrl+q"; # 退出 (输入为空时)
   "app.model.cycleForward" = "ctrl+\\"; # 循环到下一个模型
