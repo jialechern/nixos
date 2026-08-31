@@ -53,24 +53,19 @@
           // 物理上位于笔记本左侧, 故置于全局坐标空间最左侧 (x=0 为全局原点)
           position x=0 y=0
           // VRR (G-SYNC compatible): 当前为 MiniDP (DP-3) 链路, NVIDIA 驱动支持 DP 上的
-          // VRR, 已在 300Hz 下实测正常 (niri msg outputs 显示 supported, enabled)。
-          // 若日后在 DP 上出现低帧率黑闪/反复 modeset 等问题, 可改用按需模式:
+          // VRR (niri msg outputs 显示 supported)。此处采用 on-demand 模式: 仅当输出上
+          // 存在匹配 variable-refresh-rate 窗口规则的窗口时才启用 VRR, 平时显示
+          // "disabled" 属正常 (2026-08 排查时未配置该窗口规则, 故 VRR 在游戏中从未
+          // 实际激活, 这也是当时实测 VRR 无效的原因); 若需 VRR 对游戏生效, 需在
+          // window-rule 中为游戏窗口添加 variable-refresh-rate 匹配:
           variable-refresh-rate on-demand=true
-          // 并配合窗口规则按需启用 (详见 niri docs: variable-refresh-rate)
+          // 全局常开写法 (此前在 DP 上实测正常; 不推荐, 静止画面可能触发 modeset 黑闪):
           // variable-refresh-rate
           // 若低帧率时光标卡顿, 可加 debug { disable-cursor-plane } 并重连显示器
           // 外接屏禁用热角 (25.11+), 避免误触 overview; 全局 gestures 开启后同样生效
           hot-corners {
               off
           }
-          // 10bit 色深: 该屏为 8bit+FRC 面板, 华硕官方宣传 10bit (1073.7M 色)
-          // niri 26.04 尚不支持 max-bpc 属性 (docs 标注 Since: next release, 当前版本
-          // 解析未知属性会导致整份配置解析失败), 且 niri 目前默认强制 8bit 输出,
-          // 故保持注释; 升级到支持版本后可取消注释。注意: 300Hz 下 8bit 已逼近
-          // DP 1.4 带宽上限, 10bit 需要更高的 DSC 压缩比, 若启用后 300Hz 模式不可用
-          // 属正常带宽限制, 可降为 240Hz 或换回 8bit; max-bpc 文档亦建议默认不设置,
-          // 交由 GPU 驱动自动处理
-          /- max-bpc 10
       }
 
       // 笔记本内置屏幕 (eDP-1)
@@ -85,6 +80,30 @@
           // 启动时将焦点置于内置屏
           focus-at-startup
       }
+
+      // --- --- --- 统一使用 NVIDIA 显卡渲染 --- --- ---
+      // 如不统一渲染:
+      //   niri 默认取第一个 DRM 设备的渲染节点 (本机为 Intel renderD128), 而外接屏
+      //   扫描输出在 NVIDIA card0 (PRIME Sync 拓扑)。全屏 direct scanout 时, Intel 渲染
+      //   的帧需跨 GPU 交给 NVIDIA 扫描, NVIDIA 驱动该路径的 explicit sync fence 处理
+      //   有 bug (niri issue #2477), 帧会在扫描中途被换 → 撕裂; eDP-1 与渲染同 GPU 故无恙。
+      //   也会因撕裂源于 fence 时序而非刷新率失配, VRR 与降刷新率均无法改善。
+      // 修复: 强制 niri 在 NVIDIA renderD129 渲染, 外接屏渲染+扫描同 GPU, 消除跨 GPU
+      //   传输; 实施后双屏全屏游戏均正常。
+      debug {
+          // renderD129 = NVIDIA (GTX 1650 Ti); 确认方法: `ls -l /dev/dri/by-path`
+          // (pci-0000:01:00.0-render -> ../renderD129), 换显卡/平台后需重新确认
+          render-drm-device "/dev/dri/renderD129"
+      }
+      // 注意:
+      // - 启动时选定渲染设备, 热重载不生效, 修改后须重启 niri 会话;
+      // - 验证: journalctl --user -u niri -b | grep "render node" 显示 renderD129
+      //   (修复前为 renderD128);
+      // - 副作用: 内置屏变为 NVIDIA 渲染 → Intel 扫描 (反向跨 GPU), 实测正常;
+      //   PRIME Sync 下 NVIDIA 本就全程通电, 功耗影响可忽略;
+      // - debug 选项不受 niri 配置兼容性政策保护, 升级 niri 后建议复核;
+      // - 回退: 驱动修复或换 AMD 后可删本块; 备选 debug { disable-direct-scanout }
+      //   (全屏也走合成路径, 保持全屏, 性能损失很小)。
     '';
   };
 }
