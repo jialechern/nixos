@@ -1,5 +1,22 @@
 { config, pkgs, lib, inputs, hostName, ... }:
 
+let
+  # 等待 NVIDIA 渲染节点就绪的脚本 (仅 omen)
+  # 由 niri.service 的 ExecStartPre 执行; 最多等 5 秒, 超时也放行
+  # (宁可用核显渲染也不卡登录)。换显卡/平台后需同步修改此处的 PCI 地址
+  # 与下方 local-override.kdl 中的 render-drm-device 路径
+  waitNvidiaRenderNode = pkgs.writeShellScript "wait-nvidia-render-node" ''
+    i=0
+    while [ $i -lt 50 ]; do
+      if [ -e /dev/dri/by-path/pci-0000:01:00.0-render ]; then
+        exit 0
+      fi
+      ${pkgs.coreutils}/bin/sleep 0.1
+      i=$((i + 1))
+    done
+    exit 0
+  '';
+in
 {
   # niri 主配置: 直接部署 flake 输入的 dotfiles 仓库
   xdg.configFile."niri" = {
@@ -88,22 +105,41 @@
       //   的帧需跨 GPU 交给 NVIDIA 扫描, NVIDIA 驱动该路径的 explicit sync fence 处理
       //   有 bug (niri issue #2477), 帧会在扫描中途被换 → 撕裂; eDP-1 与渲染同 GPU 故无恙。
       //   也会因撕裂源于 fence 时序而非刷新率失配, VRR 与降刷新率均无法改善。
-      // 修复: 强制 niri 在 NVIDIA renderD129 渲染, 外接屏渲染+扫描同 GPU, 消除跨 GPU
-      //   传输; 实施后双屏全屏游戏均正常。
+      // 修复: 强制 niri 在 NVIDIA 渲染节点渲染 (render-drm-device 指向 by-path
+      //   稳定路径), 外接屏渲染+扫描同 GPU, 消除跨 GPU 传输; 实施后双屏全屏游戏均正常。
       debug {
-          // renderD129 = NVIDIA (GTX 1650 Ti); 确认方法: `ls -l /dev/dri/by-path`
-          // (pci-0000:01:00.0-render -> ../renderD129), 换显卡/平台后需重新确认
-          render-drm-device "/dev/dri/renderD129"
+          // 使用 by-path 稳定路径 (基于 PCI 地址, 不受 DRM minor 编号分配顺序影响);
+          // 确认方法: `ls -l /dev/dri/by-path` (pci-0000:01:00.0-render -> ../renderD129),
+          // 换显卡/平台后需重新确认该链接存在
+          render-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
       }
       // 注意:
       // - 启动时选定渲染设备, 热重载不生效, 修改后须重启 niri 会话;
-      // - 验证: journalctl --user -u niri -b | grep "render node" 显示 renderD129
-      //   (修复前为 renderD128);
+      // - 验证: journalctl --user -u niri -b | grep "render node" 应显示
+      //   using as the render node: "/dev/dri/by-path/pci-0000:01:00.0-render"
+      //   (修复前故障时显示 renderD128, 即回退核显渲染);
+      // - 开机竞态 (niri 启动时 NVIDIA 设备尚未创建) 由下方 niri.service 的
+      //   ExecStartPre 等待脚本兜底;
       // - 副作用: 内置屏变为 NVIDIA 渲染 → Intel 扫描 (反向跨 GPU), 实测正常;
       //   PRIME Sync 下 NVIDIA 本就全程通电, 功耗影响可忽略;
       // - debug 选项不受 niri 配置兼容性政策保护, 升级 niri 后建议复核;
       // - 回退: 驱动修复或换 AMD 后可删本块; 备选 debug { disable-direct-scanout }
       //   (全屏也走合成路径, 保持全屏, 性能损失很小)。
+    '';
+  };
+
+  # --- 等待 NVIDIA DRM 设备就绪 (仅 omen, 方案说明见上方 local-override.kdl) ---
+  # 问题: niri 在启动时打开 render-drm-device, 若此时 NVIDIA 驱动尚未完成初始化
+  # (设备节点未创建), niri 会静默回退到核显 renderD128 且不重试 (修复前实测约半数
+  # 开机中招)。
+  # 修复: 通过 niri.service 的 drop-in 添加 ExecStartPre, 在 niri 启动前等待
+  # by-path 节点出现, 消除竞态。drop-in 方式不覆盖 niri 包自带 unit 的内容。
+  # 生效方式: switch 后注销重新登录 (或 systemctl --user daemon-reload &&
+  # systemctl --user restart niri.service, 桌面会闪一下)。
+  xdg.configFile."systemd/user/niri.service.d/wait-nvidia.conf" = lib.mkIf (hostName == "omen") {
+    text = ''
+      [Service]
+      ExecStartPre=${waitNvidiaRenderNode}
     '';
   };
 }
