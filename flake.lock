@@ -119,11 +119,11 @@
     "scripts": {
       "flake": false,
       "locked": {
-        "lastModified": 1787908146,
-        "narHash": "sha256-1OWoQgU13Cl6x5qR7jv2ZF5Q4dc3uU19WpwwNv5C69I=",
+        "lastModified": 1785815775,
+        "narHash": "sha256-anNuaCX4wcvu90SlPgfComyqXZ1bZuUi6Tw/uiDeXY4=",
         "ref": "main",
-        "rev": "614840d98e453a2a6266be0511052b1b21864aac",
-        "revCount": 10,
+        "rev": "7b58feaf40581e63c6a4ad92a453edacc7fb0d8d",
+        "revCount": 9,
         "type": "git",
         "url": "https://gitee.com/cjl-2692367185-qed/scripts.git"
       },
