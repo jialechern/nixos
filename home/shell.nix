@@ -2,6 +2,9 @@
 
 {
   imports = [
+    # bash/zsh/fish 共享的别名、函数与 PATH
+    ./shell/common.nix
+
     ./shell/bash.nix
     ./shell/fish.nix
     ./shell/zsh.nix

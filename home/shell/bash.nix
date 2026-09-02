@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ pkgs, ... }:
 
 {
   programs.bash = {
@@ -34,33 +34,14 @@
       "checkwinsize" # 每次命令后检查终端窗口尺寸
     ];
 
-    # --- --- --- 环境变量 --- --- ---
-    sessionVariables = {};
-
-    # --- --- --- 别名设置 --- --- ---
-    shellAliases = {
-      ff = "fastfetch";
-      rsync = "rsync -arvP";
-      px = "proxychains4 -q";
-      ngens = "nix profile history --profile /nix/var/nix/profiles/system";
-      cliph = "cliphist list | fzf | cliphist decode | wl-copy";
-      tm = "tmux new-session -A -s main";
-    };
-
     # --- --- --- .bashrc 级配置(所有 Bash 调用均执行) --- --- ---
+    # 注: 通用别名 / nclean 函数 / PATH 见 ./common.nix
     bashrcExtra = ''
       # 历史命令时间戳格式(用于 history 命令输出和审计)
       HISTTIMEFORMAT="%F %T  "
 
       # less 传送 ANSI 颜色序列，使 man 手册和日志可读
       export LESS="-R"
-
-      # 一键清理 NixOS 旧系统世代与 Nix Store 垃圾
-      nclean() {
-        echo "=> 清理 NixOS 旧世代 & 垃圾回收 Nix Store ..."
-        sudo nix-collect-garbage -d
-        echo "=> 清理完成。"
-      }
     '';
 
     # --- --- --- 交互式 Shell 级配置 --- --- ---
@@ -79,15 +60,6 @@
       bind 'set show-mode-in-prompt on'
       bind 'set vi-ins-mode-string \1\e[5 q\2' # 插入模式: 闪烁竖线
       bind 'set vi-cmd-mode-string \1\e[1 q\2' # 普通模式: 闪烁方块
-
-      # Alt+t: 打开/切回 main tmux session
-      bind -x '"\et":"tmux new-session -A -s main"'
     '';
   };
-
-  # --- --- --- PATH 路径管理 --- --- ---
-  home.sessionPath = [
-    "${config.home.homeDirectory}/.local/bin"
-    "${config.home.homeDirectory}/.cargo/bin"
-  ];
 }

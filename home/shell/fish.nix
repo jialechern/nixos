@@ -1,6 +1,7 @@
-{ config, pkgs, lib, ... }:
+{ pkgs, ... }:
 
 {
+  # 注: 通用别名 / nclean 函数 / PATH 见 ./shell/common.nix
   programs.fish = {
     enable = true;
 
@@ -8,17 +9,6 @@
 
     # package 默认为 pkgs.fish, 无需显式声明
     # generateCompletions 默认为 true, 无需显式声明
-
-    # --- Shell 初始化(所有 shell)---
-    shellInit = ''
-      # 此处代码在每次 fish 启动时执行(登录 / 非登录 / 交互 / 非交互均执行)
-    '';
-
-    # --- 登录 Shell 初始化 ---
-    loginShellInit = ''
-      # 此处代码仅在登录 shell 时执行
-      # 例如：设置仅登录时需要的环境变量、启动 tmux / ssh-agent 等
-    '';
 
     # --- 交互式 Shell 初始化(VI 模式、光标、提示符)---
     interactiveShellInit = ''
@@ -59,16 +49,6 @@
       set -g fish_cursor_replace underscore blink
       # 外部命令执行时 → 竖线 (闪烁)
       set -g fish_cursor_external line blink
-
-      # Alt+t: 打开/切回 main tmux session (insert 与 default 模式均绑定)
-      bind -M insert \et 'tmux new-session -A -s main'
-      bind -M default \et 'tmux new-session -A -s main'
-    '';
-
-    # --- Shell 最后初始化 ---
-    shellInitLast = ''
-      # 此处代码在 fish 启动流程的最后执行
-      # 适用于需要在所有其他配置就绪后才能运行的命令
     '';
 
     # --- 插件 ---
@@ -104,17 +84,6 @@
       # "..." = "cd ../..";
     };
 
-    # --- 别名 ---
-    # 别名在输入时实时替换, 无法在替换后编辑
-    shellAliases = {
-      ff = "fastfetch";
-      rsync = "rsync -arvP";
-      px = "proxychains4 -q";
-      ngens = "nix profile history --profile /nix/var/nix/profiles/system";
-      cliph = "cliphist list | fzf | cliphist decode | wl-copy";
-      tm = "tmux new-session -A -s main";
-    };
-
     # --- 键绑定 ---
     # 将 <C-q> 从插入模式退出到普通模式
     binds = {
@@ -126,68 +95,10 @@
       };
     };
 
-    # --- 自定义函数 ---
-    functions = {
-      # # 创建目录并立即进入
-      # mcd = "mkdir -p $argv[1] && cd $argv[1]";
-      # # 快速备份文件
-      # bak = "cp $argv[1] $argv[1].bak";
-      # # 显示文件的权限位（八进制）
-      # perms = "stat -c '%a %n' $argv";
-      # # 创建临时目录并进入
-      # tmpd = "cd (mktemp -d)";
-      # # 解压各种压缩格式（自动识别）
-      # extract = ''
-      # set -l file $argv[1]
-      # if test -z "$file"
-      # echo "用法: extract <文件>"
-      # return 1
-      # end
-      # if test -f "$file"
-      # switch $file
-      # case '*.tar.bz2'; tar xjf $file
-      # case '*.tar.gz';  tar xzf $file
-      # case '*.bz2';     bunzip2 $file
-      # case '*.rar';     unrar x $file
-      # case '*.gz';      gunzip $file
-      # case '*.tar';     tar xf $file
-      # case '*.tbz2';    tar xjf $file
-      # case '*.tgz';     tar xzf $file
-      # case '*.zip';     unzip $file
-      # case '*.Z';       uncompress $file
-      # case '*.7z';      7z x $file
-      # case '*';         echo "'$file' 无法识别的压缩格式"
-      # end
-      # else
-      # echo "'$file' 不是有效文件"
-      # end
-      # '';
-
-      # 一键清理 NixOS 旧系统世代与 Nix Store 垃圾
-      nclean = ''
-        echo "=> 清理 NixOS 旧世代 & 垃圾回收 Nix Store ..."
-        sudo nix-collect-garbage -d
-        echo "=> 清理完成。"
-      '';
-    };
-
     # --- 自定义补全 ---
     # 为不在标准路径中的命令添加补全
     completions = { };
   };
-
-  # ============================================================
-  # 环境变量
-  # ============================================================
-  home.sessionVariables = {};
-
-  # ============================================================
-  # PATH 扩展
-  # ============================================================
-  home.sessionPath = [
-    "${config.home.homeDirectory}/.local/bin"
-    "${config.home.homeDirectory}/.cargo/bin"
-  ];
 
   # ============================================================
   # 可选增强 (按需取消注释启用)

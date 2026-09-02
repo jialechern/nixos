@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ pkgs, ... }:
 
 {
   # --- --- --- 安装必要的命令行工具 --- --- ---
@@ -7,16 +7,8 @@
     zsh-completions
   ];
 
-  # --- --- --- 环境变量与 PATH --- --- ---
-  home.sessionVariables = { };
-
-
-  home.sessionPath = [
-    "${config.home.homeDirectory}/.local/bin"
-    "${config.home.homeDirectory}/.cargo/bin"
-  ];
-
   # --- --- --- zsh 配置 --- --- ---
+  # 注: 通用别名 / nclean 函数 / PATH 见 ./common.nix
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -41,21 +33,8 @@
       }
     ];
 
-    # 别名
-    shellAliases = {
-      ff = "fastfetch";
-      rsync = "rsync -arvP";
-      px = "proxychains4 -q";
-      ngens = "nix profile history --profile /nix/var/nix/profiles/system";
-      cliph = "cliphist list | fzf | cliphist decode | wl-copy";
-      tm = "tmux new-session -A -s main";
-    };
-
-    # 需要最先加载的 zsh 配置
-    initExtraFirst = ''
-        '';
-
     # 需要最后加载的 zsh 配置
+    # (通用别名见 ./common.nix)
     initContent = ''
       			# 基础按键绑定(vi 模式)
       			bindkey -v
@@ -77,22 +56,6 @@
       			# 启动时确保光标为闪烁竖线 (默认进入插入模式)
       			zle-line-init() { printf '\e[5 q' }
       			zle -N zle-line-init
-      			
-      			# PATH 追加
-            export PATH=$HOME/.local/bin:$PATH
-            [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
-
-            # 一键清理 NixOS 旧系统世代与 Nix Store 垃圾
-            nclean() {
-              echo "=> 清理 NixOS 旧世代 & 垃圾回收 Nix Store ..."
-              sudo nix-collect-garbage -d
-              echo "=> 清理完成。"
-            }
-
-            # Alt+t: 打开/切回 main tmux session
-            tmux-main-session() { tmux new-session -A -s main }
-            zle -N tmux-main-session
-            bindkey '\et' tmux-main-session
     '';
   };
 }

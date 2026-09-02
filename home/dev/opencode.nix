@@ -55,24 +55,8 @@ in
   xdg.configFile."opencode/opencode.json".text = builtins.toJSON finalConfig;
 
   # --- shell 别名 ---
-  programs.bash.shellAliases = {
+  home.shellAliases = {
     code = "opencode";
-    oclean = "for s in $(opencode session list | awk 'NR > 2 {print $1}'); do opencode session delete $s; done";
-  };
-
-  # oclean 含 for 循环块, fish 的 alias 包装会与 end 冲突, 改用 function
-  programs.fish.functions.oclean = ''
-    for s in (opencode session list | awk 'NR > 2 {print $1}')
-      opencode session delete $s
-    end
-  '';
-
-  programs.fish.functions.code = ''
-    command opencode $argv
-  '';
-
-  programs.zsh.shellAliases = {
-    code = "opencode";
-    oclean = "for s in $(opencode session list | awk 'NR > 2 {print $1}'); do opencode session delete $s; done";
+    oclean = "sh -c 'for s in $(opencode session list | awk \"NR > 2 {print \\$1}\"); do opencode session delete $s; done'";
   };
 }

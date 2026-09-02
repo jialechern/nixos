@@ -12,6 +12,18 @@ let
     if builtins.pathExists ./pi/extensions.nix
     then import ./pi/extensions.nix
     else { };
+
+  # ---------------------------------------------------------------------------
+  # 项目级扩展 (--local): 与 ./pi/extensions.nix 末尾注释的
+  # "推荐使用 pi install --local 安装" 条目保持同步。
+  # 需要时在项目目录内运行 pi-ext, 以 --local 形式安装到当前项目 (.pi/settings.json)
+  # ---------------------------------------------------------------------------
+  localExtensions = [
+    "npm:pi-lens" # 实时代码反馈 (LSP 诊断 / linter / autofix)
+    "npm:pi-hermes-memory" # 持久记忆 + 会话搜索 + 密钥扫描
+    "npm:@vigolium/piolium" # 仓库安全审计
+  ];
+
   keybindings =
     if builtins.pathExists ./pi/keybindings.nix
     then import ./pi/keybindings.nix
@@ -124,17 +136,18 @@ in
   ];
 
   # ---------------------------------------------------------------------------
-  # shell 别名: ag = pi (通用 agent 日常入口)
+  # shell 别名
   # ---------------------------------------------------------------------------
-  programs.bash.shellAliases = {
+  home.shellAliases = {
     ag = "pi";
-  };
 
-  programs.zsh.shellAliases = {
-    ag = "pi";
-  };
+    # pi-ext: 把 extensions.nix 中注释的 "--local 按需安装" 扩展装进当前项目。
+    "pi-ext" = "sh -c 'for e in ${lib.concatStringsSep " " localExtensions}; do pi install --local $e; done'";
 
-  programs.fish.shellAliases = {
-    ag = "pi";
+    # pi-clean: 卸载当前项目本地安装的扩展 (读取 .pi/settings.json 的 packages 字段),
+    # 并清理全局残留: 全局扩展由 Nix 声明式管理, 手动 pi install 写入的
+    # ~/.pi/agent/npm/package.json 依赖在 rebuild 后不被 settings.json 识别, 属垃圾文件,
+    # 此处用 npm uninstall 一并清除。
+    "pi-clean" = "sh -c 'if [ -f .pi/settings.json ]; then for p in $(jq -r \".packages[]\" .pi/settings.json); do pi uninstall --local $p; done; else echo \"pi-clean: 未找到 .pi/settings.json (无本地安装的扩展)\"; fi; if [ -f \"$HOME/.pi/agent/settings.json\" ] && [ -f \"$HOME/.pi/agent/npm/package.json\" ]; then cd \"$HOME/.pi/agent/npm\" || exit 0; for pkg in $(jq -r \".dependencies | keys[]\" package.json); do if ! jq -e --arg p \"npm:$pkg\" \".packages | any(. == \\$p)\" \"$HOME/.pi/agent/settings.json\" > /dev/null 2>&1; then echo \"pi-clean: 清理全局残留 $pkg\"; npm uninstall \"$pkg\"; fi; done; fi'";
   };
 }
