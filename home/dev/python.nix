@@ -38,21 +38,32 @@
       cache-dir = "${config.home.homeDirectory}/.cache/uv";
 
       # --- 交互优化 ---
-      # 开启原生 TLS 支持, 在某些受限网络环境下更稳定
-      native-tls = true;
+      # 从系统证书存储加载根证书 (native-tls 已废弃, 官方建议改用 system-certs)
+      # 对依赖代理/自签根证书的受限网络环境更稳定
+      system-certs = true;
 
-      # # 如果想让 uv 在找不到 Python 时自动下载
-      # # 应该确保 python-downloads 被允许
-      # python-downloads = "auto";
+      # uv 在找不到 Python 时自动下载 (可选值: automatic / manual / never)
+      python-downloads = "automatic";
 
-      # --- 默认索引 ---
-      # # 如果需要使用镜像站(例如清华源), 可以在此配置
-      # index-url = "https://pypi.tuna.tsinghua.edu.cn/simple";
+      # --- 默认索引 (PyPI 镜像) ---
+      # index-url 已废弃, 改用 index 表; 注意镜像 URL 会写入 uv.lock
+      index = [
+        {
+          url = "https://pypi.tuna.tsinghua.edu.cn/simple";
+          default = true;
+        }
+      ];
+
+      # --- 解释器下载镜像 ---
+      # uv 默认从 GitHub (python-build-standalone) 下载托管 Python,
+      # 大陆直连慢; 换南京大学镜像 (替换 releases/download 前缀)
+      # 验证: uv python install 3.13
+      python-install-mirror = "https://mirror.nju.edu.cn/github-release/astral-sh/python-build-standalone/";
 
       # --- 编译与链接 ---
-      # # 解决 NixOS 上一些 binary 无法运行的常见问题
-      # # 强制 uv 在安装时尝试链接到系统库(如果需要)
-      # compile-bytecode = true;
+      # 解决 NixOS 上一些 binary 无法运行的常见问题
+      # 强制 uv 在安装时尝试链接到系统库(如果需要)
+      compile-bytecode = true;
     };
   };
 
