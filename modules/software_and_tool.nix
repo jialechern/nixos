@@ -92,6 +92,12 @@
       glibc
     ];
   };
+
+  # 兼容路径: 部分面向通用 Linux 的预编译程序 (典型如 uv 下载的
+  # python-build-standalone) 内部 ssl 硬编码查找 /etc/ssl/cert.pem,
+  # 而 NixOS 的证书束在 /etc/ssl/certs/ca-bundle.crt;
+  # 补一个软链, 否则这类程序的 https 请求报 SSLCertVerificationError
+  environment.etc."ssl/cert.pem".source = "/etc/ssl/certs/ca-bundle.crt";
   # 开启文档功能(man)
   documentation = {
     enable = true;
