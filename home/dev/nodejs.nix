@@ -24,8 +24,8 @@
     fund=false
     
     # 默认初始化信息
-    init-author-name=YourName
-    init-author-email=your-email@example.com
+    init-author-name=jialeChern
+    init-author-email=2692367185@qq.com
     init-license=MIT
     
     # --- 性能与日志 ---
