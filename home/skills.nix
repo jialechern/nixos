@@ -21,6 +21,20 @@ let
     hash = "sha256-RH2B03gj4kzw1j5LORezgUZPPu8mW+mWb+Kl2U7WUbY=";
   };
 
+  # memtomem/agent-skills-public — pdf-parser (复杂版面/扫描 PDF → Markdown+JSON):
+  #   - pdf-parser: 按页分诊 (纯文本层/多栏/框线表格/扫描页), 扫描页与图表渲染
+  #     成图交给视觉模型转写 (中文无需本地 OCR 语言包)
+  #   - 与官方 pdf 互补: 官方管"通用读写改", 它管"读得懂复杂版面"
+  #   - 依赖 pymupdf+pdfplumber (已配于 home/dev/python.nix), tesseract/camelot 有则用
+  # ---------------------------------------------------------------------------
+  # 更新方式同 anthropicSkills: 换 rev 后按 nix flake check 报错填新 hash
+  memtomemSkills = pkgs.fetchFromGitHub {
+    owner = "memtomem";
+    repo = "agent-skills-public";
+    rev = "7f03ea2fa645776083788e5407cf3e0adaa10b0d";
+    hash = "sha256-dH4wl+sWuddSsqapCWS4uF9EIq4ESTNXsmdf0b5Y5Jg=";
+  };
+
   # ===========================================================================
   # 需要部署的 skills, 按来源分组。属性 key 只是分组名 (可任意起), value 为:
   #   src   — 本组 skill 所在的目录, 目录下每个 <name>/SKILL.md 即一个 skill
@@ -48,6 +62,15 @@ let
       src = "${anthropicSkills}/skills";
       names = [
         "skill-creator" # 创建/编辑/评估/优化 skill 的元技能
+        "pdf" # 生产级 PDF 处理 (读/建/改/合并/OCR/填表); Proprietary 许可, 仅个人使用
+      ];
+    };
+
+    # memtomem/agent-skills-public 中选用的 skills
+    memtomem = {
+      src = "${memtomemSkills}/skills";
+      names = [
+        "pdf-parser" # 复杂版面/扫描 PDF → Markdown/JSON (与官方 pdf 互补)
       ];
     };
   };
