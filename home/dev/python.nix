@@ -31,6 +31,12 @@
       #          (cv2 可直接 import), 这是 opencv 在全配置中的唯一用途; pdf2docx 已移出 shell.nix
       #          如不再需要框线表格, 删本行即可连带去掉 opencv
       pillow # 图像处理 (pdf2image/pypdfium2 的 PIL 图像均依赖它)
+
+      # --- Office skill 依赖 (anthropic 官方 docx/pptx/xlsx) ---
+      # 脚本共享库 (scripts/office) 硬依赖; 读取/编辑/校验均需
+      defusedxml # [docx]+[pptx]+[xlsx] office 脚本的 XML 安全解析
+      lxml # [docx]+[pptx] office XSD 结构校验 (validate.py)
+      python-pptx # [pptx] 读取 pptx 文本/表格/结构 (读方向主替代; 生成侧官方用 npm pptxgenjs)
     ]))
 
     pkgs.ruff
