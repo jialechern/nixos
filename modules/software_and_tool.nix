@@ -82,6 +82,14 @@
     enable = true;
     # 缺什么库加什么包: 这里追加的会和 nixpkgs 默认清单合并
     libraries = with pkgs; [
+      # 通用运行底座: 让各类预编译二进制 (uv 托管的 python、manylinux
+      # wheel、其它从网络下载的 ELF 程序) 直接运行;
+      # 报 libstdc++.so.6 / libz / libssl / libffi 缺失时在此补对应包
+      stdenv.cc.cc.lib # libstdc++.so.6 (很多 C 扩展轮子需要)
+      zlib
+      openssl
+      libffi
+      glibc
     ];
   };
   # 开启文档功能(man)
