@@ -11,10 +11,26 @@
       matplotlib # 绘图库
       pandas # 虽然有了 polars, 但在处理某些旧格式时依然是行业标准
       requests # 几乎所有 Python 项目都会用到的 HTTP 库
-      pymupdf pypdf # pdf 操作组合
-      pillow # 图像处理
       sympy # 符号计算库
       scipy # 科学计算库
+
+      # --- PDF skill 依赖 ---
+      # 来源标注: [pdf] = anthropics/skills 官方 pdf; [pdf-parser] = memtomem
+      # pdf-parser (均部署于 ~/.agents/skills, 见 home/skills.nix);
+      # 移除对应 skill 时同步清理; 系统侧配套 CLI (poppler/qpdf/tesseract)
+      # 在 home/shell.nix, 不要重复安装
+      pypdf # [pdf] 合并/拆分/旋转/加密/水印/表单 (基础操作主力)
+      pdfplumber # [pdf]+[pdf-parser] 文本/表格提取 (读 PDF 主力)
+      pymupdf # [pdf-parser] 文本层抽取与页面渲染主力 (fitz)
+      reportlab # [pdf] 新建/排版 PDF (生成主力)
+      pypdfium2 # [pdf] reference: 高速渲染/批量出图 (PDFium 绑定, 视觉校验用)
+      pytesseract # [pdf] OCR 封装 (需系统 tesseract 二进制)
+      pdf2image # [pdf] PDF→PNG (OCR/表单 渲染前置, 需系统 poppler)
+      openpyxl # [pdf] 表格导出 Excel (pandas.to_excel 后端)
+      camelot # [pdf-parser] 可选: 框线表格高保真提取; 自动带入 opencv-python-headless
+      #          (cv2 可直接 import), 这是 opencv 在全配置中的唯一用途; pdf2docx 已移出 shell.nix
+      #          如不再需要框线表格, 删本行即可连带去掉 opencv
+      pillow # 图像处理 (pdf2image/pypdfium2 的 PIL 图像均依赖它)
     ]))
 
     pkgs.ruff
