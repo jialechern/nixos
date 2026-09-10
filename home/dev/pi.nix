@@ -45,7 +45,7 @@ let
     # --- 模型与思考 ---
     defaultProvider = "deepseek"; # 默认提供商
     defaultModel = "deepseek-flash"; # 默认模型 (2026-09-10 上线的 V4.1 Flash)
-    defaultThinkingLevel = "max"; # 默认思考等级
+    defaultThinkingLevel = "high"; # 默认思考等级
 
     # --- UI 与显示 ---
     theme = "catppuccin-mocha-mauve"; # 自定义 Catppuccin Mocha (mauve 强调色) 主题
