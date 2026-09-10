@@ -1,4 +1,4 @@
-{ config, inputs, pkgs, username, lib, ... }:
+{ config, inputs, pkgs, ... }:
 
 {
   # 导入 sops-nix 模块
