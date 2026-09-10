@@ -24,7 +24,7 @@
         mode = "0600";
       };
 
-      "ark" = {
+      "deepseek_api_key" = {
         sopsFile = ./secrets/ai_api_keys/module_api_keys.yaml;
       };
 
@@ -50,8 +50,8 @@
       "opencode-secrets.env" = {
         path = "${config.home.homeDirectory}/.config/opencode/secrets.env";
         content = ''
-          # --- 火山方舟 ---
-          VOLCANO_ARK_API_KEY=${config.sops.placeholder.ark}
+          # --- DeepSeek 官方 API ---
+          DEEPSEEK_API_KEY=${config.sops.placeholder.deepseek_api_key}
           # --- 联网搜索 ---
           TAVILY_API_KEY=${config.sops.placeholder.tavily}
           FIRECRAWL_API_KEY=${config.sops.placeholder.firecrawl}
@@ -64,8 +64,8 @@
       "pi-secrets.env" = {
         path = "${config.home.homeDirectory}/.config/pi/secrets.env";
         content = ''
-          # --- 火山方舟 ---
-          VOLCANO_ARK_API_KEY=${config.sops.placeholder.ark}
+          # --- DeepSeek 官方 API ---
+          DEEPSEEK_API_KEY=${config.sops.placeholder.deepseek_api_key}
           # --- pi-web-access 联网搜索 ---
           TAVILY_API_KEY=${config.sops.placeholder.tavily}
           FIRECRAWL_API_KEY=${config.sops.placeholder.firecrawl}
