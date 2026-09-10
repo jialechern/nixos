@@ -44,7 +44,7 @@ let
   baseSettings = {
     # --- 模型与思考 ---
     defaultProvider = "deepseek"; # 默认提供商
-    defaultModel = "deepseek-v4-flash"; # 默认模型
+    defaultModel = "deepseek-flash"; # 默认模型 (2026-09-10 上线的 V4.1 Flash)
     defaultThinkingLevel = "max"; # 默认思考等级
 
     # --- UI 与显示 ---
