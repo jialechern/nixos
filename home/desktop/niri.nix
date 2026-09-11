@@ -115,9 +115,15 @@ in
       }
       // 注意:
       // - 启动时选定渲染设备, 热重载不生效, 修改后须重启 niri 会话;
-      // - 验证: journalctl --user -u niri -b | grep "render node" 应显示
-      //   using as the render node: "/dev/dri/by-path/pci-0000:01:00.0-render"
-      //   (修复前故障时显示 renderD128, 即回退核显渲染);
+      // - 验证 (推荐): 直接运行 `ngpu` (脚本定义见 home/shell/common.nix), 它会反查
+      //   上述 by-path 映射并直接判定当前是独显渲染还是回退核显;
+      // - 手工验证: journalctl --user -u niri -b --no-pager -o cat | grep "using as the render node"
+      //   注意: niri 打印的是解析后的 renderD 编号, 而非此处配置的 by-path 路径 (26.04 实测),
+      //   修复后为 renderD129, 回退核显时为 renderD128, 因此还需对照
+      //   `ls -l /dev/dri/by-path/` 反查映射 (pci-0000:01:00.0-render -> renderD129);
+      //   配置的原值只出现在 DEBUG 级的 attempting to use render node from config: 一行中;
+      //   切勿用宽泛的 grep "render node": DEBUG 行 got render node: renderD128
+      //   只是对全部 DRM 设备的枚举, 会把核显误判为渲染设备;
       // - 开机竞态 (niri 启动时 NVIDIA 设备尚未创建) 由下方 niri.service 的
       //   ExecStartPre 等待脚本兜底;
       // - 副作用: 内置屏变为 NVIDIA 渲染 → Intel 扫描 (反向跨 GPU), 实测正常;
