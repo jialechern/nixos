@@ -17,7 +17,8 @@
   # --- 转录搜索 (全屏/滚动视口) ---
   # 内置默认 ctrl+shift+f 被 rpiv-todo 的面板折叠键占用 (见 extension-configs.nix),
   # 改绑到 ctrl+shift+s; 该键原为 pi-web-access 的 curate 快捷键,
-  # 已在 extension-configs.nix 的 web-search.json 生成配置中将其设为 off 腾出
+  # 已在 extension-configs.nix 的 web-search.json 生成配置中把 curate 改绑
+  # 到空闲键 ctrl+shift+u (旧写法 shortcuts.curate = "off" 不是官方支持语义)
   "tui.altScreen.search" = "ctrl+shift+s"; # 搜索转录内容
 
   # --- 应用操作 ---

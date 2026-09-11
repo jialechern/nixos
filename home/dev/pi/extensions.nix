@@ -11,7 +11,7 @@
 
     # 网页访问: 搜索 / 抓取 / GitHub 克隆 / PDF / 视频理解
     # 工具: web_search / fetch_content / source_check / get_search_content, 另有 /websearch 交互式策展
-    # 搜索 provider 由 extension-configs.nix 生成 (~/.pi/web-search.json, 复用 sops 的 Tavily/Firecrawl key)
+    # 搜索 provider 由 extension-configs.nix 生成 (~/.pi/agent/web-search.json, 复用 sops 的 Tavily/Firecrawl key)
     # 注意: 与 pi-deepseek-search 的 web_search 工具重名, 二者不要同时安装
     "npm:pi-web-access"
 
@@ -19,7 +19,7 @@
     # 列表从会话历史重建, /reload 与压缩后依然保留, 无磁盘写入; 支持 blockedBy 依赖排序
     # 用法: 直接让模型"把任务拆成 todos" 即可; /todos 随时查看全量列表
     # 面板折叠键在 ~/.config/rpiv-todo/config.json 绑定为 ctrl+shift+f
-    # (该键与内置 tui.altScreen.search 冲突, 后者已在 keybindings.nix 改绑 ctrl+shift+h)
+    # (该键与内置 tui.altScreen.search 冲突, 后者已在 keybindings.nix 改绑 ctrl+shift+s)
     "npm:@juicesharp/rpiv-todo"
 
     # 结构化提问 (MIT, juicesharp): ask_user_question 工具, 模型拿不准时以选项式对话框向你确认
