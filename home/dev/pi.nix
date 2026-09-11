@@ -102,9 +102,12 @@ in
     };
 
     # 扩展包运行时依赖: pi install npm:... 安装扩展 (如 @termdraw/pi) 需要 npm 与 bun
+    # gh: pi-web-access 的 GitHub 能力 (PR/Issue 富字段视图、私有库、超大仓库 API 路径)
+    #     注: gh 不读 .netrc, 认证靠 sops.nix 注入 pi 进程的 GH_TOKEN
     extraPackages = [
       pkgs.nodejs
       pkgs.bun
+      pkgs.gh
     ];
 
     # 配置目录 (见文件头注释)

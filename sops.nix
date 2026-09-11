@@ -71,6 +71,9 @@
           FIRECRAWL_API_KEY=${config.sops.placeholder.firecrawl}
           # --- context7 文档查询 ---
           CONTEXT7_API_KEY=${config.sops.placeholder.context7}
+          # --- pi-web-access GitHub 能力 (gh CLI 认证) ---
+          # 复用 .netrc 同源的只读令牌; 实际可访问范围取决于该 token 自身权限
+          GH_TOKEN=${config.sops.placeholder."github_pull_only_token"}
         '';
         mode = "0600";
       };
