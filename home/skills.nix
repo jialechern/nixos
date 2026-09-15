@@ -53,7 +53,6 @@ let
       names = [
         "nix-tool"      # 用 nix 临时获取/运行 CLI 工具
         "proxy-access"  # 网络受限时探测并使用代理
-        "git-commit"    # 按 Conventional Commits 生成中文提交信息并提交
       ];
     };
 

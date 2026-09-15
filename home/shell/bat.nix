@@ -8,7 +8,7 @@
     config = {
       # --- 主题与视觉 ---
       theme = "Monokai Extended"; # 保持你原有的 Monokai Extended 主题
-      italic-text = "always"; # 始终开启斜体（在 Ghostty/Alacritty 中效果极佳）
+      italic-text = "always"; # 始终开启斜体
       color = "always"; # 始终开启颜色
 
       # --- 装饰风格 ---

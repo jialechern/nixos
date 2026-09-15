@@ -111,11 +111,10 @@ in
         # ---------------------------------------------------------
         # 窗口管理
         # ---------------------------------------------------------
-        # 垂直 5, 水平 7 (对应 ghostty 的 padding-y=5, padding-x=7)
+        # 垂直 5, 水平 7
         window_padding_width = "5 7";
-        # niri 平铺 WM 下隐藏标题栏 (对应 ghostty window-decoration = false / alacritty decorations = None)
+        # niri 平铺 WM 下隐藏标题栏
         hide_window_decorations = "titlebar-only";
-        # 注: ghostty 的 quit-after-last-window-closed 在 kitty 无对应选项
         # (非 macOS 平台关闭最后一个窗口即退出, 仅 macOS 有 macos_quit_when_last_window_closed)
 
         # ---------------------------------------------------------
@@ -169,7 +168,7 @@ in
       "ctrl+shift+page_down" = "scroll_page_down";
 
       # --- 清屏 ---
-      # 覆盖 kitty 默认的 next_layout 绑定, 与 ghostty 的 ctrl+shift+l 清屏保持一致
+      # 覆盖 kitty 默认的 next_layout 绑定
       "ctrl+shift+l" = "clear_terminal clear active";
 
       # --- 剪贴板操作 ---
@@ -182,11 +181,11 @@ in
       "ctrl+shift+o" = "scroll_to_prompt -1"; # 上一个提示符 (覆盖默认的 pass_selection_to_program)
 
       # --- 配置重载 ---
-      # 覆盖 kitty 默认的 start_resizing_window 绑定, 与 ghostty 的 ctrl+shift+r 保持一致
+      # 覆盖 kitty 默认的 start_resizing_window 绑定
       "ctrl+shift+r" = "load_config_file";
 
       # --- 回滚搜索 ---
-      # 覆盖 kitty 默认的 paste_from_selection 绑定, 对应 ghostty 的 ctrl+shift+s 搜索回滚
+      # 覆盖 kitty 默认的 paste_from_selection 绑定
       "ctrl+shift+s" = "search_scrollback";
 
       # ============================================================

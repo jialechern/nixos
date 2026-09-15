@@ -6,7 +6,7 @@
     enable = true;
     defaultApplications = {
       # 终端模拟器 (虽然部分应用不直接通过 MIME 调用，但配置在此可保持一致性)
-      "x-scheme-handler/terminal" = [ "ghostty.desktop" ];
+      "x-scheme-handler/terminal" = [ "kitty.desktop" ];
 
       # 浏览器
       "text/html" = [ "firefox.desktop" ];

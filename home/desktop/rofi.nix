@@ -7,7 +7,7 @@
     # --- --- --- 基础配置 --- --- ---
     font = "JetBrainsMono Nerd Font 16";
     location = "center";
-    terminal = "${pkgs.ghostty}/bin/ghostty";
+    terminal = "${pkgs.kitty}/bin/kitty";
 
     extraConfig = {
       modi = "drun,run,filebrowser,window";

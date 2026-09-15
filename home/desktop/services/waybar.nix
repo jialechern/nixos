@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 let
-  term-run = "ghostty -e";
+  term-run = "kitty -e";
 in
 {
   home.packages = with pkgs; [

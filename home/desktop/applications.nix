@@ -36,10 +36,6 @@
     noto-fonts-cjk-sans # 核心中文字体
     noto-fonts-color-emoji # 表情符号支持
 
-    # --- 终端模拟器 ---
-    alacritty
-    ghostty
-
     # --- Latex && Typst 环境 ---
     typst
     texliveFull
