@@ -3,6 +3,7 @@
 {
   imports = [
     ./dev/git.nix
+    ./dev/jujutsu.nix
     ./dev/opencode.nix
     ./dev/pi.nix
     ./dev/rust.nix
@@ -26,5 +27,16 @@
     deno # JS/TS 运行时
     # 基准测试工具
     hyperfine
+
+    # --- 多语言格式化器 (命令行 / 编辑器 / jj fix 共用) ---
+    # 其中被 home/dev/jujutsu.nix 的 fix.tools 引用的: prettier/stylua/shfmt/nixfmt/
+    # yamlfmt/gofumpt/typstyle; 其余语言格式化器的来源见该文件的注释说明
+    prettier # JS/TS/前端/JSON
+    stylua # Lua
+    shfmt # Shell (bash/zsh/mksh/bats)
+    nixfmt # Nix (RFC 风格)
+    yamlfmt # YAML
+    gofumpt # Go
+    typstyle # Typst
   ];
 }
