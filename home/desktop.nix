@@ -7,7 +7,6 @@
     ./desktop/qt.nix
     ./desktop/xdg-desktop-portal.nix
     ./desktop/default-application.nix
-    ./desktop/ghostty.nix
     ./desktop/alacritty.nix
     ./desktop/kitty.nix
     ./desktop/fcitx5.nix
