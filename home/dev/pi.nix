@@ -14,15 +14,48 @@ let
     else { };
 
   # ---------------------------------------------------------------------------
-  # 项目级扩展 (--local): 与 ./pi/extensions.nix 末尾注释的
-  # "推荐使用 pi install --local 安装" 条目保持同步。
-  # 需要时在项目目录内运行 pi-ext, 以 --local 形式安装到当前项目 (.pi/settings.json)
+  # 项目级扩展集合 (--local): 与 ./pi/extensions.nix 末尾注释保持同步。
+  # 这些包不进全局 settings, 因此未装配它们的项目是零启动成本;
+  # 在项目目录内运行 pi-init / pi-coding 即可装配到该项目的 .pi/settings.json。
   # ---------------------------------------------------------------------------
-  localExtensions = [
-    "npm:pi-lens" # 实时代码反馈 (LSP 诊断 / linter / autofix)
-    "npm:pi-hermes-memory" # 持久记忆 + 会话搜索 + 密钥扫描
-    "npm:@vigolium/piolium" # 仓库安全审计
+
+  # 基础集合 (pi-init): 通用能力, 任何项目都可能想要
+  localBaseExtensions = [
+    # Codex 风格只读规划模式 (MIT, narumitw): pi 核心未内置 plan mode, 此扩展补上
+    "npm:@narumitw/pi-plan-mode"
+    # 自主目标模式 (MIT, narumitw): 给 pi 一个会话级目标, 让它持续工作直到完成/暂停/等待/触达安全上限
+    "npm:@narumitw/pi-goal"
+    # 侧线提问 (MIT, narumitw): /btw 开临时侧线程问问题, 不污染主对话, 主 agent 可继续运行
+    "npm:@narumitw/pi-btw"
+    # 子代理: 把任务委托给专注的子会话
+    "npm:pi-subagents"
   ];
+
+  # 编码集合 (pi-coding): 基础集合 + 编码专用
+  # 由于装配是幂等追加, pi-coding 单独跑就能得到完整的编码环境;
+  # 先跑 pi-init 再跑 pi-coding 结果相同。需要继续细化时可再加一组
+  # (如 localAuditExtensions → pi-audit), 复杂项目用多个别名叠加。
+  localCodingExtensions = [
+    # 持久记忆 + 会话搜索 + 密钥扫描
+    "npm:pi-hermes-memory"
+    # 实时代码反馈 (LSP 诊断 / linter / autofix)
+    "npm:pi-lens"
+    # 官方 Context7 扩展 (MIT, Upstash): 给 agent 注入最新的库文档 (不依赖训练数据)
+    "npm:@upstash/context7-pi"
+  ];
+
+  # ---------------------------------------------------------------------------
+  # 项目级扩展集合的装配与清理逻辑见 ./pi/pi-local-exts.sh
+  # (由 home.nix 部署到 ~/.local/bin), 包列表由下面的别名传入。
+  #
+  # 语义是"幂等追加": 各别名只往当前项目追加自己那组包, 不卸载任何东西。
+  # 所以依次运行多个别名得到的是它们的并集 —— 日常项目只跑 pi-init 保持轻量,
+  # 复杂项目再叠加 pi-coding, 主动用启动耗时换功能。要回退用 pi-clean。
+  # 注: --local 装配要求项目已被信任 (pi 的 trust 机制), 否则 pi install 会拒绝。
+  #
+  # 用 `sh <固定路径>` 调用, 既不依赖执行位, 也不会把会随内容变化的 store 路径写进别名。
+  # ---------------------------------------------------------------------------
+  piLocalExts = "sh ${config.home.homeDirectory}/.local/bin/pi-local-exts";
 
   keybindings =
     if builtins.pathExists ./pi/keybindings.nix
@@ -144,13 +177,13 @@ in
   home.shellAliases = {
     ag = "pi";
 
-    # pi-ext: 把 extensions.nix 中注释的 "--local 按需安装" 扩展装进当前项目。
-    "pi-ext" = "sh -c 'for e in ${lib.concatStringsSep " " localExtensions}; do pi install --local $e; done'";
+    # pi-init: 把"基础扩展集合"追加到当前项目 (.pi/settings.json)
+    "pi-init" = "${piLocalExts} install ${lib.concatStringsSep " " localBaseExtensions}";
 
-    # pi-clean: 卸载当前项目本地安装的扩展 (读取 .pi/settings.json 的 packages 字段),
-    # 并清理全局残留: 全局扩展由 Nix 声明式管理, 手动 pi install 写入的
-    # ~/.pi/agent/npm/package.json 依赖在 rebuild 后不被 settings.json 识别, 属垃圾文件,
-    # 此处用 npm uninstall 一并清除。
-    "pi-clean" = "sh -c 'if [ -f .pi/settings.json ]; then for p in $(jq -r \".packages[]\" .pi/settings.json); do pi uninstall --local $p; done; else echo \"pi-clean: 未找到 .pi/settings.json (无本地安装的扩展)\"; fi; if [ -f \"$HOME/.pi/agent/settings.json\" ] && [ -f \"$HOME/.pi/agent/npm/package.json\" ]; then cd \"$HOME/.pi/agent/npm\" || exit 0; for pkg in $(jq -r \".dependencies | keys[]\" package.json); do if ! jq -e --arg p \"npm:$pkg\" \".packages | any(. == \\$p)\" \"$HOME/.pi/agent/settings.json\" > /dev/null 2>&1; then echo \"pi-clean: 清理全局残留 $pkg\"; npm uninstall \"$pkg\"; fi; done; fi'";
+    # pi-coding: 把"基础 + 编码扩展集合"追加到当前项目 (与 pi-init 叠加, 幂等)
+    "pi-coding" = "${piLocalExts} install ${lib.concatStringsSep " " localCodingExtensions}";
+
+    # pi-clean: 卸载当前项目全部 --local 扩展, 并清理 ~/.pi/agent/npm 的全局残留
+    "pi-clean" = "${piLocalExts} clean";
   };
 }

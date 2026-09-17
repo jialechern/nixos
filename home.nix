@@ -111,7 +111,9 @@
     # 个人脚本: 从 flake inputs.scripts 仓库符号链接
     ".local/bin/by-proxies-run".source = "${inputs.scripts}/by-proxies-run";
     ".local/bin/play-musics".source = "${inputs.scripts}/play-musics";
-    ".local/bin/pi-ext".source = "${inputs.scripts}/pi-ext";
+
+    # pi 项目级扩展集合管理脚本 (pi-init / pi-coding / pi-clean 别名调用)
+    ".local/bin/pi-local-exts".source = ./home/dev/pi/pi-local-exts.sh;
 
     # # 使用示例:
     # # 构建此配置将在 Nix 存储中创建 'dotfiles/screenrc' 的副本
