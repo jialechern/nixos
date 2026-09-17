@@ -8,7 +8,7 @@
   # 解析顺序 (utils.ts): PI_CODING_AGENT_DIR → $XDG_CONFIG_HOME/pi → ~/.pi/agent
   # 文档: https://github.com/nicobailon/pi-web-access (Configuration 一节)
   ".pi/agent/web-search.json".text = builtins.toJSON {
-    # --- 搜索凭据 (与 opencode 的 MCP 共用同一把 key) ---
+    # --- 搜索凭据 ---
     # 显式声明凭据来源便于自文档化; 环境变量优先级高于此处的字面值
     tavilyApiKey = "$TAVILY_API_KEY";
     firecrawlApiKey = "$FIRECRAWL_API_KEY";

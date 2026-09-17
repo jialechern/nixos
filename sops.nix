@@ -47,20 +47,6 @@
     };
 
     templates = {
-      "opencode-secrets.env" = {
-        path = "${config.home.homeDirectory}/.config/opencode/secrets.env";
-        content = ''
-          # --- DeepSeek 官方 API ---
-          DEEPSEEK_API_KEY=${config.sops.placeholder.deepseek_api_key}
-          # --- 联网搜索 ---
-          TAVILY_API_KEY=${config.sops.placeholder.tavily}
-          FIRECRAWL_API_KEY=${config.sops.placeholder.firecrawl}
-          # --- context7 文档查询 ---
-          CONTEXT7_API_KEY=${config.sops.placeholder.context7}
-        '';
-        mode = "0600";
-      };
-
       "pi-secrets.env" = {
         path = "${config.home.homeDirectory}/.config/pi/secrets.env";
         content = ''

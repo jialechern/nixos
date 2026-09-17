@@ -115,7 +115,7 @@ in
     # 必须启用才会安装软件包并生成配置
     enable = true;
 
-    # 使用包装过后的软件包: 启动时加载 sops 生成的密钥文件 (参照 opencode.nix 的做法)
+    # 使用包装过后的软件包: 启动时加载 sops 生成的密钥文件
     # 密钥由 sops.nix 的 "pi-secrets.env" 模板生成, 文件不存在时静默跳过
     package = pkgs.symlinkJoin {
       name = "pi-coding-agent-wrapped";

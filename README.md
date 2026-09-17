@@ -160,7 +160,6 @@
 5. 重启 `reboot`
 6. 再次构建前, 如果希望使用存放在配置仓库里的私密数据, 可以将对应的加密密钥存放在 `~/.config/sops/age/keys.txt`
 7. 重启后如果 `v2raya` 已经正常开启, 则可以导入节点并开启透明代理, 并将刚刚移出的需要透明代理才可以构建的 nix 配置文件重新放回原本的位置, 并使用 `sudo nixos-rebuild switch --flake <flake.nix-path>#<host-name>` 再次构建
-8. `home/dev/opencode/` 下的以及 `home/dev/aider-chat/` 下的配置是私有配置, 不必要时可随时移除.
 ### 安装交换空间(`Btrfs` 事后补救版)
 1. 挂载 `Btrfs` 顶层视图并创建用于交换分区的字卷
     ```zsh,bash
