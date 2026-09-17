@@ -14,9 +14,9 @@ let
     else { };
 
   # ---------------------------------------------------------------------------
-  # 项目级扩展集合 (--local): 与 ./pi/extensions.nix 末尾注释保持同步。
-  # 这些包不进全局 settings, 因此未装配它们的项目是零启动成本;
-  # 在项目目录内运行 pi-init / pi-coding 即可装配到该项目的 .pi/settings.json。
+  # 项目级扩展集合 (--local): 这些包不进全局 settings (见 ./pi/extensions.nix
+  # 的 packages), 因此未装配它们的项目是零启动成本; 在项目目录内运行
+  # pi-init / pi-coding 即可装配到该项目的 .pi/settings.json。
   # ---------------------------------------------------------------------------
 
   # 基础集合 (pi-init): 通用能力, 任何项目都可能想要
@@ -31,10 +31,10 @@ let
     "npm:pi-subagents"
   ];
 
-  # 编码集合 (pi-coding): 基础集合 + 编码专用
-  # 由于装配是幂等追加, pi-coding 单独跑就能得到完整的编码环境;
-  # 先跑 pi-init 再跑 pi-coding 结果相同。需要继续细化时可再加一组
-  # (如 localAuditExtensions → pi-audit), 复杂项目用多个别名叠加。
+  # 编码集合 (pi-coding): 与基础集合正交, 只含编码相关
+  # 装配是幂等追加, 两组叠加即得并集: 日常项目跑 pi-init 即可,
+  # 编码项目再叠加 pi-coding, 主动用启动耗时换功能。
+  # 需要继续细化时可再加一组 (如 localAuditExtensions → pi-audit)。
   localCodingExtensions = [
     # 持久记忆 + 会话搜索 + 密钥扫描
     "npm:pi-hermes-memory"

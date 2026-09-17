@@ -17,5 +17,9 @@
 
     # 网页访问: 搜索 / 抓取 / GitHub 克隆 / PDF / 视频理解
     "npm:pi-web-access"
+
+    # --- 已下沉为项目级扩展的包 (不在此全局加载, 见 home/dev/pi.nix) ---
+    # 规划 / 目标 / 侧问 / 子代理 → localBaseExtensions   (pi-init)
+    # 记忆 / LSP / 库文档          → localCodingExtensions (pi-coding)
   ];
 }
