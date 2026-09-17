@@ -95,6 +95,85 @@
     collapseKey = "ctrl+shift+f";
   };
 
+  # pi-open-tui 配置 (TUI 界面扩展: header / footer / 圆角编辑器 / 轮次遥测 / thinking peek)
+  #
+  # 路径由插件源码的 getConfigPath() 决定: join(getAgentDir(), "open-tui.json"),
+  # 即 ~/.pi/agent/open-tui.json (跟随 PI_CODING_AGENT_DIR), 与 programs.pi-coding-agent
+  # 的 configDir 一致。
+  #
+  # 重要: 该文件被本仓库声明后是指向 nix store 的只读符号链接, 而插件的 saveConfig()
+  # 是 best-effort 且静默吞掉写入异常 (catch {}), 所以:
+  #   - 读取不受影响: ensureConfigExists 见文件已存在即返回, 不会尝试创建
+  #   - 但 /open-tui 里改的任何设置都不会落盘, 只在当前会话内存里生效、重启即失
+  # 改配置的正确方式是改这里再 rebuild; 想交互式调参就先注释掉本段。
+  #
+  # 下面的键按插件 0.3.6 的 OpenTuiConfig / DEFAULT_CONFIG 全部显式写出 (插件用
+  # deepMerge 合并, 允许只写部分键; 写全便于日后对照与审计)。
+  # 又: GitHub main 的 README 还提到 hostname 分段, 那是未发布的功能 ——
+  # 0.3.6 的 FooterSegments 接口里没有该字段, 写了会被忽略, 故不写。
+  ".pi/agent/open-tui.json".text = builtins.toJSON {
+    # 总开关
+    enabled = true;
+
+    # /open-tui 设置界面的语言 (en | zh)
+    settingsLanguage = "zh";
+
+    # 光标样式 (block | bar | underline)。本机 kitty 的 cursor_shape = "block",
+    # 保持一致; bar / underline 需终端支持光标形状切换。
+    cursorStyle = "block";
+
+    # 全屏模式下鼠标滚轮每格滚动行数, 取值 1-10 (超出会被 clamp)。
+    # 实现上是 Reflect.set 写 pi 的私有字段 tui.wheelScrollLines (注释标明针对
+    # pi 0.84.2); 当前 pi 0.85.1 若不兼容会自动降级为 pi 默认值, 只是该项无效,
+    # 不会报错。
+    fullscreen = {
+      wheelScrollLines = 4;
+    };
+
+    # 图标集 (auto | nerd | ascii)。auto 走 detectNerdFont(): 识别 TERM=xterm-kitty
+    # → nerd (本机 kitty 已配 JetBrainsMono Nerd Font Mono), 同时 ssh 到其它终端时
+    # 会自行退化为 ascii, 所以保留 auto 比硬写 nerd 更稳。
+    icons = {
+      mode = "auto";
+    };
+
+    # footer 分段开关。显示顺序由 footer.ts 固定 (cwd → sessionName → git 段 →
+    # runtime → context → tokens → cost → 扩展状态), 本对象只管开关;
+    # 且 footer 自带 compact/drop 逻辑, 横向不足时会自动舍弃右侧分段。
+    # 沿用插件默认: 关掉 sessionName 与 gitCommit 两个低频项。
+    # 若仍嫌拥挤可继续关 cost / tokens; 关 extensionStatuses 会连 MCP 状态一起隐藏。
+    footerSegments = {
+      cwd = true;
+      sessionName = false;
+      gitBranch = true;
+      gitStatus = true;
+      gitCommit = false;
+      runtime = true;
+      context = true;
+      tokens = true;
+      cost = true;
+      extensionStatuses = true;
+    };
+
+    # 每轮结束后的遥测行: TPS / TTFT / 耗时 / tokens / stall 次数 / 牌价速率。
+    # 注意 cost 是模型牌价单价 (usage.cost.total), 不是会话累计花费 —— 后者在 footer。
+    telemetry = {
+      enabled = true;
+      tps = true;
+      ttft = true;
+      duration = true;
+      tokens = true;
+      stalls = true;
+      cost = true;
+    };
+
+    # pi 开启"隐藏思考"时, 用动态 ticker 替换静止的 "Thinking..." 标签。
+    # 取值 0=关闭 | 1 | 2 行 (其它值回落到默认 1); 仅在模型真的流出思考内容时出现。
+    thinkingPeek = {
+      lines = 1;
+    };
+  };
+
   # pi-permission-system 权限策略 (温和默认 + 密钥保护):
   #   - 工具与 bash 默认放行 (适配通用助手/系统管理场景)
   #   - 密钥与凭据路径一律 deny (deny 是硬拒绝、不弹窗、运行时无法放行)

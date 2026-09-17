@@ -18,6 +18,13 @@
     # 网页访问: 搜索 / 抓取 / GitHub 克隆 / PDF / 视频理解
     "npm:pi-web-access"
 
+    # TUI 界面扩展 (MIT, OldSuns): header / footer / 圆角编辑器 / 轮次遥测 / thinking peek
+    # 配置见 extension-configs.nix → ~/.pi/agent/open-tui.json
+    # 注意: 这是 UI 接管型扩展, 会重写编辑器边框与上下区域, 与上面的 rpiv-todo
+    # 面板 (编辑器上方实时面板) 存在潜在重叠; 若显示异常可调整本数组的先后顺序
+    # (列表在 builtins.toJSON 中保留顺序, 即加载顺序)
+    "npm:pi-open-tui"
+
     # --- 已下沉为项目级扩展的包 (不在此全局加载, 见 home/dev/pi.nix) ---
     # 规划 / 目标 / 侧问 / 子代理 → localBaseExtensions   (pi-init)
     # 记忆 / LSP / 库文档          → localCodingExtensions (pi-coding)
