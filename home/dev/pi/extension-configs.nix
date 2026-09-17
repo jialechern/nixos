@@ -95,27 +95,129 @@
     collapseKey = "ctrl+shift+f";
   };
 
-  # pi-permission-system 权限策略 (温和默认):
+  # pi-permission-system 权限策略 (温和默认 + 密钥保护):
   #   - 工具与 bash 默认放行 (适配通用助手/系统管理场景)
-  #   - 敏感路径 (env/ssh) 全局拒绝, 所有工具与 bash 一视同仁
-  #   - 危险 bash 命令: rm -rf / sudo 需确认, mkfs 直接拒绝
+  #   - 密钥与凭据路径一律 deny (deny 是硬拒绝、不弹窗、运行时无法放行)
+  #   - .env 按方向区分: 读 deny (密钥不入上下文与日志), 写 ask (仍可批准修改)
+  #   - .git 只拦写 (含 .git 目录本身与其中内容), 读 .git 仍可用于查看仓库状态
+  #     (旧配置的裸 path "*.git" = deny 会连读一起拒, 实测误杀了 ls -d .git / git remote -v)
+  #   - cwd 之外: 读显式放行, 只拦写 (实测该 surface 缺省即 ask, 读 /nix/store 弹窗很多)
+  #   - 危险 bash 命令: rm 递归删除 / sudo 需确认, mkfs 直接拒绝
+  #   - git: 只放行只读子命令 (status/diff/log/rev-parse 等), 其余一律询问
+  #
+  # 三条影响写法的语义 (详见上游 docs/configuration.md):
+  #   1. path / external_directory 是 path_read+path_write 的语法糖, 想"只拦写"必须用方向键
+  #   2. 同一 surface 内 last-match-wins —— 宽泛规则在前, 具体例外在后
+  #   3. 显式方向键会追加在糖展开的条目之后, 因此一定覆盖裸键的规则
+  #   4. Nix 属性集无序, builtins.toJSON 按属性名排序输出 —— 而该扩展靠 JSON 键序实现
+  #      last-match-wins。即规则的实际生效顺序由字母序决定, 不由你写代码的先后决定:
+  #      `*` 排在 `~` 之前, 所以"宽泛 * 在前、具体 ~ 例外在后"恰好总是成立;
+  #      但若想要某个 `*` 开头的 allow 覆盖 `~` 开头的 deny, 这条会反过来坑你。
+  #      本例中 `*.env.example` 的 allow 能胜过 `*.env.*` 的 deny, 正是因为它按字母序在后。
+  #
+  # 对话框键位保持默认 y/s/b/n/r (未启用 permissionDialogKeys 的数字键位)。
+  # 注意: 中文输入法组字时字母键会被候选框吞掉, 而退出候选框的 esc 会被对话框读作
+  # "拒绝" —— 遇到对话框看似无响应时, 先切到英文输入状态再按。
   # 文档: https://github.com/gotgenes/pi-packages/tree/main/packages/pi-permission-system
   ".pi/agent/extensions/pi-permission-system/config.json".text = builtins.toJSON {
     permission = {
       "*" = "allow";
+      # 通用黑名单: 对所有工具与 bash 生效, 读写一视同仁
       path = {
         "*" = "allow";
-        "*.git" = "deny";
-        "*.gitignore" = "ask";
+        "~/.ssh/*" = "deny";
+        # 密钥与凭据 (deny = 硬拒绝): sops age 私钥是其中最关键的一把,
+        # 它能解开 secrets/ 下的全部密钥
+        "~/.config/sops/age/*" = "deny";
+        "~/.gnupg/*" = "deny";
+        "~/.config/gh/*" = "deny"; # GH_TOKEN
+        "~/.aws/*" = "deny";
+        "~/.docker/*" = "deny";
+        "~/.kube/*" = "deny";
+        "*.npmrc" = "deny"; # 可能含 registry token
+        "*.netrc" = "deny";
+        "*.git-credentials" = "deny";
+      };
+      # 读: env 文件一律拒绝 (密钥一旦读进上下文就留在会话历史与 review log 里,
+      # 事后改规则也收不回); 模板放行
+      path_read = {
         "*.env" = "deny";
         "*.env.*" = "deny";
         "*.env.example" = "allow";
-        "~/.ssh/*" = "deny";
+      };
+      # 写: .git 只拦写以保护仓库元数据 —— 目录本身与其内容都要拦,
+      # 否则 rm -rf .git 这类命令的方向不确定 (rm 不是纯读命令, 会查两个方向),
+      # 只写 "*.git/*" 会漏掉裸 .git; env 仍需确认 (允许 agent 协助修改)
+      path_write = {
+        "*.git" = "deny";
+        "*.git/*" = "deny";
+        "*.env" = "ask";
+        "*.env.*" = "ask";
+      };
+      # cwd 边界: 只拦写 —— 挡住误改 ~/.bashrc / 其它项目
+      # 注意: 该 surface 缺省就是 ask (实测产生 1236 次请求, 多为读 /nix/store 与 ~/.pi),
+      # 所以"读不打扰"必须显式写 allow, 不配置反而会弹窗; Pi 自身的
+      # Infrastructure Read Auto-Allow 只覆盖 read/find/grep/ls 工具, 不覆盖 bash。
+      external_directory_read = {
+        "*" = "allow";
+      };
+      external_directory_write = {
+        "*" = "ask";
+        "/tmp/*" = "allow"; # 临时目录是常规草稿区
       };
       bash = {
         "*" = "allow";
-        "rm *" = "ask";
+        # rm: 只拦递归删除 (对齐 AGENTS.md 的"rm -rf 先说明影响再确认"), 单文件 rm 不打扰。
+        # 变体写法多, 逐个列举易漏: 已知未覆盖的还有长选项在前再接 -rf 的写法
+        # (如 rm --no-preserve-root -rf /), 以及把 -r 写在操作数之后的写法。
+        "rm -r*" = "ask";
+        "rm -R*" = "ask";
+        "rm --recursive*" = "ask";
+        "rm --force --recursive*" = "ask";
+        # --- git: 只读子命令放行, 其余一律询问 ---------------------------------
+        # 对齐 AGENTS.md 的"不擅自做 git 操作": 兜底 ask, 白名单放行只读形式。
+        # 实测 "git *" = ask 产生了 368 次请求 (status 97 / diff 84 / log 35 / rev-parse 27),
+        # 其中绝大多数是只读查询。
+        # 字母序约束: `*` (0x2A) 小于任何字母, 所以 "git *" 必然排在所有
+        # "git <子命令> ..." 之前; 下面每条白名单都排在它之后, 因此能覆盖它。
         "git *" = "ask";
+
+        # 纯只读子命令 (不存在变更形式), 整条放行
+        "git status *" = "allow";
+        "git diff *" = "allow";
+        "git log *" = "allow";
+        "git show *" = "allow";
+        "git rev-parse *" = "allow";
+        "git rev-list *" = "allow";
+        "git describe *" = "allow";
+        "git grep *" = "allow";
+        "git blame *" = "allow";
+        "git ls-files *" = "allow";
+        "git ls-tree *" = "allow";
+        "git ls-remote *" = "allow";
+        "git merge-base *" = "allow";
+        "git shortlog *" = "allow";
+
+        # 混合型子命令: 只放行列举/查询形式, 变更形式落回上面的 "git *" 询问。
+        # 短选项用 -x* (而非 -x *) 以覆盖 -av/-vv 这类合并写法;
+        # branch 只放行 a/r/v 三个列举标志, 变更标志 (-d -D -m -M -c -C -f -u -t)
+        # 都不以它们开头。未列出但只读的写法 (如 git config user.name) 会询问一次,
+        # 确认后被会话记住; 需要常用时按同样格式补一行即可。
+        "git branch -a*" = "allow";
+        "git branch -r*" = "allow";
+        "git branch -v*" = "allow";
+        "git branch --list*" = "allow";
+        "git branch --show-current*" = "allow";
+        "git config --get*" = "allow";
+        "git config --list*" = "allow";
+        "git remote -v*" = "allow";
+        "git remote show*" = "allow";
+        "git reflog" = "allow";
+        "git reflog show*" = "allow";
+        "git stash list*" = "allow";
+        "git tag -l*" = "allow";
+        "git tag --list*" = "allow";
+        "git worktree list*" = "allow";
         "sudo *" = "ask";
         "mkfs*" = "deny";
       };
