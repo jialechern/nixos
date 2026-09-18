@@ -15,8 +15,11 @@
     # 结构化提问 (MIT, juicesharp): ask_user_question 工具, 模型拿不准时以选项式对话框向你确认
     "npm:@juicesharp/rpiv-ask-user-question"
 
-    # 网页访问: 搜索 / 抓取 / GitHub 克隆 / PDF / 视频理解
-    "npm:pi-web-access"
+    # 自主目标模式 (MIT, narumitw): 给 pi 一个会话级目标, 让它持续工作直到完成/暂停/等待/触达安全上限
+    "npm:@narumitw/pi-goal"
+
+    # Codex 风格只读规划模式 (MIT, narumitw): pi 核心未内置 plan mode, 此扩展补上
+    "npm:@narumitw/pi-plan-mode"
 
     # TUI 界面扩展 (MIT, OldSuns): header / footer / 圆角编辑器 / 轮次遥测 / thinking peek
     # 配置见 extension-configs.nix → ~/.pi/agent/open-tui.json
@@ -26,7 +29,7 @@
     "npm:pi-open-tui"
 
     # --- 已下沉为项目级扩展的包 (不在此全局加载, 见 home/dev/pi.nix) ---
-    # 规划 / 目标 / 侧问 / 子代理 → localBaseExtensions   (pi-init)
-    # 记忆 / LSP / 库文档          → localCodingExtensions (pi-coding)
+    # 网页访问 / 子代理 / 记忆 → localBaseExtensions   (pi-init)
+    # LSP / 库文档             → localCodingExtensions (pi-coding)
   ];
 }

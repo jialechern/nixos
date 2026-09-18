@@ -21,14 +21,12 @@ let
 
   # 基础集合 (pi-init): 通用能力, 任何项目都可能想要
   localBaseExtensions = [
-    # Codex 风格只读规划模式 (MIT, narumitw): pi 核心未内置 plan mode, 此扩展补上
-    "npm:@narumitw/pi-plan-mode"
-    # 自主目标模式 (MIT, narumitw): 给 pi 一个会话级目标, 让它持续工作直到完成/暂停/等待/触达安全上限
-    "npm:@narumitw/pi-goal"
-    # 侧线提问 (MIT, narumitw): /btw 开临时侧线程问问题, 不污染主对话, 主 agent 可继续运行
-    "npm:@narumitw/pi-btw"
+    # 网页访问: 搜索 / 抓取 / GitHub 克隆 / PDF / 视频理解
+    "npm:pi-web-access"
     # 子代理: 把任务委托给专注的子会话
     "npm:pi-subagents"
+    # 持久记忆 + 会话搜索 + 密钥扫描
+    "npm:pi-hermes-memory"
   ];
 
   # 编码集合 (pi-coding): 与基础集合正交, 只含编码相关
@@ -36,8 +34,6 @@ let
   # 编码项目再叠加 pi-coding, 主动用启动耗时换功能。
   # 需要继续细化时可再加一组 (如 localAuditExtensions → pi-audit)。
   localCodingExtensions = [
-    # 持久记忆 + 会话搜索 + 密钥扫描
-    "npm:pi-hermes-memory"
     # 实时代码反馈 (LSP 诊断 / linter / autofix)
     "npm:pi-lens"
     # 官方 Context7 扩展 (MIT, Upstash): 给 agent 注入最新的库文档 (不依赖训练数据)
