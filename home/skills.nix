@@ -62,9 +62,6 @@ let
       names = [
         "skill-creator" # 创建/编辑/评估/优化 skill 的元技能
         "pdf" # 生产级 PDF 处理 (读/建/改/合并/OCR/填表); Proprietary 许可, 仅个人使用
-        "docx" # Word 文档 读/建/改 (含样式/批注/复杂排版); Proprietary 许可
-        "pptx" # PowerPoint 读/建/改 (含模板/图片/逐页视觉校对); Proprietary 许可
-        "xlsx" # Excel 读/建/改 (公式/格式/图表/批量数据); Proprietary 许可
       ];
     };
 

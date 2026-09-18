@@ -48,13 +48,15 @@
     yq
     # 动态链接软件的分流代理工具
     proxychains-ng
-    # OCR 工具
-    ocrmypdf
     # 将 Nix 命令的输出处理以显示有用且美观的信息的工具
     nix-output-monitor
     # 命令行艺术字体生成工具
     figlet
     cmatrix
+    # pdf/文档 工具 (非 skill 依赖)
+    poppler-utils # pdf 工具集
+    img2pdf # 图片无损封包成 pdf
+    ocrmypdf # OCR 工具
 
     # --- PDF skill 配套 CLI ---
     # 来源: ~/.agents/skills 的 pdf (anthropics/skills 官方) 与 pdf-parser
@@ -68,9 +70,5 @@
       # eng 为 nixpkgs wrapper 强制要求, osd+chi_sim+chi_tra 覆盖中英/简繁, 按需增删
       enableLanguages = [ "eng" "osd" "chi_sim" "chi_tra" ];
     })
-
-    # 个人 pdf/文档小工具 (非 skill 依赖)
-    poppler-utils # pdf 工具集
-    img2pdf # 图片无损封包成 pdf
   ];
 }
