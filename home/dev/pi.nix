@@ -30,8 +30,6 @@ let
     "npm:@juicesharp/rpiv-ask-user-question"
     # 自主目标模式 (MIT, narumitw): 给 pi 一个会话级目标, 让它持续工作直到完成/暂停/等待/触达安全上限
     "npm:@narumitw/pi-goal"
-    # Codex 风格只读规划模式 (MIT, narumitw): pi 核心未内置 plan mode, 此扩展补上
-    "npm:@narumitw/pi-plan-mode"
     # TUI 界面扩展 (MIT, OldSuns): header / footer / 圆角编辑器 / 轮次遥测 / thinking peek
     # 配置见下方 home.file 的 ~/.pi/agent/open-tui.json
     # 注意: 这是 UI 接管型扩展, 会重写编辑器边框与上下区域, 与上面的 rpiv-todo
