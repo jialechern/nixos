@@ -10,7 +10,11 @@
 
 // --- --- --- niri 初始化配置 --- --- ---
 
-// 导入环境变量到 Systemd
+// 将 niri 的环境变量推送到 D-Bus 激活环境。
+// 需要保留 (不是冗余配置): niri 的 environment {} 只作用 niri 启动的子进程,
+// 不会进入 systemd/D-Bus, 而 niri-session 只会导入登录 shell 的环境;
+// 本行作为 niri 的子进程运行, 因此能看到 environment {} 的覆盖值 (见 env.kdl),
+// 再由 --all 上报给 D-Bus 激活环境。
 spawn-at-startup "dbus-update-activation-environment" "--all"
 // XWayland: niri >= 25.08 已内置 xwayland-satellite 集成 —— 只要该程序在 $PATH 中
 // (版本 >= 0.7, 本仓库在 modules/software_and_tool.nix 安装), niri 会自己创建 X11
