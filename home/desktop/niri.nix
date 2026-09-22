@@ -16,14 +16,22 @@ let
     done
     exit 0
   '';
+
+  # 构建期校验 niri 配置: 语法/选项写错时 rebuild 直接失败
+  # (只校验 dotfiles/niri, 生成的两份可选 include 不参与)
+  niriConfig = pkgs.runCommand "niri-config-checked" {
+    nativeBuildInputs = [ pkgs.niri ];
+  } ''
+    cp -r ${../../dotfiles/niri} $out
+    chmod -R u+w $out
+    niri validate --config $out/config.kdl
+  '';
 in
 {
-  # niri 主配置: 部署本仓库的 dotfiles/niri (原 flake 输入 niri-dotfiles 已移除)
-  # recursive = true 让 Home Manager 逐文件软链而不是整目录链接, 因此下方生成的
-  # conf.d/local-override.kdl 可以落在同一个目录里。
-  # 注意: 配置内容以本仓库为准, 改完需重建; 文件在 ~/.config/niri 下是只读软链。
+  # niri 主配置; recursive = true 让 HM 逐文件软链, 下方生成的
+  # local-override.kdl 才能落在同一目录 (文件只读, 临时试验用 local-live.kdl)
   xdg.configFile."niri" = {
-    source = ../../dotfiles/niri;
+    source = niriConfig;
     recursive = true;
   };
 
