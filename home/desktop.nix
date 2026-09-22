@@ -18,7 +18,7 @@
     # services
     ./desktop/services/wl-clip-persist.nix
     ./desktop/services/mako.nix
-    ./desktop/services/polkit-gnome-authentication-agent-1.nix
+    ./desktop/services/polkit-agent.nix
     ./desktop/services/waybar.nix
     ./desktop/services/swayidle.nix
     ./desktop/services/wlsunset.nix

@@ -23,7 +23,6 @@
     overskride # 蓝牙管理
     loupe # 图片查看器
     libnotify # 通知库
-    polkit_gnome # 权限认证代理
     firefox
     seahorse # 图形化 keyring 管理工具
 
