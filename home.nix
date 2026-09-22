@@ -152,10 +152,8 @@
     # 禁止 fzf 在 tmux 中新建 pane, 改为内联显示(覆盖 fzf 模块默认的 "1")
     FZF_TMUX = lib.mkForce "0";
 
-    # 强制 KeePassXC 使用 Wayland 模式, 避免缩放模糊
-    QT_QPA_PLATFORM = "wayland";
-    # 如果使用自动输入 (Auto-type), Wayland 下可能需要特定的支持
-    QT_XCB_GL_INTEGRATION = "none";
+    # 注: Qt 相关变量 (QT_QPA_PLATFORM / QT_XCB_GL_INTEGRATION /
+    # QT_QPA_PLATFORMTHEME) 统一放在 home/desktop/qt.nix 中维护。
 
     # --- Rust 代理设置 ---
     # Rust 详细回溯
