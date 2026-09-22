@@ -177,17 +177,12 @@ recent-windows {
 }
 
 // --- 硬件开关事件（笔记本盖子、平板模式） ---
-/- switch-events {
-    // 笔记本盖子关闭时的动作
-    // lid-close { spawn "notify-send" "盖子已关闭"; }
+switch-events {
+    // 合盖锁屏 (开盖由 niri 自动恢复内置屏)
+    lid-close { spawn "swaylock"; }
 
-    // 笔记本盖子打开时的动作（niri 会自动管理内置显示器状态）
-    // lid-open { spawn "notify-send" "盖子已打开"; }
-
-    // 进入平板模式时的动作（常用于启用在屏幕键盘）
-    // tablet-mode-on { spawn "bash" "-c" "gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled true"; }
-
-    // 退出平板模式时的动作
+    // 平板模式 (二合一设备才需要):
+    // tablet-mode-on  { spawn "bash" "-c" "gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled true"; }
     // tablet-mode-off { spawn "bash" "-c" "gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled false"; }
 }
 
