@@ -23,11 +23,7 @@
       package = pkgs.papirus-icon-theme;
     };
 
-    cursorTheme = {
-      name = "breeze_cursors";
-      size = 24;
-      package = pkgs.kdePackages.breeze;
-    };
+    # 光标主题由 home.pointerCursor (home.nix) 统一派生, 不在此重复声明
 
     font = {
       name = "JetBrainsMono Nerd Font";
