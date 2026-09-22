@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ pkgs, lib, ... }:
 
 let
   catppuccin-rounded = pkgs.runCommand "catppuccin-fcitx5-rounded" { } ''
@@ -50,13 +50,7 @@ in
   # 使得 fcitx5 主题插件在需要的目录下可见
   home.file.".local/share/fcitx5/themes".source = "${catppuccin-rounded}";
 
-  # 环境变量: 确保在 Niri/Wayland 下各类应用(QT, GTK, Electron)都能正常呼出输入法
-  home.sessionVariables = {
-    XMODIFIERS = "@im=fcitx";
-    GTK_IM_MODULE = "fcitx";
-    QT_IM_MODULE = "fcitx";
-    # 针对某些现代 Wayland 应用, fcitx5 推荐使用文本输入协议
-    SDL_IM_MODULE = "fcitx";
-    GLFW_IM_MODULE = "ibus"; # 部分游戏/应用需要
-  };
+  # 输入法环境变量 (XMODIFIERS / GTK_IM_MODULE / QT_IM_MODULE / SDL_IM_MODULE /
+  # GLFW_IM_MODULE) 不在这里设置: 它们属于整个会话, 统一由系统模块
+  # modules/input-method_and_font.nix 的 environment.sessionVariables 注入。
 }
