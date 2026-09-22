@@ -22,30 +22,28 @@ let
     # 权限控制 (MIT, gotgenes): 对工具 / bash / 路径 / MCP 实施 allow / ask / deny 三级策略
     # 策略文件: ~/.pi/agent/extensions/pi-permission-system/config.json (见下方 home.file)
     "npm:@gotgenes/pi-permission-system"
+    # 子代理: 把任务委托给专注的子会话
+    "npm:pi-subagents"
     # 待办清单 (MIT, juicesharp): todo 工具 + /todos 命令 + 编辑器上方实时面板
     # 面板折叠键在 ~/.config/rpiv-todo/config.json 绑定为 ctrl+shift+f
     # (该键与内置 tui.altScreen.search 冲突, 后者已在上方 keybindings 改绑 ctrl+shift+s)
     "npm:@juicesharp/rpiv-todo"
     # 结构化提问 (MIT, juicesharp): ask_user_question 工具, 模型拿不准时以选项式对话框向你确认
     "npm:@juicesharp/rpiv-ask-user-question"
-    # 自主目标模式 (MIT, narumitw): 给 pi 一个会话级目标, 让它持续工作直到完成/暂停/等待/触达安全上限
-    "npm:@narumitw/pi-goal"
     # TUI 界面扩展 (MIT, OldSuns): header / footer / 圆角编辑器 / 轮次遥测 / thinking peek
     # 配置见下方 home.file 的 ~/.pi/agent/open-tui.json
-    # 注意: 这是 UI 接管型扩展, 会重写编辑器边框与上下区域, 与上面的 rpiv-todo
-    # 面板 (编辑器上方实时面板) 存在潜在重叠; 若显示异常可调整本数组的先后顺序
     "npm:pi-open-tui"
   ];
 
   # 基础集合 (pi-init): 通用能力, 任何项目都可能想要
   localBaseExtensions = [
+    # 自主目标模式 (MIT, narumitw): 给 pi 一个会话级目标, 让它持续工作直到完成/暂停/等待/触达安全上限
+    "npm:@narumitw/pi-goal"
+    # 持久记忆 + 会话搜索 + 密钥扫描
+    "npm:pi-hermes-memory"
     # 网页访问: 搜索 / 抓取 / GitHub 克隆 / PDF / 视频理解
     # 配置见下方 home.file 的 ~/.pi/agent/web-search.json
     "npm:pi-web-access"
-    # 子代理: 把任务委托给专注的子会话
-    "npm:pi-subagents"
-    # 持久记忆 + 会话搜索 + 密钥扫描
-    "npm:pi-hermes-memory"
   ];
 
   # 编码集合 (pi-coding): 与基础集合正交, 只含编码相关
