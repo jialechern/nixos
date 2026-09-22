@@ -1,5 +1,11 @@
 { config, pkgs, ... }:
 
+let
+  # 锁屏命令; 配合 swayidle 的 -w 使用
+  # (swaylock 配置里 daemonize = true 即 `swaylock -f`: 锁定建立后才返回,
+  #  故不会出现"还没锁上就先挂起"的情况)
+  swaylock = "${config.programs.swaylock.package}/bin/swaylock";
+in
 {
   services.swayidle = {
     enable = true;
@@ -7,7 +13,7 @@
     # 在命令执行完毕前阻塞，确保锁屏等关键操作先完成
     extraArgs = [ "-w" ];
 
-    # --- 空闲超时动作（不含自动锁屏） ---
+    # --- 空闲超时动作 ---
     timeouts = [
       # 十分钟（600 秒）无活动后自动关闭显示器
       {
@@ -16,12 +22,20 @@
         # 恢复活动时点亮显示器
         resumeCommand = "${pkgs.niri}/bin/niri msg action power-on-monitors";
       }
+      # 十五分钟（900 秒）无活动后锁屏（安全兜底）
+      {
+        timeout = 900;
+        command = swaylock;
+      }
     ];
 
-    # --- 系统电源事件 ---
+    # --- 系统/会话事件 ---
     events = {
       # 系统进入睡眠前锁定屏幕
-      before-sleep = "${config.programs.swaylock.package}/bin/swaylock";
+      before-sleep = swaylock;
+
+      # 响应 loginctl lock-session 等外部锁定请求
+      lock = swaylock;
 
       # 系统从睡眠恢复后确保显示器点亮
       after-resume = "${pkgs.niri}/bin/niri msg action power-on-monitors";
