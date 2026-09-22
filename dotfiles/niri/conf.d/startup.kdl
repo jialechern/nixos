@@ -12,9 +12,12 @@
 
 // 导入环境变量到 Systemd
 spawn-at-startup "dbus-update-activation-environment" "--all"
-// 启用 XWayland 支持
-// 可选参数：path 指定 xwayland-satellite 路径，off 禁用
-spawn-at-startup "xwayland-satellite"
+// XWayland: niri >= 25.08 已内置 xwayland-satellite 集成 —— 只要该程序在 $PATH 中
+// (版本 >= 0.7, 本仓库在 modules/software_and_tool.nix 安装), niri 会自己创建 X11
+// socket、导出 $DISPLAY, 并在有 X11 客户端连接时按需拉起、退出后自动重启。
+// 因此不要再手动 spawn: 官方 wiki (Xwayland.md) 明确要求移除这种自定义配置,
+// 否则会干扰自动集成。如需自定义路径或禁用, 用顶层配置:
+//   xwayland-satellite { path "…" }   // 或 { off }
 // 壁纸初始化
 // 每次开机随机选取一张壁纸
 spawn-sh-at-startup "waypaper --backend awww --folder $HOME/Pictures/Wallpapers --random --fill fill"
