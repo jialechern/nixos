@@ -5,9 +5,9 @@
   gtk = {
     enable = true;
 
-    # 设置深色模式
-    gtk3.extraConfig.gtk-application-prefer-dark-theme = 1;
-    gtk4.extraConfig.gtk-application-prefer-dark-theme = 1;
+    # 深色模式: 由 HM 统一写入 gtk3/gtk4 的 settings.ini 与 dconf 的
+    # org/gnome/desktop/interface color-scheme, 不再手写 extraConfig / dconf
+    colorScheme = "dark";
 
     # 主题、图标及字体配置
     theme = {
@@ -81,13 +81,6 @@
       gtk-sound-theme-name = "ocean";
       # 强制设置 XFT DPI (120 DPI)
       gtk-xft-dpi = 122880;
-    };
-  };
-
-  # 强制同步 GNOME 相关的深色模式设置
-  dconf.settings = {
-    "org/gnome/desktop/interface" = {
-      color-scheme = "prefer-dark";
     };
   };
 
