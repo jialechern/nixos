@@ -1,71 +1,27 @@
 { pkgs, ... }:
 
 {
-  # 安装必要的软件包
-  home.packages = with pkgs; [
-    wl-clipboard # 基础工具
-    wl-clip-persist # 持久化工具
-    cliphist # 历史管理器
-  ];
-
-  # 配置 wl-clip-persist 服务
-  systemd.user.services.wl-clip-persist = {
-    Unit = {
-      Description = "Persistent clipboard for Wayland";
-      # 确保在图形界面会话启动后再启动
-      After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
-    };
-
-    Service = {
-      # 使用 --clipboard both 覆盖常规剪切板和鼠标选区 (primary)
-      ExecStart = "${pkgs.wl-clip-persist}/bin/wl-clip-persist --clipboard both";
-      Restart = "always";
-      RestartSec = "5";
-    };
-
-    Install = {
-      WantedBy = [ "graphical-session.target" ];
-    };
+  # --- --- --- 剪贴板历史与持久化 --- --- ---
+  # 使用 Home Manager 模块, 不再手写 systemd 服务:
+  # 模块会把服务挂到 wayland.systemd.target (即 graphical-session.target) 上。
+  services.wl-clip-persist = {
+    enable = true;
+    # 保持改动前的参数 (--clipboard both)。
+    # 注意: 这与 niri 侧 config.kdl 中的 clipboard { disable-primary } 语义上矛盾,
+    # 若确认不需要主选区 (中键粘贴), 建议改成模块推荐值 "regular"。
+    clipboardType = "both";
   };
 
-  # 配置 cliphist 监听服务
-  # 这样你就不需要在 Niri 的 config.kdl 里手动写 spawn-at-startup 了
-  systemd.user.services.cliphist = {
-    Unit = {
-      Description = "Clipboard history service";
-      After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
-    };
-
-    Service = {
-      # 监听并存储剪切板历史
-      ExecStart = "${pkgs.wl-clipboard}/bin/wl-paste --type text --watch ${pkgs.cliphist}/bin/cliphist store";
-      Restart = "always";
-      RestartSec = "5";
-    };
-
-    Install = {
-      WantedBy = [ "graphical-session.target" ];
-    };
+  services.cliphist = {
+    enable = true;
+    # 保持改动前行为: 不传参数, 用 cliphist 自身的默认值
+    # (cliphist 0.7.0: -max-items 750, -max-dedupe-search 100);
+    # HM 模块的默认值是 500 / 10。
+    extraOptions = [ ];
   };
 
-  # 图片剪切板监听服务
-  systemd.user.services.cliphist-images = {
-    Unit = {
-      Description = "Clipboard history service (images)";
-      After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
-    };
-
-    Service = {
-      ExecStart = "${pkgs.wl-clipboard}/bin/wl-paste --type image --watch ${pkgs.cliphist}/bin/cliphist store";
-      Restart = "always";
-      RestartSec = "5";
-    };
-
-    Install = {
-      WantedBy = [ "graphical-session.target" ];
-    };
-  };
+  # wl-clipboard 仍需显式安装: niri 的剪贴板历史绑定
+  # (cliphist list | fzf | cliphist decode | wl-copy) 直接调用 wl-copy,
+  # 而 services.cliphist 只把 wl-clipboard 用作服务自身的可执行文件。
+  home.packages = [ pkgs.wl-clipboard ];
 }
