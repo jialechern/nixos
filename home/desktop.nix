@@ -37,8 +37,8 @@
     # 设置桌面环境为 niri
     XDG_CURRENT_DESKTOP = "niri";
 
-    # 强制部分 GTK 应用使用 Wayland
-    GDK_BACKEND = "wayland,x11";
+    # 注意: 不要设置 GDK_BACKEND。niri 官方文档 (Important-Software) 明确警告:
+    # 全局设置该变量会破坏 screencast portal; GTK 自身会正确选择后端。
 
     # Wayland 环境中运行 Electron 应用必要的环境变量
     ELECTRON_OZONE_PLATFORM_HINT = "auto";
