@@ -1,4 +1,4 @@
-{ config, lib, pkgs, username, ... }:
+{ config, pkgs, ... }:
 
 {
   # --- 合成器与桌面环境 ---
@@ -15,14 +15,17 @@
 
   services.greetd = {
     enable = true;
-    settings = {
-      initial_session = {
-        command = "${pkgs.niri}/bin/niri-session";
-        user = "${username}";
-      };
 
+    # tuigreet 是 TUI greeter: 打开开关避免 systemd 启动日志打断界面
+    useTextGreeter = true;
+
+    settings = {
+      # 不使用 initial_session: 它的语义是免密码自动登录 (greetd 跳过 greeter
+      # 直接进入会话, 且 greetd 每次重启都会再次免密登录), 故只保留 default_session
       default_session = {
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd niri-session";
+        # tuigreet 是 greeter 本体, --cmd 指定登录后启动的会话;
+        # 会话用绝对路径, 不依赖 greetd 服务的 PATH
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd ${config.programs.niri.package}/bin/niri-session";
         user = "greeter";
       };
     };
