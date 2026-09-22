@@ -102,14 +102,6 @@ window-rule {
     }
 }
 
-// 通过设置空默认列宽度解决 WezTerm 的初始配置错误
-window-rule {
-    // 此正则表达式特意尽可能具体，因为这是默认配置，我们不希望出现误报
-    // 如果愿意，可以只使用 app-id="wezterm"
-    match app-id=r#"^org\.wezfurlong\.wezterm$"#
-    default-column-width {}
-}
-
 // 默认以浮动模式打开 Firefox 画中画播放器
 window-rule {
     // 此 app-id 正则表达式适用于两者：
