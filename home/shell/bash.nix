@@ -49,12 +49,6 @@
       # vi 编辑模式(命令行操作风格贴近系统管理场景)
       set -o vi
 
-      # 释放 <C-q>/<C-s> 的终端流控功能, 使其可用于 Readline 键绑定
-      stty -ixon 2>/dev/null
-
-      # <C-q> 从插入模式进入 Normal(vi-movement) 模式
-      bind -m vi-insert '"\C-q": vi-movement-mode'
-
       # vi 模式光标: readline 8.0+ (bash 5.0+ 自带) 的 vi-ins/cmd-mode-string,
       # 模式切换时实时发送 DECSCUSR, 解决原方案"进入 normal 光标不变"的局限
       bind 'set show-mode-in-prompt on'

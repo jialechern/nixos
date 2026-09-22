@@ -15,16 +15,6 @@
       # -------- 启用 VI 键绑定 --------
       fish_vi_key_bindings
 
-      # -------- 键绑定: 将 <C-q> 从插入模式退出到普通模式 --------
-      # 注: 原本用 programs.fish.binds, 但该 option 的类型定义
-      # (`origin // { check = ...; }`) 与新版 nixpkgs 的 option v2 merge
-      # 机制不兼容, 会直接求值报错(见 HM PR #9939)。这里写等价的
-      # fish 原生语句, 内容与 HM 原本生成的一致; 待上游合并后可改回。
-      function fish_user_key_bindings
-        bind --mode insert --sets-mode default ctrl-q 'true' repaint
-      end
-      fish_user_key_bindings
-
       # -------- 关闭启动欢迎语 --------
       set -g fish_greeting ""
 
