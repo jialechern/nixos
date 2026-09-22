@@ -60,4 +60,31 @@
     LIBVA_DRIVER_NAME = "nvidia";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
   };
+
+  # --- 缓解 niri 的 VRAM 泄漏 (上游 niri wiki: Nvidia.md) ---
+  # 给 niri 进程设 GLVidHeapReuseRatio=0, 否则显存可能长期涨到 ~1 GiB (nvtop 可查);
+  # 驱动的 ...-rc.d/ 目录在 nixpkgs 无对应选项, 故用 environment.etc; 生效需重启 niri 会话
+  environment.etc."nvidia/nvidia-application-profiles-rc.d/50-limit-free-buffer-pool-in-wayland-compositors.json".text =
+    builtins.toJSON {
+      rules = [
+        {
+          pattern = {
+            feature = "procname";
+            matches = "niri";
+          };
+          profile = "Limit Free Buffer Pool On Wayland Compositors";
+        }
+      ];
+      profiles = [
+        {
+          name = "Limit Free Buffer Pool On Wayland Compositors";
+          settings = [
+            {
+              key = "GLVidHeapReuseRatio";
+              value = 0;
+            }
+          ];
+        }
+      ];
+    };
 }
