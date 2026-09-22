@@ -215,7 +215,7 @@ in
       # --- 模型与思考 ---
       defaultProvider = "deepseek"; # 默认提供商
       defaultModel = "deepseek-flash"; # 默认模型
-      defaultThinkingLevel = "high"; # 默认思考等级
+      defaultThinkingLevel = "max"; # 默认思考等级
 
       # --- UI 与显示 ---
       theme = "catppuccin-mocha-mauve"; # 自定义 Catppuccin Mocha (mauve 强调色) 主题
@@ -423,10 +423,10 @@ in
     #   - 密钥与凭据路径一律 deny (deny 是硬拒绝、不弹窗、运行时无法放行)
     #   - .env 按方向区分: 读 deny (密钥不入上下文与日志), 写 ask (仍可批准修改)
     #   - .git 只拦写 (含 .git 目录本身与其中内容), 读 .git 仍可用于查看仓库状态
-    #     (旧配置的裸 path "*.git" = deny 会连读一起拒, 实测误杀了 ls -d .git / git remote -v)
+    #     (不用裸 path "*.git" = deny: 那会连读一起拒, 实测误杀了 ls -d .git / git remote -v)
     #   - cwd 之外: 读显式放行, 只拦写 (实测该 surface 缺省即 ask, 读 /nix/store 弹窗很多)
-    #   - 危险 bash 命令: rm 递归删除 / sudo 需确认, mkfs 直接拒绝
-    #   - git: 只放行只读子命令 (status/diff/log/rev-parse 等), 其余一律询问
+    #   - bash 只列三条例外, 其余一律放行 —— 包括全部 git 子命令与 rm -rf:
+    #     git push 直接拒绝 (远端变更不可逆), sudo 需确认, mkfs 直接拒绝
     #
     # 三条影响写法的语义 (详见上游 docs/configuration.md):
     #   1. path / external_directory 是 path_read+path_write 的语法糖, 想"只拦写"必须用方向键
@@ -490,57 +490,7 @@ in
         };
         bash = {
           "*" = "allow";
-          # rm: 只拦递归删除 (对齐 AGENTS.md 的"rm -rf 先说明影响再确认"), 单文件 rm 不打扰。
-          # 变体写法多, 逐个列举易漏: 已知未覆盖的还有长选项在前再接 -rf 的写法
-          # (如 rm --no-preserve-root -rf /), 以及把 -r 写在操作数之后的写法。
-          "rm -r*" = "ask";
-          "rm -R*" = "ask";
-          "rm --recursive*" = "ask";
-          "rm --force --recursive*" = "ask";
-          # --- git: 只读子命令放行, 其余一律询问 ---------------------------------
-          # 对齐 AGENTS.md 的"不擅自做 git 操作": 兜底 ask, 白名单放行只读形式。
-          # 实测 "git *" = ask 产生了 368 次请求 (status 97 / diff 84 / log 35 / rev-parse 27),
-          # 其中绝大多数是只读查询。
-          # 字母序约束: `*` (0x2A) 小于任何字母, 所以 "git *" 必然排在所有
-          # "git <子命令> ..." 之前; 下面每条白名单都排在它之后, 因此能覆盖它。
-          "git *" = "ask";
-
-          # 纯只读子命令 (不存在变更形式), 整条放行
-          "git status *" = "allow";
-          "git diff *" = "allow";
-          "git log *" = "allow";
-          "git show *" = "allow";
-          "git rev-parse *" = "allow";
-          "git rev-list *" = "allow";
-          "git describe *" = "allow";
-          "git grep *" = "allow";
-          "git blame *" = "allow";
-          "git ls-files *" = "allow";
-          "git ls-tree *" = "allow";
-          "git ls-remote *" = "allow";
-          "git merge-base *" = "allow";
-          "git shortlog *" = "allow";
-
-          # 混合型子命令: 只放行列举/查询形式, 变更形式落回上面的 "git *" 询问。
-          # 短选项用 -x* (而非 -x *) 以覆盖 -av/-vv 这类合并写法;
-          # branch 只放行 a/r/v 三个列举标志, 变更标志 (-d -D -m -M -c -C -f -u -t)
-          # 都不以它们开头。未列出但只读的写法 (如 git config user.name) 会询问一次,
-          # 确认后被会话记住; 需要常用时按同样格式补一行即可。
-          "git branch -a*" = "allow";
-          "git branch -r*" = "allow";
-          "git branch -v*" = "allow";
-          "git branch --list*" = "allow";
-          "git branch --show-current*" = "allow";
-          "git config --get*" = "allow";
-          "git config --list*" = "allow";
-          "git remote -v*" = "allow";
-          "git remote show*" = "allow";
-          "git reflog" = "allow";
-          "git reflog show*" = "allow";
-          "git stash list*" = "allow";
-          "git tag -l*" = "allow";
-          "git tag --list*" = "allow";
-          "git worktree list*" = "allow";
+          "git push *" = "deny"; # 远端写入不可逆, 硬拒绝
           "sudo *" = "ask";
           "mkfs*" = "deny";
         };
