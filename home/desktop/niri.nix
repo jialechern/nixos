@@ -75,12 +75,8 @@ in
           scale 1.0
           // 物理上位于笔记本左侧, 故置于全局坐标空间最左侧 (x=0 为全局原点)
           position x=0 y=0
-          // VRR (G-SYNC compatible): 当前为 MiniDP (DP-3) 链路, NVIDIA 驱动支持 DP 上的
-          // VRR (niri msg outputs 显示 supported)。此处采用 on-demand 模式: 仅当输出上
-          // 存在匹配 variable-refresh-rate 窗口规则的窗口时才启用 VRR, 平时显示
-          // "disabled" 属正常 (2026-08 排查时未配置该窗口规则, 故 VRR 在游戏中从未
-          // 实际激活, 这也是当时实测 VRR 无效的原因); 若需 VRR 对游戏生效, 需在
-          // window-rule 中为游戏窗口添加 variable-refresh-rate 匹配:
+          // VRR (G-SYNC compatible): on-demand 模式, 只有文末 window-rule 命中的窗口
+          // 存在时才启用 (平时显示 "disabled" 属正常)
           variable-refresh-rate on-demand=true
           // 全局常开写法 (此前在 DP 上实测正常; 不推荐, 静止画面可能触发 modeset 黑闪):
           // variable-refresh-rate
@@ -137,6 +133,13 @@ in
       // - debug 选项不受 niri 配置兼容性政策保护, 升级 niri 后建议复核;
       // - 回退: 驱动修复或换 AMD 后可删本块; 备选 debug { disable-direct-scanout }
       //   (全屏也走合成路径, 保持全屏, 性能损失很小)。
+
+      // --- 游戏窗口启用 VRR (配合输出上的 on-demand=true) ---
+      // 没生效的游戏用 `niri msg windows` 查 app-id 补进正则
+      window-rule {
+          match app-id=r#"^(gamescope|steam_app_\d+|.*\.exe)$"#
+          variable-refresh-rate true
+      }
     ''
     else ''
       // local-override.kdl
