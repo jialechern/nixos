@@ -55,13 +55,8 @@
     };
 
     # GTK 4.0 特定配置
-    gtk4.theme = {
-      name = "catppuccin-mocha-mauve-standard";
-      package = pkgs.catppuccin-gtk.override {
-        variant = "mocha";
-        accents = [ "mauve" ];
-      };
-    };
+    # 显式声明以保留旧默认 (HM 26.05 起该项默认改为 null); 升 stateVersion 时再决定
+    gtk4.theme = config.gtk.theme;
     gtk4.extraConfig = {
       # 开启光标闪烁
       gtk-cursor-blink = 1;
