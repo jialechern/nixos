@@ -31,9 +31,9 @@
   ];
 
   home.sessionVariables = {
-    # 强制 QT 使用 Wayland 模式, 避免缩放模糊
-    QT_QPA_PLATFORM = "wayland";
-    # 如果使用自动输入 (Auto-type), Wayland 下可能需要特定的支持
+    # 不设 QT_QPA_PLATFORM: Qt 6.5+ 会自动按 wayland→xcb 选平台, 硬写 "wayland"
+    # 会让只支持 X11 的 Qt 程序起不来
+    # QT_XCB_GL_INTEGRATION: 关闭走 xcb 的 Qt 程序的 GL 集成 (代价是软件渲染)
     QT_XCB_GL_INTEGRATION = "none";
   };
 }
