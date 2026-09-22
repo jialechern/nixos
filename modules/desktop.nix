@@ -2,8 +2,16 @@
 
 {
   # --- 合成器与桌面环境 ---
-  # 自动处理 Niri 的 Wayland session 注册
-  programs.niri.enable = true;
+  # programs.niri 一并负责: niri 包与 Wayland session 注册、niri.service 用户单元
+  # (含 enableDefaultPath=false, 避免覆盖 niri-session 导入的 PATH)、gnome-keyring、
+  # pam.services.swaylock、dconf、xdg-desktop-autostart, 以及 xdg.portal 的 niri 后端与接口路由
+  programs.niri = {
+    enable = true;
+
+    # 不安装 nautilus: portal 的 FileChooser 改用 xdg-desktop-portal-gtk,
+    # 与桌面用的 Thunar 风格一致, 也避免为了一个文件对话框拖入整个 nautilus
+    useNautilus = false;
+  };
 
   services.greetd = {
     enable = true;
