@@ -1,4 +1,3 @@
-dotfiles/*
 /AGENTS.md
-**/.pi/**/*
+.pi/
 **/.ruff_cache/**/*
