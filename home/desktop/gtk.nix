@@ -5,8 +5,7 @@
   gtk = {
     enable = true;
 
-    # 深色模式: 由 HM 统一写入 gtk3/gtk4 的 settings.ini 与 dconf 的
-    # org/gnome/desktop/interface color-scheme, 不再手写 extraConfig / dconf
+    # 深色模式 (HM 同时写入 gtk3/gtk4 settings 与 dconf 的 color-scheme)
     colorScheme = "dark";
 
     # 主题、图标及字体配置

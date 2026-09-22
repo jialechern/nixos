@@ -1,9 +1,7 @@
 { config, pkgs, ... }:
 
 let
-  # 锁屏命令; 配合 swayidle 的 -w 使用
-  # (swaylock 配置里 daemonize = true 即 `swaylock -f`: 锁定建立后才返回,
-  #  故不会出现"还没锁上就先挂起"的情况)
+  # 锁屏命令 (swaylock 配置里 daemonize = true, 即锁定建立后才返回)
   swaylock = "${config.programs.swaylock.package}/bin/swaylock";
 in
 {
@@ -22,7 +20,7 @@ in
         # 恢复活动时点亮显示器
         resumeCommand = "${pkgs.niri}/bin/niri msg action power-on-monitors";
       }
-      # 十五分钟（900 秒）无活动后锁屏（安全兜底）
+      # 十五分钟（900 秒）无活动后锁屏
       {
         timeout = 900;
         command = swaylock;

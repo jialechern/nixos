@@ -34,16 +34,11 @@
 
   # --- --- --- 环境变量与会话同步 --- --- ---
   home.sessionVariables = {
-    # 注意:
-    # - 不要设置 XDG_CURRENT_DESKTOP: niri-session 自己会设置并在退出时清理,
-    #   写在这里会泄漏到其它会话, 影响 portal 后端选择。
-    # - 不要设置 GDK_BACKEND: niri 官方文档 (Important-Software) 明确警告
-    #   全局设置该变量会破坏 screencast portal; GTK 自身会正确选择后端。
-    # - 输入法变量 (XMODIFIERS / *_IM_MODULE) 见 modules/input-method_and_font.nix。
-    # - Qt 平台主题由 qt.platformTheme 自动设置 (见 ./desktop/qt.nix)。
+    # 不要在此设置: XDG_CURRENT_DESKTOP (niri-session 自己管, 否则会泄漏到其它会话)、
+    # GDK_BACKEND (官方警告会破坏 screencast portal)、输入法变量与 Qt 平台主题
+    # (分别见 modules/input-method_and_font.nix、./desktop/qt.nix)
 
-    # Wayland 环境中运行 Electron 应用必要的环境变量
-    # (ELECTRON_ENABLE_FEATURES=WaylandWindowDecorations 已废弃: Electron 26+ 默认开启)
+    # Electron 应用走 Wayland
     ELECTRON_OZONE_PLATFORM_HINT = "auto";
   };
 }

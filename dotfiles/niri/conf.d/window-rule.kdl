@@ -36,10 +36,7 @@ layer-rule {
     }
 }
 
-// 使 Mako 通知弹窗获得毛玻璃模糊特效
-// 注意: mako 的 layer-shell 命名空间是 "notifications" (见 mako 源码 wayland.c 里的
-// zwlr_layer_shell_v1_get_layer_surface(..., "notifications")), 不是 "mako";
-// 写成 ^mako$ 时本规则永远不会命中。可用 `niri msg layers` 核对实际命名空间。
+// 使 Mako 通知弹窗获得毛玻璃模糊特效 (mako 的命名空间是 "notifications", 不是 "mako")
 layer-rule {
     match namespace="^notifications$"
 

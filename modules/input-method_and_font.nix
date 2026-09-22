@@ -19,14 +19,8 @@
   };
 
   # --- 输入法环境变量 ---
-  # nixpkgs 的 i18n.inputMethod (waylandFrontend = true) 只会设置 XMODIFIERS 与
-  # QT_PLUGIN_PATH, 其余 toolkit 需要的输入法变量统一在这里定义一次。
-  # 此前它们散落在 home/desktop/fcitx5.nix (HM sessionVariables) 与
-  # dotfiles/niri/conf.d/env.kdl (niri environment {}) 两处, 行为还不一致 ——
-  # niri 的 environment {} 只作用于 niri 启动的子进程, 不会传播到 systemd 服务。
-  # 放在系统层的原因: pam_env 会在登录时注入 (greetd 会话同样生效), 同时也会并入
-  # environment.variables 供登录 shell 使用。
-  # 注意: 不要设置 GDK_BACKEND —— niri 官方文档明确警告全局设置会破坏 screencast portal。
+  # i18n.inputMethod (waylandFrontend) 只设 XMODIFIERS/QT_PLUGIN_PATH, 其余变量在此定义;
+  # 不要设置 GDK_BACKEND —— 官方警告会破坏 screencast portal
   environment.sessionVariables = {
     GTK_IM_MODULE = "fcitx"; # GTK2 / 走 XWayland 的 GTK 程序 / Electron
     QT_IM_MODULE = "fcitx"; # Qt5 及自带 Qt 输入法模块的程序 (Qt6 的 Wayland 原生输入走 text-input-v3)

@@ -48,6 +48,7 @@
     enable = true;
     # 核心选项: 构建时如果不存在则自动创建
     createDirectories = true;
+    # 显式声明以保留旧默认 (HM 26.05 起默认改为 false), 升 stateVersion 时再决定
     setSessionVariables = true;
 
     # 定义具体的文件夹路径
@@ -153,8 +154,7 @@
     # 禁止 fzf 在 tmux 中新建 pane, 改为内联显示(覆盖 fzf 模块默认的 "1")
     FZF_TMUX = lib.mkForce "0";
 
-    # 注: Qt 相关变量 (QT_QPA_PLATFORM / QT_XCB_GL_INTEGRATION /
-    # QT_QPA_PLATFORMTHEME) 统一放在 home/desktop/qt.nix 中维护。
+    # Qt 相关变量见 home/desktop/qt.nix
 
     # --- Rust 代理设置 ---
     # Rust 详细回溯

@@ -78,8 +78,8 @@
   systemd.user.services.mako = {
     Unit = {
       Description = "Mako notification daemon";
-      # 排在 graphical-session.target 之后: graphical-session-pre.target 早于 niri.service,
-      # 那时 WAYLAND_DISPLAY 还没设置, mako 只能靠 Restart 重试才起来。
+      # 需排在 graphical-session.target 之后 (pre.target 早于 niri.service,
+      # 那时还没有 WAYLAND_DISPLAY)
       After = [ "graphical-session.target" ];
       PartOf = [ "graphical-session.target" ];
     };

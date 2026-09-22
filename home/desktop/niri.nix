@@ -35,13 +35,8 @@ in
     recursive = true;
   };
 
-  # 本机特定配置 (外接显示器、渲染设备等), 按主机注入
-  # 经 config.kdl 末行的 `include optional=true "conf.d/local-override.kdl"` 加载。
-  # 本文件由本仓库生成 (hostName 由各主机的 configuration.nix 经 extraSpecialArgs 注入),
-  # 不要再把 conf.d/local-override.kdl 放回 dotfiles/niri/: Home Manager 对
-  # "目录递归软链" 与 "同路径单独定义" 的重叠默认保留目录里那份、静默忽略生成的这份
-  # (home.fileOverlapResolution 默认 "ignore"), 会退化成很难发现的错误配置;
-  # modules/desktop.nix 里的断言把这个陷阱变成显式报错。
+  # 本机特定配置 (外接显示器、渲染设备等), 按 hostName 注入;
+  # 由 config.kdl 末行的 include optional=true 加载
   xdg.configFile."niri/conf.d/local-override.kdl".text =
     if hostName == "omen" then ''
       // local-override.kdl

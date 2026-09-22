@@ -48,13 +48,8 @@
     };
   };
 
-  # 针对 Niri/Wayland 的环境变量
-  # 注:
-  # - nvidia-vaapi-driver 无需手动列入 hardware.graphics.extraPackages:
-  #   nixpkgs 的 hardware.nvidia.videoAcceleration 默认为 true, 会自动加入该包
-  #   (它也是下面 LIBVA_DRIVER_NAME=nvidia 能生效的前提)。
-  # - 原 WLR_NO_HARDWARE_CURSORS 已删除: 它是 wlroots 专有变量,
-  #   niri 与 gamescope 均不读取 (实测二进制中不存在该字符串)。
+  # Niri/Wayland 环境变量 (nvidia-vaapi-driver 由 nixpkgs 的 videoAcceleration
+  # 默认带上; 不要加 WLR_NO_HARDWARE_CURSORS —— 那是 wlroots 专有变量)
   environment.variables = {
     GBM_BACKEND = "nvidia-drm";
     LIBVA_DRIVER_NAME = "nvidia";

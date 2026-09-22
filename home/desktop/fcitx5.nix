@@ -50,7 +50,5 @@ in
   # 使得 fcitx5 主题插件在需要的目录下可见
   home.file.".local/share/fcitx5/themes".source = "${catppuccin-rounded}";
 
-  # 输入法环境变量 (XMODIFIERS / GTK_IM_MODULE / QT_IM_MODULE / SDL_IM_MODULE /
-  # GLFW_IM_MODULE) 不在这里设置: 它们属于整个会话, 统一由系统模块
-  # modules/input-method_and_font.nix 的 environment.sessionVariables 注入。
+  # 输入法环境变量由系统层统一注入 (见 modules/input-method_and_font.nix)
 }
