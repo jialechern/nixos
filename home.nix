@@ -84,8 +84,9 @@
   };
 
   # --- 下载即使用的软件 ---
-  # home.packages 选项允许您将 Nix 软件包安装到您的环境中
-  home.packages = with pkgs; [
+  # 实际包清单在各模块里; 下面是模板示例, 需要临时装包时取消注释
+  # (列表为空时不能写 `with pkgs;`)
+  home.packages = [
     # # 将 'hello' 命令添加到环境中. 运行时它会打印友好的 "Hello, world!"
     #
     # pkgs.hello
