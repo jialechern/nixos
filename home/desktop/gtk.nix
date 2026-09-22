@@ -49,8 +49,7 @@
       gtk-decoration-layout = "icon:minimize,maximize,close";
       # 声音主题
       gtk-sound-theme-name = "ocean";
-      # 加载特定的 GTK 模块
-      gtk-modules = "colorreload-gtk-module:window-decorations-gtk-module";
+      # 不设 gtk-modules: 本机没有提供 colorreload / window-decorations 模块的包
       # 强制设置 XFT DPI (120 DPI)
       gtk-xft-dpi = 122880;
     };
