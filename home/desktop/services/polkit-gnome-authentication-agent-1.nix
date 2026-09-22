@@ -6,8 +6,9 @@
   systemd.user.services.polkit-gnome-authentication-agent-1 = {
     Unit = {
       Description = "polkit-gnome-authentication-agent-1";
-      Wants = [ "graphical-session-pre.target" ];
-      After = [ "graphical-session-pre.target" ];
+      # 排在 graphical-session.target 之后: 这个代理需要图形会话 (X11/Wayland 连接),
+      # 而 graphical-session-pre.target 早于 niri.service。
+      After = [ "graphical-session.target" ];
       PartOf = [ "graphical-session.target" ];
     };
 
