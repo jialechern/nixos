@@ -54,23 +54,6 @@
         "url": "https://github.com/jialechern/keepass.git"
       }
     },
-    "niri-dotfiles": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1786872119,
-        "narHash": "sha256-+HXckmbDPPT5ILxhL0lDEBCBwxq7d3Nrr+V3nm35CEk=",
-        "ref": "main",
-        "rev": "086e05c5a1d6d83908e4ffcee4512a143ce8aa18",
-        "revCount": 28,
-        "type": "git",
-        "url": "https://gitee.com/cjl-2692367185-qed/niri.git"
-      },
-      "original": {
-        "ref": "main",
-        "type": "git",
-        "url": "https://gitee.com/cjl-2692367185-qed/niri.git"
-      }
-    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1789921291,
@@ -109,7 +92,6 @@
         "desktop-wallpapers": "desktop-wallpapers",
         "home-manager": "home-manager",
         "keepassxc-dotfiles": "keepassxc-dotfiles",
-        "niri-dotfiles": "niri-dotfiles",
         "nixpkgs": "nixpkgs",
         "nvim-dotfiles": "nvim-dotfiles",
         "scripts": "scripts",

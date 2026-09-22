@@ -1,0 +1,369 @@
+//  __  __         _   _ _      _ 
+// |  \/  |_   _  | \ | (_)_ __(_)
+// | |\/| | | | | |  \| | | '__| |
+// | |  | | |_| | | |\  | | |  | |
+// |_|  |_|\__, | |_| \_|_|_|  |_|
+//         |___/                  
+
+// 配置文件采用 KDL 格式：https://kdl.dev
+// "/-" 注释掉后面的节点
+// 完整配置说明请查阅维基：
+// https://yalter.github.io/niri/Configuration:-Introduction
+
+// 环境变量配置
+include "conf.d/env.kdl"
+
+// 输入设备配置
+include "conf.d/input.kdl"
+
+// 输出设备配置
+include "conf.d/output.kdl"
+
+// 窗口定位和大小的设置
+include "conf.d/layout.kdl"
+
+// 配置 niri 环境初始化过程中 必要/可选 的自启动程序
+include "conf.d/startup.kdl"
+
+hotkey-overlay {
+    // 取消注释此行以禁用启动时的"重要快捷键"弹出窗口
+    skip-at-startup
+}
+
+// 取消注释此行以请求客户端尽可能省略其客户端装饰
+// 如果客户端特别请求 CSD，将尊重该请求
+// 此外，客户端将被告知它们是平铺的，移除一些客户端圆角
+// 此选项还将修复某些半透明窗口后面的边框/焦点环绘制
+// 启用或禁用此选项后，需要重新启动应用程序才能生效
+
+// 去除窗口的标题栏
+prefer-no-csd
+
+// 可更改屏幕截图的保存路径
+// 开头的 ~ 将扩展为主目录
+// 路径使用 strftime(3) 格式化，为您提供屏幕截图的日期和时间
+screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+// 也可将其设置为 null 以禁用将屏幕截图保存到磁盘
+// screenshot-path null
+
+// 光标主题
+cursor {
+    // 主题
+    xcursor-theme "breeze_cursors"
+    // 大小
+    xcursor-size 27
+    // 闲置时隐藏光标
+    hide-after-inactive-ms 3000
+    // 打字时应藏光标
+    hide-when-typing
+}
+
+// 动画设置
+// 维基解释了如何配置单个动画：
+// https://yalter.github.io/niri/Configuration:-Animations
+animations {
+    // 取消注释以关闭所有动画
+    // off
+
+    // 按此系数减慢所有动画。低于 1 的值将加快动画速度
+    // slowdown 3.0
+
+    // --- 工作区切换动画（spring 类型） ---
+    // 推荐用于触摸板手势
+    // workspace-switch {
+    //     spring damping-ratio=1.0 stiffness=1000 epsilon=0.0001
+    // }
+
+    // --- 窗口打开动画 ---
+    // 支持 duration-ms + curve 和 custom-shader
+    // window-open {
+    //     duration-ms 150
+    //     curve "ease-out-expo"
+    // }
+
+    // --- 窗口关闭动画（Since: 0.1.5） ---
+    // window-close {
+    //     duration-ms 150
+    //     curve "ease-out-quad"
+    // }
+
+    // --- 横向视图滚动动画（聚焦屏幕外窗口时触发） ---
+    // horizontal-view-movement {
+    //     spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+    // }
+
+    // --- 窗口在列内/列间移动动画（Since: 0.1.5） ---
+    // window-movement {
+    //     spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+    // }
+
+    // --- 窗口大小调整动画（Since: 0.1.5） ---
+    // 适用于 switch-preset-column-width、maximize-column 等手动调整
+    // 小幅度调整（≤10 像素）不触发动画
+    // window-resize {
+    //     spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+    // }
+
+    // --- 配置变更通知弹出/关闭动画 ---
+    // config-notification-open-close {
+    //     spring damping-ratio=0.6 stiffness=1000 epsilon=0.001
+    // }
+
+    // --- 退出确认对话框动画 ---
+    // exit-confirmation-open-close {
+    //     spring damping-ratio=0.6 stiffness=500 epsilon=0.01
+    // }
+
+    // --- 截图 UI 打开动画 ---
+    // screenshot-ui-open {
+    //     duration-ms 200
+    //     curve "ease-out-quad"
+    // }
+
+    // --- 概览模式打开/关闭动画 ---
+    // overview-open-close {
+    //     spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+    // }
+
+    // --- 最近窗口切换器关闭动画 ---
+    // recent-windows-close {
+    //     spring damping-ratio=1.0 stiffness=800 epsilon=0.001
+    // }
+}
+
+// 窗口规则允许您调整单个窗口的行为
+// 更多信息请查阅维基：
+// https://yalter.github.io/niri/Configuration:-Window-Rules
+
+// 全局预览配置
+overview {
+    // 预览时 Workspace 缩放比例
+    zoom 0.61
+    // 预览时背景颜色
+    // backdrop-color "#777777"
+
+    // 去掉 Overview 里工作区阴影，画面更干净
+    // 也可配置 softness、spread、offset、color 来调整阴影外观
+    workspace-shadow {
+        off
+    }
+}
+
+// 窗口规则配置
+include "conf.d/window-rule.kdl"
+
+// --- 最近窗口切换器（Alt+Tab 风格） ---
+recent-windows {
+    // 立即弹出, 无延迟
+    open-delay-ms 0
+
+    highlight {
+        active-color "#ffc87fff"
+        urgent-color "#9b0000ff"
+        padding 30
+        corner-radius 12
+    }
+
+    previews {
+        max-height 480
+        max-scale 0.5
+    }
+
+    binds {
+        Mod+Tab         { next-window; }
+        Mod+Shift+Tab   { previous-window; }
+    }
+}
+
+// --- 硬件开关事件（笔记本盖子、平板模式） ---
+/- switch-events {
+    // 笔记本盖子关闭时的动作
+    // lid-close { spawn "notify-send" "盖子已关闭"; }
+
+    // 笔记本盖子打开时的动作（niri 会自动管理内置显示器状态）
+    // lid-open { spawn "notify-send" "盖子已打开"; }
+
+    // 进入平板模式时的动作（常用于启用在屏幕键盘）
+    // tablet-mode-on { spawn "bash" "-c" "gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled true"; }
+
+    // 退出平板模式时的动作
+    // tablet-mode-off { spawn "bash" "-c" "gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled false"; }
+}
+
+// --- 命名工作区（持久化工作区，即使为空也不会被自动删除） ---
+// 命名工作区与普通动态工作区一样，可参与 focus-workspace-down/up 切换，
+// 声明顺序决定初始排列顺序（先声明的在上方）。
+
+workspace "main"
+
+workspace "term"
+
+workspace "media"
+
+// --- 命名工作区可用的配置项（按需取消注释启用） ---
+//
+// 1. open-on-output — 将工作区绑定到指定显示器（多显示器场景）
+//    使用 "niri msg outputs" 获取显示器名称
+// /-workspace "main" {
+//     open-on-output "eDP-1"
+// }
+//
+// 2. layout { } — 为当前工作区覆盖全局布局设置
+//    可用的子项：gaps / struts / border / focus-ring / preset-column-widths
+//    / default-column-width / always-center-single-column / center-focused-column
+// /-workspace "term" {
+//     layout {
+//         // 覆盖全局间隙大小
+//         gaps 16
+//
+//         // 覆盖工作区边距（留白区域）
+//         struts {
+//             left 0
+//             right 0
+//             bottom 0
+//             top 0
+//         }
+//
+//         // 覆盖窗口边框
+//         border {
+//             on
+//             width 2
+//             active-color "#ffc87f"
+//             inactive-color "#505050"
+//         }
+//
+//         // 覆盖焦点环
+//         focus-ring {
+//             on
+//             width 4
+//             active-color "#7fc8ff"
+//             inactive-color "#505050"
+//         }
+//
+//         // 覆盖预设列宽
+//         preset-column-widths {
+//             proportion 0.33333
+//             proportion 0.5
+//             proportion 0.66667
+//             proportion 1.0
+//         }
+//
+//         // 覆盖默认列宽
+//         default-column-width { proportion 0.5; }
+//
+//         // 列中只有一个窗口时始终居中（设为 false 则取消）
+//         always-center-single-column false
+//
+//         // 聚焦列始终居中
+//         center-focused-column
+//     }
+// }
+
+// --- 手势配置 ---
+/- gestures {
+    // 拖放时边缘滚动视图的触发参数
+    // dnd-edge-view-scroll {
+    //     trigger-width 30
+    //     delay-ms 100
+    //     max-speed 1500
+    // }
+
+    // 拖放时边缘工作区切换的触发参数
+    // dnd-edge-workspace-switch {
+    //     trigger-height 50
+    //     delay-ms 100
+    //     max-speed 1500
+    // }
+
+    // 全局热角配置（可在 per-output 级别覆盖）
+    // hot-corners {
+    //     // off
+    //     top-left
+    //     // top-right
+    //     // bottom-left
+    //     // bottom-right
+    // }
+}
+
+// --- 调试选项（开发/排查问题时启用） ---
+/- debug {
+    // 以 screencast 模式预览渲染器 DMABUF 输出
+    // preview-render "screencast"
+
+    // 启用 overlay 硬件平面
+    // enable-overlay-planes
+
+    // 禁用 cursor 硬件平面
+    // disable-cursor-plane
+
+    // 禁用 Direct Scanout 优化
+    // disable-direct-scanout
+
+    // 从 resume 时不自动重连显示器
+    // force-disable-connectors-on-resume
+
+    // 指定渲染 DRM 设备
+    // render-drm-device "/dev/dri/renderD129"
+
+    // 忽略某个 DRM 设备
+    // ignore-drm-device "/dev/dri/renderD128"
+
+    // 禁用窗口大小调整的节流
+    // disable-resize-throttling
+
+    // 禁用 compositor 事务机制
+    // disable-transactions
+
+    // 笔记本盖子关闭时保持面板开启
+    // keep-laptop-panel-on-when-lid-is-closed
+
+    // 禁用显示器名称
+    // disable-monitor-names
+
+    // 严格的新窗口聚焦策略
+    // strict-new-window-focus-policy
+
+    // VRR 期间跳过仅光标更新的帧
+    // skip-cursor-only-updates-during-vrr
+
+    // 取消聚焦时让窗口进入 deactivated 状态
+    // deactivate-unfocused-windows
+}
+
+// --- 配置变更通知 ---
+// 禁用配置解析失败时的屏幕通知
+// config-notification {
+//     disable-failed
+// }
+
+// --- 剪贴板设置 ---
+// 禁用主剪贴板（中键粘贴），仅对之后启动的应用生效
+clipboard {
+    disable-primary
+}
+
+// --- 毛玻璃模糊特效 ---
+// 全局模糊参数，配合窗口规则中的 background-effect { blur true; } 使用
+// passes: 下采样/上采样轮数，越多越光滑但更消耗 GPU
+// offset: 每轮的像素偏移倍率，越大越光滑（不增加 GPU 开销），但过高会产生伪影
+// noise: 在模糊上叠加微噪声，防止色带伪影
+// saturation: 饱和度增强，让玻璃背后的颜色更鲜亮
+blur {
+    // off —— 取消此行注释以禁用全局模糊
+    passes 3
+    offset 3.0
+    noise 0.03
+    saturation 1.6
+}
+
+// 配置按键绑定
+include "conf.d/bind.kdl"
+
+// 配置其它特殊机器的特殊需求 (外接显示器、渲染设备、热角等)
+// 注意: conf.d/local-override.kdl 由 /etc/nixos 的 home/desktop/niri.nix 按主机生成
+// (hostName == "omen" 时为实际配置, 其它主机为空占位), 不要手写进本仓库 ——
+// 仓库里若同时存在同名文件, Home Manager 会静默用仓库那份、忽略生成的那份;
+// 该情况有断言兜底 (见 modules/desktop.nix)。optional=true 保证文件缺失时也能加载。
+include optional=true "conf.d/local-override.kdl"
+

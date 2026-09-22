@@ -1,0 +1,413 @@
+// bind.kdl
+// 此处存放 niri 常用的按键绑定
+
+binds {
+    // 按键由用 + 号分隔的修饰符组成，最后是 XKB 键名
+    // 要查找特定键的 XKB 名称，可使用 wev 等程序
+
+    // "Mod" 是一个特殊修饰符，在 TTY 上运行时等于 Super，作为 winit 窗口运行时等于 Alt
+
+    // 此处可绑定的大多数操作也可以通过 `niri msg action do-something` 以编程方式调用
+
+    // 使用 spawn-sh 运行 shell 命令。如果需要管道、多个命令等，请使用此方式
+
+    // Mod-Shift-/，通常与 Mod-? 相同，显示重要快捷键列表
+    Mod+Shift+Slash { show-hotkey-overlay; }
+
+    // --- --- --- 标准媒体快捷键配置 --- --- ---
+    // PipeWire 与 WirePlumber 的音量键映射示例。
+    // allow-when-locked=true 属性使得这些快捷键在会话锁定时依然有效。
+    // "-l 1.0" 将音量上限限制在 100%。
+    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1-"; }
+    XF86AudioMute        allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
+
+    // 使用 playerctl 的媒体键映射示例。
+    // 这将适用于任何支持 MPRIS 的媒体播放器。
+    XF86AudioPlay        allow-when-locked=true { spawn-sh "playerctl play-pause"; }
+    XF86AudioStop        allow-when-locked=true { spawn-sh "playerctl stop"; }
+    XF86AudioPrev        allow-when-locked=true { spawn-sh "playerctl previous"; }
+    XF86AudioNext        allow-when-locked=true { spawn-sh "playerctl next"; }
+
+    // brightnessctl 的屏幕亮度键映射示例。
+    // 也可以使用常规的 spawn 并传递多个参数（以避免通过 "sh" 执行），
+    // 但需要手动将每个参数放在单独的引号 "" 中。
+    XF86MonBrightnessUp allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "+10%"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "10%-"; }
+
+
+    // --- --- --- 鼠标/触控板 行为 --- --- ---
+    // 使用以下语法绑定鼠标滚轮滚动事件。
+    // 这些绑定会根据自然滚动设置改变方向。
+    // 为了避免滚轮滚动过快切换工作区，你可以使用
+    // cooldown-ms 属性。该绑定将被限制为此值设定的速率。
+    // 可以在任何绑定上设置冷却时间，但对于滚轮来说最有用。
+    Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }
+    Mod+WheelScrollUp        cooldown-ms=150 { focus-workspace-up; }
+    Mod+Ctrl+WheelScrollDown cooldown-ms=150 { move-column-to-workspace-down; }
+    Mod+Ctrl+WheelScrollUp   cooldown-ms=150 { move-column-to-workspace-up; }
+
+    Mod+WheelScrollRight      { focus-column-right; }
+    Mod+WheelScrollLeft       { focus-column-left; }
+    Mod+Ctrl+WheelScrollRight { move-column-right; }
+    Mod+Ctrl+WheelScrollLeft  { move-column-left; }
+
+    // 通常在应用程序中按住 Shift 键进行上下滚动会导致
+    // 水平滚动；这些绑定模拟了该行为。
+    Mod+Shift+WheelScrollDown      { focus-column-right; }
+    Mod+Shift+WheelScrollUp        { focus-column-left; }
+    Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
+    Mod+Ctrl+Shift+WheelScrollUp   { move-column-left; }
+
+    // 类似地，可以绑定触摸板滚动的“刻度”。
+    // 触摸板滚动是连续的，因此对于这些绑定，它被分割成
+    // 离散的间隔。
+    // 这些绑定也受触摸板自然滚动设置的影响，所以这些
+    // 示例绑定是“反转的”，因为默认对触摸板启用了自然滚动。
+    // Mod+TouchpadScrollDown { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02+"; }
+    // Mod+TouchpadScrollUp   { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.02-"; }
+
+
+    // --- --- --- 基础快捷键 --- --- ---
+    // 某些应用程序，如远程桌面客户端和软件 KVM 切换器，可能会
+    // 请求 niri 停止处理此处定义的键盘快捷键，
+    // 以便它们可以将按键原样转发到远程机器。
+    // 绑定一个“逃生舱口”来切换抑制器是个好主意，
+    // 这样有问题的应用程序就无法劫持你的会话。
+    // allow-inhibiting=false 属性也可以应用于其他绑定，
+    // 这确保了 niri 始终处理它们，即使抑制器处于活动状态。
+    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+
+    // quit 操作将显示一个确认对话框，以避免意外退出。
+    Mod+Shift+E { quit; }
+    Ctrl+Alt+Delete { quit; }
+
+    // 关闭显示器电源。要重新打开它们，请执行任何输入操作，
+    // 例如移动鼠标或按下任何其他键。
+    Mod+Ctrl+Shift+P { power-off-monitors; }
+
+    // --- 调试快捷键 ---
+    // 切换调试着色（配合 debug 块使用）
+    // Mod+Shift+Ctrl+T { toggle-debug-tint; }
+    // 切换不透明区域调试显示
+    // Mod+Shift+Ctrl+O { debug-toggle-opaque-regions; }
+    // 切换重绘区域调试显示
+    // Mod+Shift+Ctrl+D { debug-toggle-damage; }
+
+    // 打开/关闭概览：一个工作区和窗口的缩略视图。
+    // 也可以将鼠标移动到左上角的热点区域，
+    // 或者在触摸板上进行四指向上滑动。
+    Mod+O repeat=false { toggle-overview; }
+
+    // --- --- --- 窗口行为快捷键 --- --- ---
+    // --- 关闭窗口 ---
+    Mod+Q repeat=false { close-window; }
+    Mod+X repeat=false { close-window; }
+
+    // --- 切换 列/窗口 焦点 ---
+    Mod+H     { focus-column-or-monitor-left; }
+    Mod+J     { focus-window-or-workspace-down; }
+    Mod+K     { focus-window-or-workspace-up; }
+    Mod+L     { focus-column-or-monitor-right; }
+
+    Mod+Left     { focus-column-or-monitor-left; }
+    Mod+Down     { focus-window-or-workspace-down; }
+    Mod+Up     { focus-window-or-workspace-up; }
+    Mod+Right     { focus-column-or-monitor-right; }
+
+    // Mod+Left  { focus-column-left; }
+    // Mod+Down  { focus-window-down; }
+    // Mod+Up    { focus-window-up; }
+    // Mod+Right { focus-column-right; }
+    // Mod+H     { focus-column-left; }
+    // Mod+J     { focus-window-down; }
+    // Mod+K     { focus-window-up; }
+    // Mod+L     { focus-column-right; }
+
+    Mod+Home { focus-column-first; }
+    Mod+0 { focus-column-first; }
+    Mod+End  { focus-column-last; }
+    Mod+Shift+0  { focus-column-last; }
+
+    // --- 移动 列/窗口 ---
+    // 当到达列中的第一个或最后一个窗口时，跨工作区移动的替代命令。
+    Mod+Ctrl+H     { move-column-left-or-to-monitor-left; }
+    Mod+Ctrl+J     { move-window-down-or-to-workspace-down; }
+    Mod+Ctrl+K     { move-window-up-or-to-workspace-up; }
+    Mod+Ctrl+L     { move-column-right-or-to-monitor-right; }
+
+    Mod+Ctrl+Left     { move-column-left-or-to-monitor-left; }
+    Mod+Ctrl+Down     { move-window-down-or-to-workspace-down; }
+    Mod+Ctrl+Up     { move-window-up-or-to-workspace-up; }
+    Mod+Ctrl+Right     { move-column-right-or-to-monitor-right; }
+
+    // Mod+Ctrl+Left  { move-column-left; }
+    // Mod+Ctrl+Down  { move-window-down; }
+    // Mod+Ctrl+Up    { move-window-up; }
+    // Mod+Ctrl+Right { move-column-right; }
+
+    // Mod+Ctrl+H     { move-column-left; }
+    // Mod+Ctrl+J     { move-window-down; }
+    // Mod+Ctrl+K     { move-window-up; }
+    // Mod+Ctrl+L     { move-column-right; }
+
+    Mod+Ctrl+Home { move-column-to-first; }
+    Mod+Ctrl+0 { move-column-to-first; }
+    Mod+Ctrl+End  { move-column-to-last; }
+    Mod+Ctrl+Shift+0  { move-column-to-last; }
+
+    // 列居中
+    Mod+C { center-column; }
+    Mod+Z { center-column; }
+
+    // 以下绑定将焦点窗口移入或移出列。
+    // 如果窗口是独立的，它们会将其吸收到侧边的相邻列中。
+    // 如果窗口已经在某个列中，它们会将其从列中排出。
+    Mod+Comma  { consume-or-expel-window-left; }
+    Mod+Period { consume-or-expel-window-right; }
+
+    // 从右侧吸收一个窗口到焦点列的底部。
+    Mod+BracketLeft  { consume-window-into-column; }
+    Mod+Shift+Comma  { consume-window-into-column; }
+    Mod+Ctrl+Comma  { consume-window-into-column; }
+    Mod+Alt+Comma  { consume-window-into-column; }
+
+    // 将焦点列底部的窗口排出到右侧。
+    Mod+BracketRight { expel-window-from-column; }
+    Mod+Shift+Period { expel-window-from-column; }
+    Mod+Ctrl+Period { expel-window-from-column; }
+    Mod+Alt+Period { expel-window-from-column; }
+
+    // --- 调整 列/窗口 大小 --- 
+    // 顺序/相反顺序 循环切换预设宽度。
+    Mod+Backslash { switch-preset-column-width; }
+    Mod+Shift+Backslash { switch-preset-column-width-back; }
+    Mod+Ctrl+Backslash { switch-preset-column-width-back; }
+    Mod+Alt+Backslash { switch-preset-column-width-back; }
+
+    // 顺序/相反顺序 循环切换预设高度。
+    Mod+R { switch-preset-window-height; }
+    Mod+Shift+R { switch-preset-window-height-back; }
+    Mod+Ctrl+R { switch-preset-window-height-back; }
+    Mod+Alt+R { switch-preset-window-height-back; }
+
+    // 最大化
+    Mod+F { maximize-column; }
+
+    // 重置高度
+    Mod+Shift+F { reset-window-height; }
+    Mod+Alt+F { reset-window-height; }
+
+    // 将焦点列扩展到未被其他完全可见列占据的空间。
+    // 使该列“填充剩余空间”。
+    Mod+Ctrl+F { expand-column-to-available-width; }
+
+    // 全屏模式
+    Mod+Ctrl+Shift+F { fullscreen-window; }
+    Mod+Ctrl+Alt+F { fullscreen-window; }
+
+    // 在屏幕上居中所有完全可见的列。
+    Mod+Ctrl+C { center-visible-columns; }
+
+    // 更精细的宽度调整。
+    // 此命令还可以：
+    // * 以像素为单位设置宽度："1000"
+    // * 以像素为单位调整宽度："-5" 或 "+5"
+    // * 以屏幕宽度的百分比设置宽度："25%"
+    // * 以屏幕宽度的百分比调整宽度："-10%" 或 "+10%"
+    // 像素大小使用逻辑像素或缩放像素。例如，在缩放比例为 2.0 的输出上，
+    // set-column-width "100" 将使该列占据 200 个物理屏幕像素。
+    Mod+Minus { set-column-width "-3%"; }
+    Mod+Equal { set-column-width "+3%"; }
+
+    // 当处于包含其他窗口的列中时，进行更精细的高度调整。
+    Mod+Shift+Minus { set-window-height "-10%"; }
+    Mod+Shift+Equal { set-window-height "+10%"; }
+
+    // 在浮动布局和平铺布局之间移动焦点窗口。
+    Mod+V       { toggle-window-floating; }
+    Mod+Shift+V { switch-focus-between-floating-and-tiling; }
+    Mod+Ctrl+V { switch-focus-between-floating-and-tiling; }
+    Mod+Alt+V { switch-focus-between-floating-and-tiling; }
+
+    // 切换列标签页显示模式。
+    // 此列中的窗口将显示为垂直标签页，
+    // 而不是堆叠在彼此之上。
+    Mod+W { toggle-column-tabbed-display; }
+
+    // 切换布局的操作。
+    // 注意：如果你取消注释这些行，请确保你**没有**在
+    // 上面的 xkb 选项中配置匹配的布局切换快捷键。
+    // 在同一快捷键上同时设置两者会破坏切换功能，
+    // 因为按下快捷键时会切换两次（一次由 xkb 触发，一次由 niri 触发）。
+    // Mod+Space       { switch-layout "next"; }
+    // Mod+Shift+Space { switch-layout "prev"; }
+
+
+    // --- --- --- 工作空间行为快捷键 --- --- ---
+    // 或者，也有只移动单个窗口的命令：
+    // Mod+Shift+Ctrl+Left  { move-window-to-monitor-left; }
+    // ...
+
+    // 你也可以将整个工作区移动到另一个显示器：
+    // Mod+Shift+Ctrl+Left  { move-workspace-to-monitor-left; }
+    // ...
+
+    // --- 切换工作空间焦点 ---
+    Mod+Page_Down      { focus-workspace-down; }
+    Mod+N              { focus-workspace-down; }
+    Mod+Page_Up        { focus-workspace-up; }
+    Mod+P              { focus-workspace-up; }
+    Mod+U              { focus-workspace-down; }
+    Mod+I              { focus-workspace-up; }
+
+    // 可以通过索引引用工作区。但是，请注意
+    // niri 是一个动态工作区系统，所以这些命令在某种程度上是
+    // “尽力而为”。尝试引用大于当前工作区数量的索引
+    // 将转而引用最底部（空）的工作区。
+    // 例如，有 2 个工作区 + 1 个空工作区时，索引 3、4、5 等
+    // 都将引用第 3 个工作区。
+
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+    
+    // 在当前工作区和上一个工作区之间切换焦点。
+    // Mod+Tab { focus-workspace-previous; }
+    Mod+Grave { focus-workspace-previous; }
+    Mod+Apostrophe { focus-workspace-previous; }
+
+    // --- 跨工作空间移动列 ---
+    Mod+Ctrl+Page_Down { move-column-to-workspace-down; }
+    Mod+Ctrl+N         { move-column-to-workspace-down; }
+    Mod+Ctrl+Page_Up   { move-column-to-workspace-up; }
+    Mod+Ctrl+P         { move-column-to-workspace-up; }
+    Mod+Ctrl+U         { move-column-to-workspace-down; }
+    Mod+Ctrl+I         { move-column-to-workspace-up; }
+
+    // 或者，也有只移动单个窗口的命令：
+    // Mod+Ctrl+Page_Down { move-window-to-workspace-down; }
+    // ...
+    
+    // 依靠索引在工作空间中移动列
+    Mod+Ctrl+1 { move-column-to-workspace 1; }
+    Mod+Ctrl+2 { move-column-to-workspace 2; }
+    Mod+Ctrl+3 { move-column-to-workspace 3; }
+    Mod+Ctrl+4 { move-column-to-workspace 4; }
+    Mod+Ctrl+5 { move-column-to-workspace 5; }
+    Mod+Ctrl+6 { move-column-to-workspace 6; }
+    Mod+Ctrl+7 { move-column-to-workspace 7; }
+    Mod+Ctrl+8 { move-column-to-workspace 8; }
+    Mod+Ctrl+9 { move-column-to-workspace 9; }
+
+    // 或者，也有只移动单个窗口的命令：
+    // Mod+Ctrl+1 { move-window-to-workspace 1; }
+    
+    // --- 移动工作空间 ---
+    Mod+Alt+N         { move-workspace-down; }
+    Mod+Alt+P         { move-workspace-up; }
+
+    Mod+Alt+Left  { move-workspace-to-monitor-left; }
+    Mod+Alt+Down  { move-workspace-to-monitor-down; }
+    Mod+Alt+Up  { move-workspace-to-monitor-up; }
+    Mod+Alt+Right  { move-workspace-to-monitor-right; }
+
+    Mod+Alt+H  { move-workspace-to-monitor-left; }
+    Mod+Alt+J  { move-workspace-to-monitor-down; }
+    Mod+Alt+K  { move-workspace-to-monitor-up; }
+    Mod+Alt+L  { move-workspace-to-monitor-right; }
+
+    // --- --- --- 显示器行为快捷键 --- --- ---
+    // 切换显示器焦点
+    Mod+Shift+Left  { focus-monitor-left; }
+    Mod+Shift+Down  { focus-monitor-down; }
+    Mod+Shift+Up    { focus-monitor-up; }
+    Mod+Shift+Right { focus-monitor-right; }
+
+    Mod+Shift+H     { focus-monitor-left; }
+    Mod+Shift+J     { focus-monitor-down; }
+    Mod+Shift+K     { focus-monitor-up; }
+    Mod+Shift+L     { focus-monitor-right; }
+
+    // 跨显示器移动列
+    Mod+Shift+Ctrl+Left  { move-column-to-monitor-left; }
+    Mod+Shift+Ctrl+Down  { move-column-to-monitor-down; }
+    Mod+Shift+Ctrl+Up    { move-column-to-monitor-up; }
+    Mod+Shift+Ctrl+Right { move-column-to-monitor-right; }
+
+    Mod+Shift+Ctrl+H     { move-column-to-monitor-left; }
+    Mod+Shift+Ctrl+J     { move-column-to-monitor-down; }
+    Mod+Shift+Ctrl+K     { move-column-to-monitor-up; }
+    Mod+Shift+Ctrl+L     { move-column-to-monitor-right; }
+
+    // --- --- --- 其它应用 --- --- ---
+    // spawn 可用属性:
+    //   allow-when-locked=true   — 会话锁定时仍可用
+    //   hotkey-overlay-title="…" — 快捷键列表中显示的自定义标题
+    //   hotkey-overlay-title=null — 从快捷键列表中隐藏
+    //   working-directory="/path" — 设置进程的工作目录
+    //   repeat=false             — 禁用按键重复
+    //   cooldown-ms=150          — 冷却时间，单位毫秒
+    // 终端模拟器配置
+    Mod+T hotkey-overlay-title="终端模拟器 kitty" { spawn "kitty"; }
+    Ctrl+Alt+T hotkey-overlay-title="终端模拟器 alacritty" { spawn "alacritty"; }
+
+    // 程序启动器配置
+    // -no-imdkit 关闭 rofi 内置的 imdkit, 改用 GTK3 原生 IM 模块以兼容 fcitx5
+    Alt+Space hotkey-overlay-title="程序启动器" { spawn "rofi" "-show" "drun" "-no-imdkit"; }
+    Mod+D hotkey-overlay-title="命令执行器" { spawn "rofi" "-show" "run" "-no-imdkit"; }
+
+    // 输入法配置
+    Mod+Space hotkey-overlay-title="fcitx5" { spawn-sh "systemctl --user restart fcitx5-daemon.service"; }
+
+    // 文件管理器配置
+    Mod+E hotkey-overlay-title="文件管理器" { spawn "Thunar"; }
+
+    // 锁屏配置
+    Super+Ctrl+Alt+Shift+L hotkey-overlay-title="锁屏" { spawn "swaylock"; }
+
+
+    // 选择区域截图
+    Mod+S { screenshot; }
+    // 截取整个屏幕
+    Mod+Shift+S { screenshot-screen; }
+    // 截取当前窗口
+    Mod+Ctrl+S { screenshot-window; }
+
+    // 打开剪切板历史
+    Mod+Ctrl+X { spawn "alacritty" "-e" "sh" "-c" "cliphist list | fzf | cliphist decode | wl-copy"; }
+
+    // 开启/隐藏 状态栏
+    // Mod+B { spawn "killall" "-SIGUSR1" "waybar"; }
+    Mod+B { spawn "systemctl" "--user" "kill" "-s" "SIGUSR1" "waybar"; }
+
+    // 打开壁纸管理器
+    // fill: fill(自动匹配屏幕尺寸) | stretch(强制匹配屏幕尺寸) | fit(保持图片尺寸) | center(居中图片) | tile
+    // 选择默认壁纸
+    Mod+Ctrl+W { spawn-sh "find -L \"$HOME/Pictures/Wallpapers\" -type f -path \"*default*\" -exec waypaper --backend awww --wallpaper {} --fill fill \\;"; }
+    // 随机选择一张壁纸
+    Mod+Alt+W { spawn-sh "waypaper --backend awww --folder $HOME/Pictures/Wallpapers --random --fill fill"; }
+    // 主动选择一张壁纸
+    Mod+Ctrl+Alt+W { spawn-sh "waypaper --backend awww --folder $HOME/Pictures/Wallpapers --fill fill"; }
+
+    // 打开蓝牙管理器
+    Mod+Ctrl+B { spawn "overskride"; }
+
+    // 打开网络管理器
+    Mod+Ctrl+Shift+N { spawn "nm-connection-editor"; }
+
+    // 打开音乐播放工具
+    Mod+Ctrl+M { spawn "play-musics"; }
+
+    // 刷新状态栏
+    Mod+Ctrl+Shift+S { spawn-sh "pkill waybar || true && waybar"; }
+
+}
+

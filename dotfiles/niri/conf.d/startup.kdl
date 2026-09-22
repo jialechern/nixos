@@ -1,0 +1,25 @@
+// startup.kdl
+// 此处存放 niri 环境初始化过程中 必要/可选 的自启动程序
+
+// 添加类似此行以在启动时生成进程
+// 注意：niri 作为 systemd session 运行时已支持 xdg-desktop-autostart，
+// GNOME/KDE 中配置的自启动应用会自动生效，无需在 niri 中手动配置。
+// 要运行 shell 命令（包含变量、管道等），请使用 spawn-sh-at-startup：
+// spawn-sh-at-startup "qs -c ~/source/qs/MyAwesomeShell"
+// 更多生成示例请参阅下面的 binds 部分
+
+// --- --- --- niri 初始化配置 --- --- ---
+
+// 导入环境变量到 Systemd
+spawn-at-startup "dbus-update-activation-environment" "--all"
+// 启用 XWayland 支持
+// 可选参数：path 指定 xwayland-satellite 路径，off 禁用
+spawn-at-startup "xwayland-satellite"
+// 壁纸初始化
+// 每次开机随机选取一张壁纸
+spawn-sh-at-startup "waypaper --backend awww --folder $HOME/Pictures/Wallpapers --random --fill fill"
+// // 每次开机选取给定路径下的 `default(不限后缀名)` 壁纸
+// spawn-sh-at-startup "find -L \"$HOME/Pictures/Wallpapers\" -type f -path \"*default*\" -exec waypaper --backend awww --wallpaper {} --fill fill \\;"
+
+// --- --- --- 应用程序配置 --- --- ---
+

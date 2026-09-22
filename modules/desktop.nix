@@ -13,6 +13,24 @@
     useNautilus = false;
   };
 
+  # --- 配置一致性断言 ---
+  # dotfiles/niri/conf.d/local-override.kdl 由 home/desktop/niri.nix 按主机生成;
+  # 若该文件同时存在于仓库里, Home Manager 会把 "目录递归软链" 与 "同路径单独定义"
+  # 视为重叠, 默认保留仓库那份而静默忽略生成的这份 (home.fileOverlapResolution
+  # 默认 "ignore"), 导致本机覆盖项 (显示器/渲染设备等) 默默失效。
+  # 注意: 被 .gitignore 或尚未 git add 的文件不在 flake 源内, 本断言也不会看到,
+  # 但那种情况下它同样不会被部署, 因此不会产生上述误导。
+  assertions = [
+    {
+      assertion = !(builtins.pathExists ./../dotfiles/niri/conf.d/local-override.kdl);
+      message = ''
+        dotfiles/niri/conf.d/local-override.kdl 与按主机生成的同名文件冲突。
+        请删除 dotfiles/niri/conf.d/local-override.kdl —— 它应由
+        home/desktop/niri.nix 按 hostName 生成, 内容不应手写进仓库。
+      '';
+    }
+  ];
+
   services.greetd = {
     enable = true;
 

@@ -1,0 +1,233 @@
+// window-rule.kdl
+// 此处存放 niri 环境中 必要/可选 的窗口规则配置
+
+// 让 awww/swww 的壁纸同时进入 overview 的 backdrop
+layer-rule {
+    match namespace="^(swww-daemon|awww-daemon)$"
+    place-within-backdrop true
+}
+
+// 使 Rofi 启动器获得毛玻璃模糊特效
+layer-rule {
+    match namespace="^rofi$"
+
+    opacity 0.88
+
+    geometry-corner-radius 12
+
+    background-effect {
+        blur true
+    }
+}
+
+// 使 Waybar 状态栏获得圆角裁剪与毛玻璃模糊
+layer-rule {
+    match namespace="^waybar$"
+
+    geometry-corner-radius 12
+
+    popups {
+        geometry-corner-radius 10
+        opacity 0.88
+
+        background-effect {
+            blur true
+        }
+    }
+}
+
+// 使 Mako 通知弹窗获得毛玻璃模糊特效
+layer-rule {
+    match namespace="^mako$"
+
+    geometry-corner-radius 8
+    opacity 0.92
+
+    background-effect {
+        blur true
+    }
+}
+
+// 匹配器（match）完整列表:
+//   match app-id="..." — 按 app-id 匹配
+//   match title="..."  — 按窗口标题匹配
+//   match is-active=true        — 匹配活动窗口
+//   match is-focused=false      — 匹配未聚焦窗口
+//   match is-active-in-column=true — 匹配列内活动窗口
+//   match is-floating=true      — 匹配浮动窗口
+//   match is-window-cast-target=true — 匹配屏幕录制目标窗口
+//   match is-urgent=true        — 匹配紧急窗口
+//   match at-startup=true       — 仅在 niri 启动时匹配
+//   exclude app-id="..." title="..." — 从匹配中排除特定窗口
+
+// 示例：从屏幕捕获中屏蔽两个密码管理器
+// (此示例规则以 "/-" 开头注释掉)
+/-window-rule {
+    match app-id=r#"^org\.keepassxc\.KeePassXC$"#
+    match app-id=r#"^org\.gnome\.World\.Secrets$"#
+
+    block-out-from "screen-capture"
+
+    // 如果希望它们在第三方屏幕截图工具中可见，请改用此设置
+    // block-out-from "screencast"
+}
+
+// 所有窗口都应用的规则
+window-rule {
+    // --- 启用圆角 ---
+    geometry-corner-radius 12
+    clip-to-geometry true
+    // --- 不透明度 ---
+    // 提示：透明度越低毛玻璃越明显，可尝试 0.85 ~ 0.92
+    opacity 0.85
+    draw-border-with-background false
+    // --- 毛玻璃背景特效 ---
+    background-effect {
+        blur true
+        noise 0.03
+        saturation 1.6
+    }
+    // --- 右键菜单等弹出窗口 ---
+    popups {
+        opacity 0.88
+        geometry-corner-radius 15
+        background-effect {
+            blur true
+            noise 0.03
+            saturation 1.6
+        }
+    }
+}
+
+// 通过设置空默认列宽度解决 WezTerm 的初始配置错误
+window-rule {
+    // 此正则表达式特意尽可能具体，因为这是默认配置，我们不希望出现误报
+    // 如果愿意，可以只使用 app-id="wezterm"
+    match app-id=r#"^org\.wezfurlong\.wezterm$"#
+    default-column-width {}
+}
+
+// 默认以浮动模式打开 Firefox 画中画播放器
+window-rule {
+    // 此 app-id 正则表达式适用于两者：
+    // - host Firefox (app-id is "firefox")
+    // - Flatpak Firefox (app-id is "org.mozilla.firefox")
+    match app-id=r#"firefox$"# title="^Picture-in-Picture$"
+    open-floating true
+}
+
+// --- 以下为新增窗口规则属性示例，默认全部注释 ---
+
+// 示例：窗口打开时行为控制
+/-window-rule {
+    match app-id="firefox$"
+
+    // 窗口以最大化列形式打开
+    // open-maximized true
+
+    // 最大化到屏幕边缘（不计入间隙）
+    // open-maximized-to-edges true
+
+    // 窗口以全屏形式打开
+    // 也可设为 false 阻止全屏（如 Telegram 媒体查看器）
+    // open-fullscreen true
+
+    // 窗口以浮动模式打开
+    // open-floating true
+
+    // 指定窗口打开的显示器（支持名称如 "HDMI-A-1" 或描述如 "Some Company Monitor"）
+    // open-on-output "HDMI-A-1"
+
+    // 指定窗口打开的工作区（需配合命名工作区声明）
+    // open-on-workspace "chat"
+
+    // 窗口打开时不聚焦
+    // open-focused false
+
+    // 新窗口的默认高度
+    // default-window-height { fixed 500; }
+
+    // 浮动窗口的默认位置
+    // default-floating-position x=100 y=200 relative-to="bottom-left"
+
+    // 特定窗口触发可变刷新率（需配合 output 的 on-demand=true）
+    // variable-refresh-rate true
+
+    // 窗口的滚动速度因子（<1 更慢，>1 更快）
+    // scroll-factor 0.75
+
+    // 该窗口所在列的默认显示模式
+    // default-column-display "tabbed"
+
+    // 窗口尺寸约束
+    // min-width 100
+    // max-width 200
+    // min-height 300
+    // max-height 300
+
+    // 强制窗口保持平铺状态
+    // tiled-state true
+
+    // 启用类似 baba 布局的浮动行为
+    // baba-is-float true
+}
+
+// 示例：per-window-rule 级别可视化覆盖
+/-window-rule {
+    match app-id="Alacritty"
+
+    // focus-ring {
+    //     off
+    //     width 4
+    //     active-color "#7fc8ff"
+    //     inactive-color "#505050"
+    // }
+
+    // border {
+    //     on
+    //     width 2
+    //     active-color "#ffc87f"
+    //     inactive-color "#505050"
+    // }
+
+    // shadow {
+    //     on
+    //     softness 40
+    //     spread 5
+    //     offset x=0 y=5
+    //     draw-behind-window true
+    //     color "#00000064"
+    // }
+
+    // tab-indicator {
+    //     active-color "red"
+    //     inactive-color "gray"
+    // }
+}
+
+// 示例：背景特效与弹出窗口
+/-window-rule {
+    match app-id="firefox$"
+
+    // 背景特效（应用于窗口背后的区域）
+    // background-effect {
+    //     xray true
+    //     blur true
+    //     noise 0.05
+    //     saturation 3
+    // }
+
+    // 针对弹出窗口（如右键菜单）的子规则
+    // popups {
+    //     opacity 0.5
+    //     geometry-corner-radius 15
+    //
+    //     background-effect {
+    //         xray true
+    //         blur true
+    //         noise 0.05
+    //         saturation 3
+    //     }
+    // }
+}
+

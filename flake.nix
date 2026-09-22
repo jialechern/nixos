@@ -24,10 +24,8 @@
       flake = false;
     };
 
-    niri-dotfiles = {
-      url = "git+https://gitee.com/cjl-2692367185-qed/niri.git?ref=main";
-      flake = false;
-    };
+    # niri 的配置已并入本仓库 (dotfiles/niri/), 不再作为外部输入 —— 保留输入会与本地副本
+    # 形成两份事实来源, 部署方式见 home/desktop/niri.nix
 
     keepassxc-dotfiles = {
       url = "git+https://github.com/jialechern/keepass.git?ref=main";
@@ -54,7 +52,6 @@
     , home-manager
     , sops-nix
     , nvim-dotfiles
-    , niri-dotfiles
     , keepassxc-dotfiles
     , desktop-wallpapers
     , scripts

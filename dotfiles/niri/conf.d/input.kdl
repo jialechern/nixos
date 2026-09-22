@@ -1,0 +1,126 @@
+// input.kdl
+// 输入设备配置
+// 完整选项列表请查阅维基：
+// https://yalter.github.io/niri/Configuration:-Input
+input {
+    keyboard {
+        xkb {
+        // 可设置规则、模型、布局、变体和选项
+        // 更多信息请参阅 xkeyboard-config(7)
+
+        // 例如：
+        // layout "us,ru"
+        // options "grp:win_space_toggle,compose:ralt,ctrl:nocaps"
+
+        // 如果此部分为空，niri 将从 org.freedesktop.locale1 获取 xkb 设置
+        // 您可以使用 localectl set-x11-keymap 控制这些设置
+        }
+
+        // 启动时启用数字锁定键，省略此设置则禁用
+        numlock
+
+        // 按住按键开始重复前的延迟时间，单位毫秒，默认 600
+        // repeat-delay 600
+
+        // 按键重复的速率，每秒字符数，默认 25
+        // repeat-rate 25
+
+        // 键盘布局跟踪模式：
+        // "global" — 所有窗口共享一个布局状态（默认）
+        // "window" — 每个窗口独立跟踪布局
+        // track-layout "global"
+    }
+
+    // 以下部分包含 libinput 设置
+    // 省略设置将禁用它们，或保留其默认值
+    // 此处所有注释掉的设置均为示例，并非默认值
+    touchpad {
+        // off
+        tap
+        // dwt
+        // dwtp
+        // drag false
+        // drag-lock
+        natural-scroll
+        // accel-speed 0.2
+        // accel-profile "flat"
+        // scroll-method "two-finger"
+        // disabled-on-external-mouse
+    }
+
+    mouse {
+        // off
+        // natural-scroll
+        // accel-speed 0.2
+        // accel-profile "flat"
+        // scroll-method "no-scroll"
+    }
+
+    trackpoint {
+        // off
+        // natural-scroll
+        // accel-speed 0.2
+        // accel-profile "flat"
+        // scroll-method "on-button-down"
+        // scroll-button 273
+        // scroll-button-lock
+        // left-handed
+        // middle-emulation
+    }
+
+    trackball {
+        // off
+        // natural-scroll
+        // accel-speed 0.2
+        // accel-profile "flat"
+        // scroll-method "on-button-down"
+        // scroll-button 273
+        // scroll-button-lock
+        // left-handed
+        // middle-emulation
+    }
+
+    tablet {
+        // off
+        // 将平板笔映射到指定显示器
+        // map-to-output "eDP-1"
+        // 将平板笔映射到当前聚焦的显示器
+        // map-to-focused-output
+        // 将平板笔映射到当前聚焦的窗口
+        // map-to-focused-window
+        // 左手模式
+        // left-handed
+        // 校准矩阵，6 个浮点数
+        // calibration-matrix 1.0 0.0 0.0 0.0 1.0 0.0
+    }
+
+    touch {
+        // off
+        // 将触摸输入映射到指定显示器
+        // map-to-output "eDP-1"
+        // 校准矩阵
+        // calibration-matrix 1.0 0.0 0.0 0.0 1.0 0.0
+    }
+
+    // 将鼠标跳转到新聚焦的窗口
+    // 不带 mode：保持鼠标在窗口中的相对位置
+    // warp-mouse-to-focus
+    // 带 mode="center-xy"：鼠标跳转到窗口正中心
+    warp-mouse-to-focus mode="center-xy"
+
+    // 当鼠标移入时自动聚焦窗口和输出
+    // 设置 max-scroll-amount="0%" 使其仅对已完全在屏幕上的窗口生效
+    focus-follows-mouse max-scroll-amount="0%"
+
+    // 按同一个工作区索引键两次时切回上一个工作区
+    workspace-auto-back-and-forth
+
+    // 自定义 Mod 键行为
+    // 在 TTY 上默认等同 Super，在嵌套窗口内默认等同 Alt
+    // mod-key "Super"
+    // 嵌套模式单独的 Mod 键
+    // mod-key-nested "Alt"
+
+    // 禁用 niri 对电源键的处理
+    // disable-power-key-handling
+}

@@ -1,4 +1,4 @@
-{ config, pkgs, lib, inputs, hostName, ... }:
+{ pkgs, lib, hostName, ... }:
 
 let
   # 等待 NVIDIA 渲染节点就绪的脚本 (仅 omen)
@@ -18,18 +18,24 @@ let
   '';
 in
 {
-  # niri 主配置: 直接部署 flake 输入的 dotfiles 仓库
+  # niri 主配置: 部署本仓库的 dotfiles/niri (原 flake 输入 niri-dotfiles 已移除)
+  # recursive = true 让 Home Manager 逐文件软链而不是整目录链接, 因此下方生成的
+  # conf.d/local-override.kdl 可以落在同一个目录里。
+  # 注意: 配置内容以本仓库为准, 改完需重建; 文件在 ~/.config/niri 下是只读软链。
   xdg.configFile."niri" = {
-    source = inputs.niri-dotfiles;
+    source = ../../dotfiles/niri;
     recursive = true;
   };
 
-  # 本机特定配置 (外接显示器等), 仅 omen 主机注入
-  # 经 config.kdl 末行的 `include optional=true "conf.d/local-override.kdl"` 加载;
-  # 该文件被 niri-dotfiles 仓库的 .gitignore ( **/local-* ) 忽略, 不会随 flake 输入分发,
-  # 故由本仓库直接生成 (hostName 由各主机的 configuration.nix 经 extraSpecialArgs 注入)
-  xdg.configFile."niri/conf.d/local-override.kdl" = lib.mkIf (hostName == "omen") {
-    text = ''
+  # 本机特定配置 (外接显示器、渲染设备等), 按主机注入
+  # 经 config.kdl 末行的 `include optional=true "conf.d/local-override.kdl"` 加载。
+  # 本文件由本仓库生成 (hostName 由各主机的 configuration.nix 经 extraSpecialArgs 注入),
+  # 不要再把 conf.d/local-override.kdl 放回 dotfiles/niri/: Home Manager 对
+  # "目录递归软链" 与 "同路径单独定义" 的重叠默认保留目录里那份、静默忽略生成的这份
+  # (home.fileOverlapResolution 默认 "ignore"), 会退化成很难发现的错误配置;
+  # modules/desktop.nix 里的断言把这个陷阱变成显式报错。
+  xdg.configFile."niri/conf.d/local-override.kdl".text =
+    if hostName == "omen" then ''
       // local-override.kdl
       // 此处存放特定机器的特殊配置, 本文件由 /etc/nixos 仓库生成
       // (详见 home/desktop/niri.nix 的注入逻辑)
@@ -131,8 +137,13 @@ in
       // - debug 选项不受 niri 配置兼容性政策保护, 升级 niri 后建议复核;
       // - 回退: 驱动修复或换 AMD 后可删本块; 备选 debug { disable-direct-scanout }
       //   (全屏也走合成路径, 保持全屏, 性能损失很小)。
+    ''
+    else ''
+      // local-override.kdl
+      // 本机 (${hostName}) 暂无特殊覆盖项; 保留占位是为了让 config.kdl 末行的
+      // include optional=true 总能命中, 避免每次加载配置都刷一条文件缺失告警。
+      // 机器专属配置 (外接显示器/渲染设备/热角等) 写在这里。
     '';
-  };
 
   # --- 等待 NVIDIA DRM 设备就绪 (仅 omen, 方案说明见上方 local-override.kdl) ---
   # 问题: niri 在启动时打开 render-drm-device, 若此时 NVIDIA 驱动尚未完成初始化

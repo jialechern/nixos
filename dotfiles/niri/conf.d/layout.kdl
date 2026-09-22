@@ -1,0 +1,207 @@
+// layout.kdl
+// 此处存放窗口定位和大小的设置
+// 更多信息请查阅维基：
+// https://yalter.github.io/niri/Configuration:-Layout
+
+layout {
+    // 以逻辑像素为单位设置窗口周围的间隙
+    // 设置窗口间距
+    gaps 8
+
+    // 工作区上仅有一列时始终居中（不受 center-focused-column 设置影响）
+    always-center-single-column
+
+    // 在第一个工作区之前始终保持一个空工作区
+    // empty-workspace-above-first
+
+    // 新列的默认显示模式，"tabbed" 表示标签页模式
+    // default-column-display "tabbed"
+
+    // 何时在更改焦点时居中列，选项有：
+    // - "never"：默认行为，聚焦屏幕外列将保持在屏幕左侧或右侧边缘
+    // - "always"：聚焦的列将始终居中
+    // - "on-overflow"：如果列与先前聚焦的列一起无法容纳，聚焦时将居中该列
+    center-focused-column "never"
+
+    // 可自定义 "switch-preset-column-width" (Mod+R) 切换的宽度
+    preset-column-widths {
+        // 比例将宽度设置为输出宽度的分数，考虑间隙
+        // 例如，您可以在输出上完美容纳四个 "proportion 0.25" 大小的窗口
+        // 默认预设宽度为输出的 1/3、1/2 和 2/3
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+
+        // 固定值以逻辑像素精确设置宽度
+        // fixed 1920
+    }
+
+    // 也可自定义 "switch-preset-window-height" (Mod+Shift+R) 切换的高度
+    // preset-window-heights { }
+
+    // 可更改新窗口的默认宽度
+    // 窗口打开时的默认宽度
+    default-column-width { proportion 0.5; }
+    // 如果保留空括号，窗口将自行决定其初始宽度
+    // default-column-width {}
+
+    // 默认情况下，焦点环和边框作为实心背景矩形在窗口后面渲染
+    // 也就是说，它们将通过半透明窗口显示
+    // 这是因为使用客户端装饰的窗口可以具有任意形状
+    //
+    // 如果不喜欢这样，应取消注释下面的 `prefer-no-csd`
+    // niri 将在同意省略其客户端装饰的窗口*周围*绘制焦点环和边框
+    //
+    // 或者，可以使用名为 `draw-border-with-background` 的窗口规则覆盖此设置
+
+    // 可更改焦点环的外观
+    focus-ring {
+        // 取消注释此行以禁用焦点环
+        // off
+
+        // 环从窗口向外延伸的逻辑像素数
+        width 3
+
+        // 颜色可通过多种方式设置：
+        // - CSS 命名颜色："red"
+        // - RGB 十六进制："#rgb"、"#rgba"、"#rrggbb"、"#rrggbbaa"
+        // - CSS 样式表示法："rgb(255, 127, 0)"、rgba()、hsl() 等
+
+        // 活动显示器上环的颜色
+        active-color "#00000000"
+
+        // 非活动显示器上环的颜色
+        // 焦点环仅围绕活动窗口绘制，因此唯一可以看到其非活动颜色的地方是其他显示器
+        inactive-color "#00000000"
+
+        // 也可使用渐变。渐变优先于纯色
+        // 渐变渲染方式与 CSS linear-gradient(angle, from, to) 相同
+        // 角度与 linear-gradient 相同，可选，默认为 180（从上到下渐变）
+        // 可使用网络上的任何 CSS linear-gradient 工具设置这些
+        // 也支持更改颜色空间，更多信息请查阅维基
+        //
+        // active-gradient from="#80c8ff" to="#c7ff7f" angle=45
+
+        // 也可相对于工作区的整个视图为渐变着色，而不仅仅是窗口本身
+        // 为此，设置 relative-to="workspace-view"
+        //
+        // inactive-gradient from="#505050" to="#808080" angle=45 relative-to="workspace-view"
+    }
+
+    // 也可添加边框。它与焦点环类似，但始终可见
+    border {
+        // 设置与焦点环相同
+        // 如果启用边框，可能希望禁用焦点环
+        off
+
+        width 4
+        active-color "#ffc87f"
+        inactive-color "#505050"
+
+        // 请求注意的窗口周围边框的颜色
+        urgent-color "#9b0000"
+
+        // 渐变可使用几种不同的插值颜色空间
+        // 例如，这是通过 in="oklch longer hue" 实现的柔和彩虹渐变
+        //
+        // active-gradient from="#e5989b" to="#ffb4a2" angle=45 relative-to="workspace-view" in="oklch longer hue"
+
+        // inactive-gradient from="#505050" to="#808080" angle=45 relative-to="workspace-view"
+    }
+
+    // 可为窗口启用阴影
+    shadow {
+        // 取消注释下一行以启用阴影
+        on
+
+        // 默认情况下，阴影仅在其窗口周围绘制，而不在其后面绘制
+        // 取消注释此设置以使阴影在其窗口后面绘制
+        //
+        // 注意：niri 无法知道 CSD 窗口圆角半径
+        // 它必须假设窗口具有直角，导致 CSD 圆角内部出现阴影伪影
+        // 此设置修复了这些伪影
+        //
+        // 但是，您可能希望设置 prefer-no-csd 和/或 geometry-corner-radius
+        // 然后，niri 将知道圆角半径并正确绘制阴影，而无需在窗口后面绘制
+        // 如果窗口绘制了任何客户端阴影，这些设置也会移除它们
+        //
+        // draw-behind-window true
+
+        // 可更改阴影外观。以下值以逻辑像素为单位，与 CSS box-shadow 属性匹配
+
+        // 柔和度控制阴影模糊半径
+        softness 7
+
+        // 扩展扩大阴影
+        spread 5
+
+        // 偏移相对于窗口移动阴影
+        offset x=0 y=5
+
+        // 也可更改阴影颜色和不透明度
+        color "#0007"
+
+        // 非活动窗口阴影颜色（仅在其他显示器上可见，焦点环同理）
+        // inactive-color "#00000054"
+    }
+
+    // 标签指示器 — 标识列中活动窗口（仅 tabbed 显示模式下可见）
+    tab-indicator {
+        on
+
+        // 列中仅有一个窗口时隐藏指示器，不碍眼
+        hide-when-single-tab
+
+        // 指示器位置："left"、"right"、"top"、"bottom"
+        position "right"
+
+        // 指示器宽度
+        width 4
+
+        // 活动/非活动颜色与上方 border 配色保持一致
+        active-color "#ffc87f"
+        inactive-color "#505050"
+
+        // 圆角半径
+        // corner-radius 8
+
+        // 标签之间的间距
+        // gaps-between-tabs 2
+
+        // 将指示器放在列内而非列外
+        // place-within-column
+
+        // 也可使用渐变
+        // active-gradient from="#80c8ff" to="#bbddff" angle=45
+        // inactive-gradient from="#505050" to="#808080" angle=45 relative-to="workspace-view"
+    }
+
+    // 拖放插入位置提示
+    insert-hint {
+        // off
+        // on
+
+        // 插入提示的颜色
+        // color "#ffc87f80"
+
+        // 也可使用渐变
+        // gradient from="#ffbb6680" to="#ffc88080" angle=45 relative-to="workspace-view"
+    }
+
+    // 支柱缩小窗口占用的区域，类似于层外壳面板
+    // 可将其视为一种外部间隙。以逻辑像素为单位设置
+    // 左侧和右侧支柱将导致侧面的下一个窗口始终可见
+    // 顶部和底部支柱将简单地在层外壳面板和常规间隙占用的区域之外添加外部间隙
+    struts {
+        // left 64
+        // right 64
+        // top 64
+        // bottom 64
+    }
+
+    // 背景颜色(主要用于 `toggle-overview` 模式的背景)
+    background-color "transparent"
+}
+
+
+

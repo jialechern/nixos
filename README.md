@@ -110,7 +110,7 @@
     ```
 
     **本仓库默认配置的一些说明:**
-        - niri、nvim、keepassxc 这些软件的配置是独立的(通过 flake.nix 作为 nix 项目的依赖注入). 其中 keepassxc 这个仓库是私有的, 如果初次构建失败或是不希望配置该软件, 那么直接将对应的 keepassxc.nix 删除即可.
+        - nvim、keepassxc 这些软件的配置是独立的(通过 flake.nix 作为 nix 项目的依赖注入); niri 的配置已并入本仓库的 `dotfiles/niri/`, 由 `home/desktop/niri.nix` 以逐文件软链方式部署到 `~/.config/niri/`(只读软链, 改完需重建), 其中 `conf.d/local-override.kdl` 由该模块按主机生成, 不要放回 dotfiles. 其中 keepassxc 这个仓库是私有的, 如果初次构建失败或是不希望配置该软件, 那么直接将对应的 keepassxc.nix 删除即可.
         - 如果不存在 `~/Pictures/Wallpapers/` 目录,
           那么在构建系统时将会自动创建这个路径, 因为这个路径被 niri 配置中的 `awww` 相关自动命令
           作为默认的获取壁纸文件的路径. 如有希望作为壁纸的图片,
