@@ -5,7 +5,6 @@
     ./desktop/niri.nix
     ./desktop/gtk.nix
     ./desktop/qt.nix
-    ./desktop/xdg-desktop-portal.nix
     ./desktop/default-application.nix
     ./desktop/alacritty.nix
     ./desktop/kitty.nix
