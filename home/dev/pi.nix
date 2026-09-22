@@ -416,80 +416,45 @@ in
       };
     };
 
-    # pi-permission-system 权限策略 (温和默认 + 密钥保护):
-    #   - 工具与 bash 默认放行 (适配通用助手/系统管理场景)
-    #   - 密钥与凭据路径一律 deny (deny 是硬拒绝、不弹窗、运行时无法放行)
-    #   - .env 按方向区分: 读 deny (密钥不入上下文与日志), 写 ask (仍可批准修改)
-    #   - .git 只拦写 (含 .git 目录本身与其中内容), 读 .git 仍可用于查看仓库状态
-    #     (不用裸 path "*.git" = deny: 那会连读一起拒, 实测误杀了 ls -d .git / git remote -v)
-    #   - cwd 之外: 读显式放行, 只拦写 (实测该 surface 缺省即 ask, 读 /nix/store 弹窗很多)
-    #   - bash 只列三条例外, 其余一律放行 —— 包括全部 git 子命令与 rm -rf:
-    #     git push 直接拒绝 (远端变更不可逆), sudo 需确认, mkfs 直接拒绝
-    #
-    # 三条影响写法的语义 (详见上游 docs/configuration.md):
-    #   1. path / external_directory 是 path_read+path_write 的语法糖, 想"只拦写"必须用方向键
-    #   2. 同一 surface 内 last-match-wins —— 宽泛规则在前, 具体例外在后
-    #   3. 显式方向键会追加在糖展开的条目之后, 因此一定覆盖裸键的规则
-    #   4. Nix 属性集无序, builtins.toJSON 按属性名排序输出 —— 而该扩展靠 JSON 键序实现
-    #      last-match-wins。即规则的实际生效顺序由字母序决定, 不由你写代码的先后决定:
-    #      `*` 排在 `~` 之前, 所以"宽泛 * 在前、具体 ~ 例外在后"恰好总是成立;
-    #      但若想要某个 `*` 开头的 allow 覆盖 `~` 开头的 deny, 这条会反过来坑你。
-    #      本例中 `*.env.example` 的 allow 能胜过 `*.env.*` 的 deny, 正是因为它按字母序在后。
-    #
-    # 对话框键位保持默认 y/s/b/n/r (未启用 permissionDialogKeys 的数字键位)。
-    # 注意: 中文输入法组字时字母键会被候选框吞掉, 而退出候选框的 esc 会被对话框读作
-    # "拒绝" —— 遇到对话框看似无响应时, 先切到英文输入状态再按。
-    # 文档: https://github.com/gotgenes/pi-packages/tree/main/packages/pi-permission-system
+    # pi-permission-system 权限策略
     ".pi/agent/extensions/pi-permission-system/config.json".text = builtins.toJSON {
+      yoloMode = true;
       permission = {
         "*" = "allow";
-        # 通用黑名单: 对所有工具与 bash 生效, 读写一视同仁
         path = {
           "*" = "allow";
           "~/.ssh/*" = "deny";
-          # 密钥与凭据 (deny = 硬拒绝): sops age 私钥是其中最关键的一把,
-          # 它能解开 secrets/ 下的全部密钥
           "~/.config/sops/age/*" = "deny";
           "~/.gnupg/*" = "deny";
-          "~/.config/gh/*" = "deny"; # GH_TOKEN
+          "~/.config/gh/*" = "deny";
           "~/.aws/*" = "deny";
           "~/.docker/*" = "deny";
           "~/.kube/*" = "deny";
-          "*.npmrc" = "deny"; # 可能含 registry token
+          "*.npmrc" = "deny";
           "*.netrc" = "deny";
           "*.git-credentials" = "deny";
         };
-        # 读: env 文件一律拒绝 (密钥一旦读进上下文就留在会话历史与 review log 里,
-        # 事后改规则也收不回); 模板放行
         path_read = {
           "*.env" = "deny";
           "*.env.*" = "deny";
           "*.env.example" = "allow";
         };
-        # 写: .git 只拦写以保护仓库元数据 —— 目录本身与其内容都要拦,
-        # 否则 rm -rf .git 这类命令的方向不确定 (rm 不是纯读命令, 会查两个方向),
-        # 只写 "*.git/*" 会漏掉裸 .git; env 仍需确认 (允许 agent 协助修改)
         path_write = {
           "*.git" = "deny";
           "*.git/*" = "deny";
-          "*.env" = "ask";
-          "*.env.*" = "ask";
         };
-        # cwd 边界: 只拦写 —— 挡住误改 ~/.bashrc / 其它项目
-        # 注意: 该 surface 缺省就是 ask (实测产生 1236 次请求, 多为读 /nix/store 与 ~/.pi),
-        # 所以"读不打扰"必须显式写 allow, 不配置反而会弹窗; Pi 自身的
-        # Infrastructure Read Auto-Allow 只覆盖 read/find/grep/ls 工具, 不覆盖 bash。
         external_directory_read = {
           "*" = "allow";
         };
         external_directory_write = {
-          "*" = "ask";
-          "/tmp/*" = "allow"; # 临时目录是常规草稿区
+          "*" = "deny";
+          "/tmp/*" = "allow";
         };
         bash = {
           "*" = "allow";
-          "git push *" = "deny"; # 远端写入不可逆, 硬拒绝
-          "sudo *" = "ask";
+          "git push *" = "deny";
+          "* git push *" = "deny";
+          "*git push*" = "deny";
           "mkfs*" = "deny";
         };
       };
