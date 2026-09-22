@@ -455,6 +455,7 @@ in
           "git push *" = "deny";
           "* git push *" = "deny";
           "*git push*" = "deny";
+          "sudo *" = "deny";
           "mkfs*" = "deny";
         };
       };
