@@ -356,10 +356,9 @@ blur {
 // 配置按键绑定
 include "conf.d/bind.kdl"
 
-// 配置其它特殊机器的特殊需求 (外接显示器、渲染设备、热角等)
-// 注意: conf.d/local-override.kdl 由 /etc/nixos 的 home/desktop/niri.nix 按主机生成
-// (hostName == "omen" 时为实际配置, 其它主机为空占位), 不要手写进本仓库 ——
-// 仓库里若同时存在同名文件, Home Manager 会静默用仓库那份、忽略生成的那份;
-// 该情况有断言兜底 (见 modules/desktop.nix)。optional=true 保证文件缺失时也能加载。
+// 机器专属配置 (外接显示器、渲染设备等), 由 /etc/nixos 的 home/desktop/niri.nix
+// 按主机生成并可缺省; 不要手写进本仓库 (有断言兜底)
 include optional=true "conf.d/local-override.kdl"
 
+// 本机临时试验文件 (非 Nix 管理, 保存即热重载); 放最后以便覆盖上面的配置
+include optional=true "conf.d/local-live.kdl"

@@ -151,10 +151,14 @@ in
     ''
     else ''
       // local-override.kdl
-      // 本机 (${hostName}) 暂无特殊覆盖项; 保留占位是为了让 config.kdl 末行的
-      // include optional=true 总能命中, 避免每次加载配置都刷一条文件缺失告警。
-      // 机器专属配置 (外接显示器/渲染设备/热角等) 写在这里。
+      // 本机 (${hostName}) 暂无覆盖项; 保留占位是为了让 include optional=true 命中
     '';
+
+  # --- 本机热改文件 conf.d/local-live.kdl ---
+  # 用 tmpfiles 创建而不是 xdg.configFile (后者是只读软链); 直接编辑即被 niri 热重载
+  systemd.user.tmpfiles.rules = [
+    "f %h/.config/niri/conf.d/local-live.kdl 0644 - - -"
+  ];
 
   # --- 等待 NVIDIA DRM 设备就绪 (仅 omen, 方案说明见上方 local-override.kdl) ---
   # 问题: niri 在启动时打开 render-drm-device, 若此时 NVIDIA 驱动尚未完成初始化
