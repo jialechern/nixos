@@ -22,8 +22,11 @@
       width = 450;
       # 通知框高度
       height = 150;
-      # 外边距
-      margin = 20;
+      # 外边距: mako 的 margin 画在 surface *内部*(含透明边), niri 毛玻璃会涂满
+      # 整块 surface -> 通知框外多出一圈模糊, 故置 0 并改用 layer-shell 的
+      # outer-margin (位置不变)。margin 也是堆叠间隔, 置 0 后多条通知紧贴。
+      margin = 0;
+      outer-margin = 20;
       # 内边距
       padding = 25;
       # 边框粗细
