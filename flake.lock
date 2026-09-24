@@ -70,30 +70,12 @@
         "url": "https://mirrors.tuna.tsinghua.edu.cn/git/nixpkgs.git"
       }
     },
-    "nvim-dotfiles": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1789667894,
-        "narHash": "sha256-+Jl4hZuMSV7lY37HUrhzvFdy1tFciFIkhq2RCMAcPN8=",
-        "ref": "main",
-        "rev": "76983dfbb08711eaa1168ce0b970ada6b50d418e",
-        "revCount": 320,
-        "type": "git",
-        "url": "https://gitee.com/cjl-2692367185-qed/nvim.git"
-      },
-      "original": {
-        "ref": "main",
-        "type": "git",
-        "url": "https://gitee.com/cjl-2692367185-qed/nvim.git"
-      }
-    },
     "root": {
       "inputs": {
         "desktop-wallpapers": "desktop-wallpapers",
         "home-manager": "home-manager",
         "keepassxc-dotfiles": "keepassxc-dotfiles",
         "nixpkgs": "nixpkgs",
-        "nvim-dotfiles": "nvim-dotfiles",
         "scripts": "scripts",
         "sops-nix": "sops-nix"
       }

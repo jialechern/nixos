@@ -18,14 +18,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # dotfiles 配置仓库 (Gitee 国内镜像)
-    nvim-dotfiles = {
-      url = "git+https://gitee.com/cjl-2692367185-qed/nvim.git?ref=main";
-      flake = false;
-    };
-
-    # niri 配置已并入本仓库 (dotfiles/niri/), 部署见 home/desktop/niri.nix
-
     keepassxc-dotfiles = {
       url = "git+https://github.com/jialechern/keepass.git?ref=main";
       flake = false;
@@ -50,7 +42,6 @@
     , nixpkgs
     , home-manager
     , sops-nix
-    , nvim-dotfiles
     , keepassxc-dotfiles
     , desktop-wallpapers
     , scripts

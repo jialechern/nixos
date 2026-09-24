@@ -1,4 +1,4 @@
-{ config, pkgs, lib, inputs, ... }:
+{ pkgs, ... }:
 
 let
   extraTools = with pkgs; [
@@ -66,11 +66,5 @@ in
 
     # 不再写入 ${config.home.homeDirectory}/.config/nvim/init.lua, 避免和自己的配置文件冲突
     sideloadInitLua = true;
-  };
-
-  # 链接 Lua 配置文件夹
-  xdg.configFile."nvim" = {
-    source = inputs.nvim-dotfiles;
-    recursive = true;
   };
 }
