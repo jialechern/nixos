@@ -1,22 +1,5 @@
 {
   "nodes": {
-    "desktop-wallpapers": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1783000175,
-        "narHash": "sha256-qGvtmLFGxJ/XSrt+GCD/5BtQsJbAtTZV9gwYfE1dUNI=",
-        "ref": "nixos",
-        "rev": "20213ea177112c368acd17d13669ece71e787a55",
-        "revCount": 2,
-        "type": "git",
-        "url": "https://gitee.com/cjl-2692367185-qed/wallpapers.git"
-      },
-      "original": {
-        "ref": "nixos",
-        "type": "git",
-        "url": "https://gitee.com/cjl-2692367185-qed/wallpapers.git"
-      }
-    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -55,7 +38,6 @@
     },
     "root": {
       "inputs": {
-        "desktop-wallpapers": "desktop-wallpapers",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
         "scripts": "scripts",

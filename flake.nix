@@ -18,12 +18,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # 桌面壁纸仓库
-    desktop-wallpapers = {
-      url = "git+https://gitee.com/cjl-2692367185-qed/wallpapers.git?ref=nixos";
-      flake = false;
-    };
-
     # 个人脚本仓库
     scripts = {
       url = "git+https://gitee.com/cjl-2692367185-qed/scripts.git?ref=main";
@@ -37,7 +31,6 @@
     , nixpkgs
     , home-manager
     , sops-nix
-    , desktop-wallpapers
     , scripts
     , ...
     }@inputs:

@@ -64,8 +64,8 @@
 
     # 定义额外的自定义目录
     extraConfig = {
-      # # Wallpapers 文件夹已由 flake 依赖接管
-      # WALLPAPERS = "${config.home.homeDirectory}/Wallpapers";
+      # 壁纸目录 (niri 的 waypaper 启动项与快捷键以此为默认目录, 图片由用户自行放置)
+      WALLPAPERS = "${config.home.homeDirectory}/Wallpapers";
       PROJECTS = "${config.home.homeDirectory}/Projects";
       TEST = "${config.home.homeDirectory}/Test";
       STU = "${config.home.homeDirectory}/Stu";
@@ -108,8 +108,6 @@
   # Home Manager 非常擅长管理 dot 文件 (dotfiles). 管理纯文本文件的
   # 主要方式是通过 'home.file'
   home.file = {
-    "Pictures/Wallpapers".source = inputs.desktop-wallpapers;
-
     # 个人脚本: 从 flake inputs.scripts 仓库符号链接
     ".local/bin/by-proxies-run".source = "${inputs.scripts}/by-proxies-run";
     ".local/bin/play-musics".source = "${inputs.scripts}/play-musics";

@@ -111,10 +111,7 @@
 
     **本仓库默认配置的一些说明:**
         - nvim、keepassxc 的配置不再由本仓库声明式管理, 本仓库只负责安装软件与运行时依赖(`home/shell/nvim.nix`、`home/desktop/applications.nix`), `~/.config/nvim/`、`~/.config/keepassxc/` 由本地手动维护; niri 的配置已并入本仓库的 `dotfiles/niri/`, 由 `home/desktop/niri.nix` 以逐文件软链方式部署到 `~/.config/niri/`(只读软链, 改完需重建), 其中 `conf.d/local-override.kdl` 由该模块按主机生成, 不要放回 dotfiles.
-        - 如果不存在 `~/Pictures/Wallpapers/` 目录,
-          那么在构建系统时将会自动创建这个路径, 因为这个路径被 niri 配置中的 `awww` 相关自动命令
-          作为默认的获取壁纸文件的路径. 如有希望作为壁纸的图片,
-          只需要将其存放在该路径下即可.
+        - 壁纸目录为 `~/Wallpapers/`, 不再由 flake 输入提供 (也不再是软链), 而是由 `home.nix` 的 `xdg.userDirs.extraConfig.WALLPAPERS` 声明, 并由 `createDirectories = true` 在构建时自动创建; niri 的启动项与快捷键以该路径为默认壁纸目录, 壁纸图片由用户自行存放在该路径下.
         - 如果使用核显, 则不应该在 `nixpkgs.lib.nixosSystem { ... }` 的参数 `modules` 中引入形如 `./modules/nvidia.nix` 的独立显卡驱动配置项, 而应当引入形如 `./modules/intel-extra.nix` 这样的核显适配的配置项.
 
     **网络问题:**

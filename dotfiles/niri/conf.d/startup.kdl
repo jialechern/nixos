@@ -18,9 +18,9 @@ spawn-at-startup "dbus-update-activation-environment" "--all"
 // 不要再手动 spawn; 自定义路径或禁用用顶层 xwayland-satellite { path "…" } / { off }
 // 壁纸初始化
 // 每次开机随机选取一张壁纸
-spawn-sh-at-startup "waypaper --backend awww --folder $HOME/Pictures/Wallpapers --random --fill fill"
+spawn-sh-at-startup "waypaper --backend awww --folder $HOME/Wallpapers --random --fill fill"
 // // 每次开机选取给定路径下的 `default(不限后缀名)` 壁纸
-// spawn-sh-at-startup "find -L \"$HOME/Pictures/Wallpapers\" -type f -path \"*default*\" -exec waypaper --backend awww --wallpaper {} --fill fill \\;"
+// spawn-sh-at-startup "find -L \"$HOME/Wallpapers\" -type f -path \"*default*\" -exec waypaper --backend awww --wallpaper {} --fill fill \\;"
 
 // --- --- --- 应用程序配置 --- --- ---
 

@@ -391,11 +391,11 @@ binds {
     // 打开壁纸管理器
     // fill: fill(自动匹配屏幕尺寸) | stretch(强制匹配屏幕尺寸) | fit(保持图片尺寸) | center(居中图片) | tile
     // 选择默认壁纸
-    Mod+Ctrl+W { spawn-sh "find -L \"$HOME/Pictures/Wallpapers\" -type f -path \"*default*\" -exec waypaper --backend awww --wallpaper {} --fill fill \\;"; }
+    Mod+Ctrl+W { spawn-sh "find -L \"$HOME/Wallpapers\" -type f -path \"*default*\" -exec waypaper --backend awww --wallpaper {} --fill fill \\;"; }
     // 随机选择一张壁纸
-    Mod+Alt+W { spawn-sh "waypaper --backend awww --folder $HOME/Pictures/Wallpapers --random --fill fill"; }
+    Mod+Alt+W { spawn-sh "waypaper --backend awww --folder $HOME/Wallpapers --random --fill fill"; }
     // 主动选择一张壁纸
-    Mod+Ctrl+Alt+W { spawn-sh "waypaper --backend awww --folder $HOME/Pictures/Wallpapers --fill fill"; }
+    Mod+Ctrl+Alt+W { spawn-sh "waypaper --backend awww --folder $HOME/Wallpapers --fill fill"; }
 
     // 打开蓝牙管理器
     Mod+Ctrl+B { spawn "overskride"; }
