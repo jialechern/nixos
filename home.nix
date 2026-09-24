@@ -1,4 +1,4 @@
-{ config, pkgs, lib, inputs, username, ... }:
+{ config, pkgs, lib, username, ... }:
 
 {
   # Home Manager 需要一些关于它应该管理的路径的信息
@@ -108,10 +108,6 @@
   # Home Manager 非常擅长管理 dot 文件 (dotfiles). 管理纯文本文件的
   # 主要方式是通过 'home.file'
   home.file = {
-    # 个人脚本: 从 flake inputs.scripts 仓库符号链接
-    ".local/bin/by-proxies-run".source = "${inputs.scripts}/by-proxies-run";
-    ".local/bin/play-musics".source = "${inputs.scripts}/play-musics";
-
     # pi 项目级扩展集合管理脚本 (pi-init / pi-coding / pi-clean 别名调用)
     ".local/bin/pi-local-exts".source = ./home/dev/pi/pi-local-exts.sh;
 

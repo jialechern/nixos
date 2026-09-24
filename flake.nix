@@ -17,12 +17,6 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # 个人脚本仓库
-    scripts = {
-      url = "git+https://gitee.com/cjl-2692367185-qed/scripts.git?ref=main";
-      flake = false;
-    };
   };
 
   # Outputs (输出): 定义系统配置
@@ -31,7 +25,6 @@
     , nixpkgs
     , home-manager
     , sops-nix
-    , scripts
     , ...
     }@inputs:
     let
