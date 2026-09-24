@@ -25,6 +25,7 @@
     libnotify # 通知库
     firefox
     seahorse # 图形化 keyring 管理工具
+    keepassxc # 密码管理器
 
     # --- 字体、主题与图标 ---
     (pkgs.catppuccin-gtk.override {

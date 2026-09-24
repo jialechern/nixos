@@ -18,11 +18,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    keepassxc-dotfiles = {
-      url = "git+https://github.com/jialechern/keepass.git?ref=main";
-      flake = false;
-    };
-
     # 桌面壁纸仓库
     desktop-wallpapers = {
       url = "git+https://gitee.com/cjl-2692367185-qed/wallpapers.git?ref=nixos";
@@ -42,7 +37,6 @@
     , nixpkgs
     , home-manager
     , sops-nix
-    , keepassxc-dotfiles
     , desktop-wallpapers
     , scripts
     , ...

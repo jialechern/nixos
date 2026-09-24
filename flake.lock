@@ -37,23 +37,6 @@
         "type": "github"
       }
     },
-    "keepassxc-dotfiles": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1787829393,
-        "narHash": "sha256-1q/LJvl2mjQJghkna3DQUuNm6CIvrEhDjYiMJEah4X8=",
-        "ref": "main",
-        "rev": "d36f8be8b6c10de53e3a1b056de458c9c7a1f858",
-        "revCount": 168,
-        "type": "git",
-        "url": "https://github.com/jialechern/keepass.git"
-      },
-      "original": {
-        "ref": "main",
-        "type": "git",
-        "url": "https://github.com/jialechern/keepass.git"
-      }
-    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1790046670,
@@ -74,7 +57,6 @@
       "inputs": {
         "desktop-wallpapers": "desktop-wallpapers",
         "home-manager": "home-manager",
-        "keepassxc-dotfiles": "keepassxc-dotfiles",
         "nixpkgs": "nixpkgs",
         "scripts": "scripts",
         "sops-nix": "sops-nix"

@@ -27,9 +27,6 @@
   ] ++ (builtins.filter builtins.pathExists [
     # 需要网络代理才能下载的应用列表配置
     ./desktop/applications-require-proxy.nix
-
-    # keepassxc 配置
-    ./desktop/keepassxc.nix
   ]);
 
   # --- --- --- 环境变量与会话同步 --- --- ---
