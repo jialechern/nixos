@@ -403,8 +403,9 @@ binds {
     // 打开网络管理器
     Mod+Ctrl+Shift+N { spawn "nm-connection-editor"; }
 
-    // 打开音乐播放工具
-    Mod+Ctrl+M { spawn "play-musics"; }
+    // 播放 ~ 下所有 Music 目录中的音频 (递归搜索)
+    // 尾部 2>/dev/null 抑制无权限目录 (如 Trash) 的告警; 注: GNU find 不认 BSD 的 -E, 必须写全 -regextype
+    Mod+Ctrl+M { spawn-sh "find \"$HOME\" -regextype posix-extended -iregex '.*/Music/.*[.](mp3|mp4|flac|mkv|wav|wave|m4a|alac|aiff|aif|aifc|wv|ape|tak|dsf|dff|aac|ogg|oga|ogv|opus|mpc)$' -type f -exec mpv {} + 2>/dev/null"; }
 
     // 刷新状态栏
     Mod+Ctrl+Shift+S { spawn-sh "pkill waybar || true && waybar"; }
