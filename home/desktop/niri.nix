@@ -22,7 +22,7 @@ let
   niriConfig = pkgs.runCommand "niri-config-checked" {
     nativeBuildInputs = [ pkgs.niri ];
   } ''
-    cp -r ${../../dotfiles/niri} $out
+    cp -r ${./niri} $out
     chmod -R u+w $out
     niri validate --config $out/config.kdl
   '';
