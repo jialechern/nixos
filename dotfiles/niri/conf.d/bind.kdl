@@ -390,12 +390,12 @@ binds {
 
     // 打开壁纸管理器
     // fill: fill(自动匹配屏幕尺寸) | stretch(强制匹配屏幕尺寸) | fit(保持图片尺寸) | center(居中图片) | tile
-    // 选择默认壁纸
+    // 选择默认壁纸 (递归: find 自身会遍历子目录)
     Mod+Ctrl+W { spawn-sh "find -L \"$HOME/Wallpapers\" -type f -path \"*default*\" -exec waypaper --backend awww --wallpaper {} --fill fill \\;"; }
-    // 随机选择一张壁纸
-    Mod+Alt+W { spawn-sh "waypaper --backend awww --folder $HOME/Wallpapers --random --fill fill"; }
-    // 主动选择一张壁纸
-    Mod+Ctrl+Alt+W { spawn-sh "waypaper --backend awww --folder $HOME/Wallpapers --fill fill"; }
+    // 随机选择一张壁纸 (递归: find 枚举 ~/Wallpapers 下全部子目录, 再交给 waypaper 的随机逻辑)
+    Mod+Alt+W { spawn-sh "find -L \"$HOME/Wallpapers\" -type d -print0 | xargs -0 -r waypaper --backend awww --fill fill --random --folder"; }
+    // 主动选择一张壁纸 (递归: 同上, GUI 会列出所有子目录下的图片)
+    Mod+Ctrl+Alt+W { spawn-sh "find -L \"$HOME/Wallpapers\" -type d -print0 | xargs -0 -r waypaper --backend awww --fill fill --folder"; }
 
     // 打开蓝牙管理器
     Mod+Ctrl+B { spawn "overskride"; }
