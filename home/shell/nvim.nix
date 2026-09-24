@@ -28,17 +28,24 @@ let
     lua-language-server
     marksman
     nixd
-    nixpkgs-fmt
+    nixpkgs-fmt # 已归档 (最后更新 2024-07), 官方 formatter 是 nixfmt (RFC 166)
+    # nixfmt
     basedpyright
     black
     guile-lsp-server
     rust-analyzer
     typescript-language-server
     prettierd
+    # ruff 由 home/dev/python.nix 提供, 这里显式声明以免那里的改动悄悄破坏 lsp/ruff.lua
+    ruff
     taplo
     texlab
     tinymist
   ];
+
+  # nvim-treesitter 的全部 parser 二进制
+  treesitterParsers = pkgs.lib.filter pkgs.lib.isDerivation
+    (pkgs.lib.attrValues pkgs.vimPlugins.nvim-treesitter.parsers);
 in
 {
   # 安装外部依赖到系统环境
@@ -57,9 +64,9 @@ in
     withPython3 = true;
     withRuby = true;
 
-    # --- 使用 nix/home-manager 管理 neovim 插件 ---
-    plugins = with pkgs.vimPlugins; [
-    ];
+    # neovim 插件本体由 ${config.home.homeDirectory}/.config/nvim 里的 vim.pack 管理, 这里只注入
+    # treesitter parser (见 treesitterParsers)
+    plugins = treesitterParsers;
 
     # 将依赖注入 Neovim 的 PATH
     extraPackages = lspDeps ++ extraTools;

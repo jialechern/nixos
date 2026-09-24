@@ -145,8 +145,7 @@
   #	/etc/profiles/per-user/${username}/etc/profile.d/hm-session-vars.sh
   #
   home.sessionVariables = {
-    # 默认编辑器
-    EDITOR = "nvim";
+    # EDITOR / VISUAL 由 home/shell/nvim.nix 的 programs.neovim.defaultEditor 提供
 
     # 默认 Shell
     SHELL = "${pkgs.fish}/bin/fish";
