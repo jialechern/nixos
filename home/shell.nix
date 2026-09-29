@@ -33,8 +33,7 @@
 
   # --- --- --- 其它 Shell 工具 --- --- ---
   home.packages = with pkgs; [
-    wget
-    curl
+    # wget / curl 已在系统侧 (modules/software_and_tool.nix), 不再重复装
     ffmpeg
 
     # nixos 安装工具

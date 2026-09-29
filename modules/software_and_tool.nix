@@ -54,8 +54,8 @@
     valgrind
     kdePackages.kcachegrind
 
-    # debugging
-    gdbHostCpuOnly
+    # debugging: gdb 只在用户侧装 (home/dev.nix), 避免同名二进制互相遮蔽;
+    # 需要以 root 调试时用 `nix shell nixpkgs#gdb` 即可
     rr
     ltrace
     nixseparatedebuginfod2
