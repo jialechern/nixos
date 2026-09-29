@@ -97,7 +97,7 @@ let
 in
 {
   # 统一生成 home.file 条目, 均部署到 ~/.agents/skills/<name>
-  # (pi / opencode / Claude Code 都会自动发现该目录, 一份源码多工具生效)
+  # (pi 会读取该目录 —— 见 pi 文档 docs/skills.md; 其它 agent 是否读取未在本机验证)
   home.file = builtins.listToAttrs (builtins.map (e: {
     name = ".agents/skills/${e.name}";
     value.source = e.src;

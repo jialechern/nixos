@@ -77,8 +77,8 @@
       python-install-mirror = "https://mirror.nju.edu.cn/github-release/astral-sh/python-build-standalone/";
 
       # --- 编译与链接 ---
-      # 解决 NixOS 上一些 binary 无法运行的常见问题
-      # 强制 uv 在安装时尝试链接到系统库(如果需要)
+      # 安装后把 .py 预编译成 .pyc (uv 默认 false: 首次 import 时才懒编译)。
+      # 用更长的安装时间换更快的启动, 收益主要在反复调用的 CLI/CI 场景。
       compile-bytecode = true;
     };
   };

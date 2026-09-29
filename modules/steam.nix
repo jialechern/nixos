@@ -23,6 +23,7 @@
     protonup-ng
   ];
 
-  # gamescope 硬依赖: 内核能力
+  # gamemode: 可选的性能守护进程 (游戏经 libgamemode 请求 CPU/GPU 性能档),
+  # gamescope / steam 都不依赖它 —— 装了只是让支持的游戏能用上
   programs.gamemode.enable = true;
 }

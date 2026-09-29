@@ -68,7 +68,7 @@ in
         cursor_shape = "block";
         # 闪烁间隔 0.5 秒, ease-in-out 缓动实现平滑过渡 (0 = 禁用, 负值 = 系统默认)。
         # 注: 历史上 easing + background_opacity < 1 有动画 bug (kitty#8401),
-        # 已于 0.39.1 修复, 当前版本 (0.48.x) 可放心使用
+        # 已于 0.39.1 修复, 现在可放心使用
         cursor_blink_interval = "0.5 ease-in-out";
         # 键盘闲置后永不停闪烁 (默认 15 秒后停止, 这是"闪烁不生效"的根源)
         cursor_stop_blinking_after = 0;
@@ -87,7 +87,7 @@ in
         # ---------------------------------------------------------
         scrollback_lines = 100000; # 回滚缓冲上限
         # 用 nvim 浏览回滚历史 (vi 模式), 由 show_scrollback (默认 ctrl+shift+h, 另绑定 alt+s>alt+v) 调用
-        # 官方 0.48 文档示例: nvim_open_term 渲染 ANSI 颜色, q 直接退出, 打开时定位到上次光标行
+        # 官方文档示例: nvim_open_term 渲染 ANSI 颜色, q 直接退出, 打开时定位到上次光标行
         scrollback_pager = "${pkgs.neovim}/bin/nvim --cmd 'set eventignore=FileType' +'nnoremap q ZQ' +'call nvim_open_term(0, {})' +'set nomodified nolist' +'$' -";
         # 单独给 pager 使用的历史缓冲上限 (MB), 0 = 全部传入
         # 约 1MB/万行: 32MB 足够容纳 10 万行回滚, 同时防止缓冲异常增长拖慢打开

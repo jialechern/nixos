@@ -22,7 +22,9 @@
         ncurses
       ];
 
-      # 环境内可见的共享库 (multiPkgs 只装库不装命令)
+      # 环境内可见的共享库。注意 multiPkgs 并不限制"只装库": upstream 的
+      # targetPaths = targetPkgs ++ multiPkgs, 两者会并入同一个 64 位环境;
+      # 区别只在于 multiArch 时 multiPkgs 会额外装一份 32 位 (i686) 版本。
       # 完整清单拷贝自 nixpkgs 的 pkgs/build-support/appimage/default.nix
       # 中的 defaultFhsEnvArgs.multiPkgs (AppImage 官方 excludelist),
       # 覆盖绝大多数 AppImage 程序的运行库需求; 若上游清单更新可对照同步
