@@ -26,14 +26,8 @@
     };
   };
 
-  # 字体包安装 (对应你的 tty-font 需求)
-  fonts.fontconfig.enable = true;
-  home.packages = with pkgs; [
-    noto-fonts
-    noto-fonts-cjk-sans
-    noto-fonts-color-emoji
-    nerd-fonts.jetbrains-mono # NixOS 24.11+ 的新写法
-  ];
+  # 字体统一在 modules/input-method_and_font.nix 声明 (fonts.packages +
+  # fonts.fontconfig 已是默认开启), 这里不再重复装同一批字体包
 
   home.sessionVariables = {
     # 不设 QT_QPA_PLATFORM: Qt 6.5+ 会自动按 wayland→xcb 选平台, 硬写 "wayland"

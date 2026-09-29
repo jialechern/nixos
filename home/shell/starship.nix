@@ -9,8 +9,7 @@
     enableZshIntegration = true;
     enableFishIntegration = true;
 
-    # 配置路径
-    configPath = "${config.xdg.configHome}/starship.toml";
+    # configPath 保持 HM 默认 (${config.xdg.configHome}/starship.toml), 不显式声明
 
     settings = {
       # 基础设置

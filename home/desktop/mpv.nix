@@ -28,10 +28,9 @@
       # --- 增强: 抗色带/断层 (Debanding) ---
       # 非常适合动画和低码率视频，防止色彩断层
       deband = "yes";
-      deband-iterations = 4; # 迭代次数
-      deband-threshold = 48; # 阈值
-      deband-range = 16; # 范围
-      deband-grain = 48; # 动态噪声，有助于掩盖断层
+      deband-iterations = 4; # 迭代次数 (mpv 默认 1)
+      deband-grain = 48; # 动态噪声, 有助于掩盖断层 (mpv 默认 32)
+      # deband-threshold (mpv 默认 48) / deband-range (默认 16) 与 mpv 默认一致, 不再写
 
       # --- 增强: 运动补偿 (Interpolation) ---
       # 让视频播放更丝滑, 匹配显示器刷新率

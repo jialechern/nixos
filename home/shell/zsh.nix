@@ -11,19 +11,10 @@
   # 注: 通用别名 / nclean 函数 / PATH 见 ./common.nix
   programs.zsh = {
     enable = true;
-    enableCompletion = true;
-    # 自动补全
-    autosuggestion.enable = true;
-    # 语法高亮
-    syntaxHighlighting.enable = true;
-
-    # 历史记录
-    history = {
-      size = 10000;
-      path = "$HOME/.zsh_history";
-      ignoreDups = true;
-      share = true;
-    };
+    # 注: enableCompletion 与 history.{size,path,ignoreDups,share} 都等于 HM 默认值
+    # (true / 10000 / $HOME/.zsh_history / true / true), 不再显式声明
+    autosuggestion.enable = true; # 自动补全
+    syntaxHighlighting.enable = true; # 语法高亮
 
     # 注意: 不要用 plugins 引 zsh-completions —— 该包只装 share/zsh/site-functions/
     # (无 *.plugin.zsh), HM 的 `[[ -f ... ]] && source` 会静默跳过。补全实际来自

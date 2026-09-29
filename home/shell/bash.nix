@@ -3,14 +3,10 @@
 {
   programs.bash = {
     enable = true;
-    # 启用 Bash 自动补全(依赖 pkgs.bash-completion)
-    enableCompletion = true;
+    # 注: enableCompletion / historySize / historyFileSize 都等于 HM 默认值
+    # (true / 10000 / 100000), 不再显式声明; 需要偏离时再加回来
 
     # --- --- --- 历史记录 --- --- ---
-    # 内存中保留的历史命令条数
-    historySize = 10000;
-    # 历史文件中保留的命令条数
-    historyFileSize = 100000;
     # 历史去重：忽略连续重复命令、忽略以空格开头的命令
     historyControl = [
       "ignoredups"
@@ -25,6 +21,8 @@
     ];
 
     # --- --- --- Shell 选项(shopt) --- --- ---
+    # 注: HM 的 listOf 选项在显式定义时会整体替换默认值 (这里的 default 只在
+    # 完全不写本选项时生效), 所以必须把 6 项列全
     shellOptions = [
       "histappend"   # 追加到历史文件而非覆盖
       "extglob"      # 扩展通配符

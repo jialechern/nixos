@@ -16,8 +16,8 @@
   # 为防止出现版本检查导致的警告, 禁用版本检查
   home.enableNixpkgsReleaseCheck = false;
 
-  # 让 Home Manager 安装和管理自身
-  programs.home-manager.enable = true;
+  # 内嵌 HM (submoduleSupport.enable = true) 下不需要 programs.home-manager.enable:
+  # 该选项只在非内嵌时把 home-manager CLI 装进用户 profile, activation 由 NixOS 模块负责
 
   # --- --- --- 引入配置 --- --- ---
   imports = [
@@ -53,24 +53,16 @@
     # 显式声明以保留旧默认 (HM 26.05 起默认改为 false), 升 stateVersion 时再决定
     setSessionVariables = true;
 
-    # 定义具体的文件夹路径
-    # 使用 "${config.home.homeDirectory}" 确保路径指向家目录
-    documents = "${config.home.homeDirectory}/Documents";
-    download = "${config.home.homeDirectory}/Downloads";
-    pictures = "${config.home.homeDirectory}/Pictures";
-    videos = "${config.home.homeDirectory}/Videos";
-    music = "${config.home.homeDirectory}/Music";
-    desktop = "${config.home.homeDirectory}/Desktop";
-    publicShare = "${config.home.homeDirectory}/Public";
-    templates = "${config.home.homeDirectory}/Templates";
+    # 8 个标准目录 (documents/download/pictures/videos/music/desktop/
+    # publicShare/templates) 以及 projects 都等于 HM 默认值 ($HOME/同名目录),
+    # 不再逐个声明; 需要改名时再显式写
 
-    # 定义额外的自定义目录
+    # 额外的自定义目录
     extraConfig = {
-      # 壁纸目录 (niri 的 waypaper 启动项与快捷键以此为默认目录, 图片由用户自行放置)
+      # 壁纸目录: niri 的启动项与快捷键里写死了 $HOME/Wallpapers (见
+      # home/desktop/niri/conf.d/{startup,bind}.kdl), 这里声明是为了让遵循 XDG
+      # 的 GUI 程序也能找到它; 图片由用户自行放置
       WALLPAPERS = "${config.home.homeDirectory}/Wallpapers";
-      PROJECTS = "${config.home.homeDirectory}/Projects";
-      TEST = "${config.home.homeDirectory}/Test";
-      STU = "${config.home.homeDirectory}/Stu";
     };
   };
 
@@ -160,8 +152,6 @@
     RUSTUP_UPDATE_ROOT = "https://rsproxy.cn/rustup";
   };
 
-  # 启用 home-manager 中安装的字体
-  fonts.fontconfig.enable = true;
   # 为非 NixOS 系统导出必要的 Linux 环境变量
   # targets.genericLinux.enable = true;
 }

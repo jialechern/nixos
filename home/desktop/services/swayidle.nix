@@ -8,8 +8,7 @@ in
   services.swayidle = {
     enable = true;
 
-    # 在命令执行完毕前阻塞，确保锁屏等关键操作先完成
-    extraArgs = [ "-w" ];
+    # (-w = 等命令执行完毕再继续, 是 HM 默认值, 不再显式声明)
 
     # --- 空闲超时动作 ---
     timeouts = [
