@@ -21,6 +21,8 @@
       # 不用 initial_session (它是免密自动登录), 只留 greeter + default_session
       default_session = {
         # --cmd 指定登录后启动的会话; 用绝对路径, 不依赖 greetd 的 PATH
+        # (它只是默认会话, 仍可在登录界面的会话菜单里手动改选 —— 如 gamescope session;
+        #  tuigreet(1): "--cmd ... can be overridden by manual selection within tuigreet")
         command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd ${config.programs.niri.package}/bin/niri-session";
         user = "greeter";
       };
