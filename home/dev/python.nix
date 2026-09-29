@@ -42,13 +42,11 @@
     # 默认使用系统中的 uv 包, 也可以手动指定版本
     package = pkgs.uv;
 
-    # 核心配置 (对应 uv.toml)
+    # 核心配置 (对应 uv.toml) —— 只写与 uv 默认值不同的项
+    # python-preference ("managed") 与 python-downloads ("automatic") 都等于 uv
+    # 默认值, 已删除; uv 默认行为是: 优先用 uv 托管的 Python, 系统里已有可用版本
+    # 时用系统版, 缺失时自动下载 (要改成 manual / never 再显式写)
     settings = {
-      # --- Python 策略 ---
-      # 偏好使用系统中安装的 Python(例如通过 Nix 安装的)
-      # 但也允许 uv 自动下载并管理隔离的 Python 版本
-      python-preference = "managed";
-
       # --- 缓存与路径 ---
       # 明确指定缓存目录, 便于管理和清理
       cache-dir = "${config.home.homeDirectory}/.cache/uv";
@@ -57,9 +55,6 @@
       # 从系统证书存储加载根证书 (native-tls 已废弃, 官方建议改用 system-certs)
       # 对依赖代理/自签根证书的受限网络环境更稳定
       system-certs = true;
-
-      # uv 在找不到 Python 时自动下载 (可选值: automatic / manual / never)
-      python-downloads = "automatic";
 
       # --- 默认索引 (PyPI 镜像) ---
       # index-url 已废弃, 改用 index 表; 注意镜像 URL 会写入 uv.lock
