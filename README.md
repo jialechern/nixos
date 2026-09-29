@@ -77,7 +77,8 @@
 6. 挂载子卷(如有多块磁盘, 可以跨磁盘挂载)并开启"透明压缩"
     ```bash,zsh
     # 通用挂载选项: zstd 压缩 + 自动碎片整理 + 异步 discard
-    # (与 hosts/*/configuration.nix 声明的选项保持一致; /swap 子卷另加 noatime, 见下文)
+    # (与 hosts/*/configuration.nix 追加上去的挂载选项一致; 设备/子卷声明在 hw-cfg,
+    #  /swap 子卷另加 noatime, 见下文)
     BTRFS_OPTS="compress=zstd,autodefrag,discard=async"
 
     # 挂载根目录子卷
@@ -177,9 +178,9 @@
     sudo mkdir -p /swap
     sudo mount -t btrfs -o noatime,subvol=@swap /dev/nvme0n1p2 /swap
     ```
-3. 修改 `hardware-configuration.nix` 以保存 `swap` 挂载信息并启用交换空间
+3. 保存 `swap` 挂载信息并启用交换空间 (本仓库与其它子卷声明一起放在 `hardware-configuration.nix`; 也可写进 `hosts/<HOSTNAME>/configuration.nix`, 两者按 attr/list 合并)
     ```nix
-    # hardware-configuration.nix
+    # hardware-configuration.nix (或 hosts/<HOSTNAME>/configuration.nix)
     # ...
     fileSystems."/swap" = {
       # uuid 可以使用 'lsblk -f` 查询, 也可以照抄同磁盘挂载点的 uuid 配置
@@ -196,7 +197,7 @@
     }];
     # ...
     ```
-    **注意:** `hardware-configuration.nix` 是 `nixos-generate-config` 生成的 (文件头写着 "Do not modify this file!"), 再次运行生成器会覆盖它。安装阶段这一次修改是必要的, 但更稳的做法是把上面 `fileSystems."/swap"` 与 `swapDevices` 两段写进 `hosts/<HOSTNAME>/configuration.nix` —— 它与生成文件是按 list/attr 合并的, 不会冲突。
+    **注意:** `hardware-configuration.nix` 是 `nixos-generate-config` 生成的 (文件头写着 "Do not modify this file!"), 再次运行生成器会覆盖手改内容。因此长期维护策略是: 存储布局 (device/fsType/subvol) 以该文件为准, 而**追加的挂载选项** (如压缩) 写在 `hosts/<HOSTNAME>/configuration.nix` 的 `fileSystems."/".options` 里 —— 选项按 list 合并, 重新生成 hw-cfg 也不会丢; swap 这两段放哪边都行, 本仓库与其它子卷声明一起放在 hw-cfg。
 
 4. 重新构建以应用(交换文件由上游用 `btrfs filesystem mkswapfile` 自动创建, 无需手工 mkswap/chattr)
     ```zsh,bash
