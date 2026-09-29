@@ -14,6 +14,7 @@
     ./desktop/mpv.nix
     ./desktop/zathura.nix
     ./desktop/applications.nix
+    ./desktop/obs.nix
 
     # services
     ./desktop/services/wl-clip-persist.nix

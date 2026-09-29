@@ -26,17 +26,15 @@
     rustdesk-flutter
   ];
 
-  imports = [
-
-    ./obs.nix
-
-  ];
+  # (OBS 配置不需要代理, 它的 import 已移到 home/desktop.nix)
 
   # Steam 配置
   xdg.desktopEntries = {
     steam-gamescope = {
       name = "Steam (gamescope)";
-      exec = "gamescope -- steam";
+      # 用上游 programs.steam.gamescopeSession 生成的脚本 —— 它带 --steam 与
+      # gamescopeSession.args / steamArgs 参数 (自写 `gamescope -- steam` 会漏掉这些)
+      exec = "steam-gamescope";
       icon = "steam";
       terminal = false;
       categories = [ "Game" ];
