@@ -35,14 +35,8 @@
       selection-clipboard = "clipboard"; # 选中文本自动进入系统剪贴板 (Wayland 必备)
       adjust-open = "width"; # 打开文件时默认宽度适应窗口
 
-      # 平滑滚动: 现代触摸板或高刷屏必备
-      smooth-scroll = true;
-
       # 窗口标题: 在窗口管理器（如 Niri/Sway）的顶栏显示当前页码
       window-title-page = true;
-
-      # 禁用沙盒: 在 Arch/Wayland 下, 严格的沙盒可能导致无法调用外部编辑器或读取特定字体
-      sandbox = "none";
 
       # SyncTeX 支持: 为 LaTeX / Typst 工作流开启正反向搜索核心
       synctex = true;
