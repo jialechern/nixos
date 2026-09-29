@@ -26,7 +26,10 @@
   # --- 入站防火墙放行 (NixOS 原生命令式防火墙, iptables 后端) ---
   # 注意: 部分服务模块会自动放行自己的端口, 无需在此重复:
   #   - services.openssh.enable -> 自动放行 22
-  #   - programs.steam          -> 自动放行 27036/27037/10400/10401
+  #   - programs.steam          -> UDP 27036 (Peer discovery; localNetworkGameTransfers 或
+  #                                remotePlay 的 openFirewall 任一开启即放行);
+  #                                remotePlay.openFirewall 另加 TCP 27036/27037 +
+  #                                UDP 10400/10401 + UDP 27031-27035
   #   - services.avahi          -> openFirewall = true 时自动放行 UDP 5353 (见上)
   # mDNS 只用 UDP (实测本机无 TCP:5353 监听), 所以不再手工放行 TCP 5353。
   networking.firewall.allowedTCPPorts = [
