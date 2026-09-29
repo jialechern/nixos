@@ -103,7 +103,7 @@
     
     **注意:** 使用 "从现有系统安装" 或是 "Host-to-Target 安装" 需要将生成的 `hardware-configuration.nix` 中的多余本机信息删除.
 ### 安装 NixOS
-1. 使用当前这份 `NixOS` 的配置文件, 需要将刚刚生成的 `hardware-configuration.nix` 移动至 `./hosts/<HOSTNAME>/` 下, 并放入配置好的 `configuration.nix`(可参考已有主机: 只 import `../common.nix` 与 hw-cfg 并设置 `networking.hostName` 即可; 两机共用的用户/组、挂载选项、stateVersion 都在 `hosts/common.nix`)
+1. 使用当前这份 `NixOS` 的配置文件, 需要将刚刚生成的 `hardware-configuration.nix` 移动至 `./hosts/<HOSTNAME>/` 下, 并放入配置好的 `configuration.nix`(可参考已有主机: 只 import `../common.nix` 与 hw-cfg 并设置 `networking.hostName` 即可; 两机共用的用户/组、挂载选项、stateVersion 都在 `hosts/common.nix` —— 新机器若初始安装版本与 25.11 不同, 在本机配置里直接写 `system.stateVersion` 即可覆盖它)
 2. 在 `flake.nix` 的 `nixosConfigurations` 属性集中写入当前主机的配置信息(可以以已有主机作为模板). 在 `modules/*` 中放置了多项现成的可复用的 `configuration.nix` 配置, 只需要按需将它们放入 `nixpkgs.lib.nixosSystem { ... }` 的参数 `modules` 中即可
 
 3. 通过如下命令通过 flake 的方式(前提是已经打开了 flake 功能)安装 `NixOS` 了. 其中 `FLAKEPATH` 是 `flake.nix` 文件的路径, `HOSTNAME` 是 `flake.nix` 中定义好的主机名称.
