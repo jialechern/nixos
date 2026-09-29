@@ -9,6 +9,8 @@
   # i18n.defaultLocale = "zh_CN.UTF-8";
 
   # 特殊应用的语言设置
+  # 注意: 不要在此写 LANG —— 上游用 { LANG = defaultLocale; } // extraLocaleSettings
+  # 合并, 写在这里会覆盖 defaultLocale, 并在 /etc/locale.conf 多出一行 LANG=
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "zh_CN.UTF-8";
     LC_IDENTIFICATION = "zh_CN.UTF-8";
@@ -20,7 +22,6 @@
     LC_TELEPHONE = "zh_CN.UTF-8";
     LC_TIME = "zh_CN.UTF-8";
     LC_MESSAGES = "en_US.UTF-8";
-    LANG = "zh_CN.UTF-8";
   };
 
   # console = {
