@@ -365,7 +365,10 @@ binds {
     Mod+D hotkey-overlay-title="命令执行器" { spawn "rofi" "-show" "run" "-no-imdkit"; }
 
     // 输入法配置
-    Mod+Space hotkey-overlay-title="fcitx5" { spawn-sh "systemctl --user restart fcitx5-daemon.service"; }
+    // 单元名来自 systemd-xdg-autostart-generator (源: org.fcitx.Fcitx5.desktop),
+    // 本机没有 fcitx5-daemon.service; 用 systemd 单元而不是 `fcitx5 -r -d`,
+    // 后者会跑在该单元 cgroup 之外, 登出时不被 PartOf=graphical-session.target 带走
+    Mod+Space hotkey-overlay-title="fcitx5" { spawn-sh "systemctl --user restart app-org.fcitx.Fcitx5@autostart.service"; }
 
     // 文件管理器配置
     Mod+E hotkey-overlay-title="文件管理器" { spawn "Thunar"; }
@@ -408,7 +411,9 @@ binds {
     Mod+Ctrl+M { spawn-sh "find \"$HOME\" -regextype posix-extended -iregex '.*/Music/.*[.](mp3|mp4|flac|mkv|wav|wave|m4a|alac|aiff|aif|aifc|wv|ape|tak|dsf|dff|aac|ogg|oga|ogv|opus|mpc)$' -type f -exec mpv {} + 2>/dev/null"; }
 
     // 刷新状态栏
-    Mod+Ctrl+Shift+S { spawn-sh "pkill waybar || true && waybar"; }
+    // 用单元自带的 reload (ExecReload = kill -SIGUSR2; waybar(5): SIGUSR2 默认 reload);
+    // pkill 会被 Restart=on-failure 自动拉起, 并与 shell 新起的实例并存
+    Mod+Ctrl+Shift+S { spawn "systemctl" "--user" "reload" "waybar"; }
 
 }
 
