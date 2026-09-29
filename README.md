@@ -77,7 +77,7 @@
 6. 挂载子卷(如有多块磁盘, 可以跨磁盘挂载)并开启"透明压缩"
     ```bash,zsh
     # 通用挂载选项: zstd 压缩 + 自动碎片整理 + 异步 discard
-    # (与 hosts/*/configuration.nix 追加上去的挂载选项一致; 设备/子卷声明在 hw-cfg,
+    # (与 hosts/common.nix 追加上去的挂载选项一致; 设备/子卷声明在 hw-cfg,
     #  /swap 子卷另加 noatime, 见下文)
     BTRFS_OPTS="compress=zstd,autodefrag,discard=async"
 
@@ -103,7 +103,7 @@
     
     **注意:** 使用 "从现有系统安装" 或是 "Host-to-Target 安装" 需要将生成的 `hardware-configuration.nix` 中的多余本机信息删除.
 ### 安装 NixOS
-1. 使用当前这份 `NixOS` 的配置文件, 需要将刚刚生成的 `hardware-configuration.nix` 移动至 `./hosts/<HOSTNAME>/` 下, 并放入配置好的 `configuration.nix`(可以使用当前配置文件中已有的 `configuration.nix` 作为模板)
+1. 使用当前这份 `NixOS` 的配置文件, 需要将刚刚生成的 `hardware-configuration.nix` 移动至 `./hosts/<HOSTNAME>/` 下, 并放入配置好的 `configuration.nix`(可参考已有主机: 只 import `../common.nix` 与 hw-cfg 并设置 `networking.hostName` 即可; 两机共用的用户/组、挂载选项、stateVersion 都在 `hosts/common.nix`)
 2. 在 `flake.nix` 的 `nixosConfigurations` 属性集中写入当前主机的配置信息(可以以已有主机作为模板). 在 `modules/*` 中放置了多项现成的可复用的 `configuration.nix` 配置, 只需要按需将它们放入 `nixpkgs.lib.nixosSystem { ... }` 的参数 `modules` 中即可
 
 3. 通过如下命令通过 flake 的方式(前提是已经打开了 flake 功能)安装 `NixOS` 了. 其中 `FLAKEPATH` 是 `flake.nix` 文件的路径, `HOSTNAME` 是 `flake.nix` 中定义好的主机名称.
@@ -197,7 +197,7 @@
     }];
     # ...
     ```
-    **注意:** `hardware-configuration.nix` 是 `nixos-generate-config` 生成的 (文件头写着 "Do not modify this file!"), 再次运行生成器会覆盖手改内容。因此长期维护策略是: 存储布局 (device/fsType/subvol) 以该文件为准, 而**追加的挂载选项** (如压缩) 写在 `hosts/<HOSTNAME>/configuration.nix` 的 `fileSystems."/".options` 里 —— 选项按 list 合并, 重新生成 hw-cfg 也不会丢; swap 这两段放哪边都行, 本仓库与其它子卷声明一起放在 hw-cfg。
+    **注意:** `hardware-configuration.nix` 是 `nixos-generate-config` 生成的 (文件头写着 "Do not modify this file!"), 再次运行生成器会覆盖手改内容。因此长期维护策略是: 存储布局 (device/fsType/subvol) 以该文件为准, 而**追加的挂载选项** (如压缩) 写在 `hosts/common.nix` 的 `fileSystems."/".options` 里 —— 选项按 list 合并, 重新生成 hw-cfg 也不会丢; swap 这两段放哪边都行, 本仓库与其它子卷声明一起放在 hw-cfg。
 
 4. 重新构建以应用(交换文件由上游用 `btrfs filesystem mkswapfile` 自动创建, 无需手工 mkswap/chattr)
     ```zsh,bash
