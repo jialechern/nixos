@@ -69,6 +69,15 @@ let
   # 用 `sh <固定路径>` 调用, 既不依赖执行位, 也不会把会随内容变化的 store 路径写进别名。
   # ---------------------------------------------------------------------------
   piLocalExts = "sh ${config.home.homeDirectory}/.local/bin/pi-local-exts";
+
+  # ---------------------------------------------------------------------------
+  # git push 拦截规则 (值带拒绝理由, 会附加到给 agent 的报错信息里)
+  # 覆盖形态与已知残余见下方 bash 规则处的注释块。
+  # ---------------------------------------------------------------------------
+  pushDeny = {
+    action = "deny";
+    reason = "本机策略: 不允许 agent 执行 git push (含 git -C/-c 变体与 timeout/env/bash -c 等包装形态)。需要推送时请让用户在自己的终端手动执行, 不要尝试绕过。";
+  };
 in
 {
   programs.pi-coding-agent = {
@@ -381,6 +390,10 @@ in
 
     # pi-permission-system 权限策略
     ".pi/agent/extensions/pi-permission-system/config.json".text = builtins.toJSON {
+      # 有意取舍 (复评 BUG-10/SEC-01 登记): yoloMode 自动批准所有 ask ——
+      # 代价是放弃"不可解析命令 / wrapper 一律 floor 到 ask"的人工兜底,
+      # 只剩 deny 规则一道防线。所以所有真正的底线必须写成 deny,
+      # 并整串覆盖 wrapper 形态 (wrapper 内层不参与规则匹配, 见下方 bash 注释)。
       yoloMode = true;
       permission = {
         "*" = "allow";
@@ -413,11 +426,32 @@ in
           "*" = "deny";
           "/tmp/*" = "allow";
         };
+        # bash 匹配语义 (pi-permission-system v35, docs/configuration.md#bash-surface):
+        #   * 链式命令拆分后逐条匹配整串文本, 前缀 env 赋值剥离;
+        #   * wrapper (sudo/env/xargs/timeout/nohup/nice/find -exec/...) 与不透明包装
+        #     (bash|sh|dash|zsh|ksh -c, eval) 不解析内层, 只按整串文本匹配, 且 allow
+        #     会被 floor 成 ask —— 而 yoloMode 会把 ask 静默放行, 所以 deny 必须
+        #     整串覆盖这些形态, 否则包装一下就能绕过;
+        #   * 同 surface 内最后命中者胜, 而 builtins.toJSON 按属性名字母序输出,
+        #     所以规则顺序由字母序决定 ("*" 恒在最前)。
+        # 覆盖形态: git push [args] / git <选项> push / <wrapper> git push /
+        #           <wrapper> git <选项> push / <不透明包装> …git…push…。
+        # 已知残余 (文本规则无法覆盖的自由): 混淆写法 (git pu'sh)、git 别名、
+        #   把 push 写进脚本文件再执行 —— 想彻底拦需 git 侧 hook, 目前不引入。
+        # 已知误伤 (刻意接受): 以散文形式含 " git push " 的少数命令 (如 echo 提示语);
+        #   引号包裹的 grep/rg 检索不受影响 (旧规则 "*git push*" 的误伤由此消除)。
         bash = {
           "*" = "allow";
-          "git push *" = "deny";
-          "* git push *" = "deny";
-          "*git push*" = "deny";
+          "git push *" = pushDeny; # 直接形式 (尾部 " *" 可省参数, 裸 git push 也命中)
+          "git * push *" = pushDeny; # git 选项在 push 前: git -C dir push / 双空格
+          "* git push*" = pushDeny; # 前缀/包装 + 直接形式 (尾部自由, 兼顾末尾带引号)
+          "* git * push*" = pushDeny; # 前缀/包装 + 选项形式: timeout 30 git -C x push
+          "bash -c *git*push*" = pushDeny;
+          "dash -c *git*push*" = pushDeny;
+          "ksh -c *git*push*" = pushDeny;
+          "sh -c *git*push*" = pushDeny;
+          "zsh -c *git*push*" = pushDeny;
+          "eval *git*push*" = pushDeny;
           "sudo *" = "deny";
           "mkfs*" = "deny";
         };
