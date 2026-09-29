@@ -80,42 +80,13 @@
   };
 
   # --- 下载即使用的软件 ---
-  # 实际包清单在各模块里; 下面是模板示例, 需要临时装包时取消注释
-  # (列表为空时不能写 `with pkgs;`)
-  home.packages = [
-    # # 将 'hello' 命令添加到环境中. 运行时它会打印友好的 "Hello, world!"
-    #
-    # pkgs.hello
-    #
-    # # 有时微调包很有用, 例如通过应用覆盖
-    # # 可以直接在这里进行, 只是别忘了括号. 也可以安装 Nerd Fonts
-    #
-    # (pkgs.nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
-    #
-    # # 也可以直接在配置中创建简单的 shell 脚本
-    # # 例如, 这将向环境添加一个 'my-hello' 命令:
-    #
-    # (pkgs.writeShellScriptBin "my-hello" ''
-    #   echo "Hello, ${config.home.username}!"
-    # '')
-  ];
+  # 实际包清单在各模块里; 需要临时装包时在这里加 (列表为空时不能写 `with pkgs;`)
+  home.packages = [ ];
 
-  # Home Manager 非常擅长管理 dot 文件 (dotfiles). 管理纯文本文件的
-  # 主要方式是通过 'home.file'
+  # home.file: 声明式部署 dotfiles (各模块也有自己的 home.file / xdg.configFile)
   home.file = {
     # pi 项目级扩展集合管理脚本 (pi-init / pi-coding / pi-clean 别名调用)
     ".local/bin/pi-local-exts".source = ./home/dev/pi/pi-local-exts.sh;
-
-    # # 使用示例:
-    # # 构建此配置将在 Nix 存储中创建 'dotfiles/screenrc' 的副本
-    # # 激活配置后, '${config.home.homeDirectory}/.screenrc' 将成为指向 Nix 存储副本的符号链接
-    # ".screenrc".source = dotfiles/screenrc;
-
-    # # 您也可以直接设置文件内容
-    # ".gradle/gradle.properties".text = ''
-    #   org.gradle.console=verbose
-    #   org.gradle.daemon.idletimeout=3600000
-    # '';
   };
 
   # Home Manager 也可以通过 'home.sessionVariables' 管理环境变量

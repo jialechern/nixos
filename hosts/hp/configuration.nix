@@ -52,30 +52,13 @@
     shell = pkgs.bashInteractive;
   };
 
-  # 定义用户账户. 别忘了用 `passwd` 命令设置密码
-  # users.users.alice = {
-  #   isNormalUser = true;
-  #   extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-  #   packages = with pkgs; [
-  #     tree
-  #   ];
-  # };
+  # 用户账户定义在 flake.nix (单用户 jlc); 首次登录后可用 `passwd` 改密码
 
   # --- --- --- End --- --- ---
-  # 此选项定义您在此特定机器上安装的第一个 NixOS 版本
-  # 用于保持与在旧版 NixOS 上创建的应用程序数据(例如数据库)的兼容性
-  #
-  # 大多数用户在任何情况下都 **绝对不应** 在初始安装后更改此值, 即使您已将系统升级到新的 NixOS 发行版
-  #
-  # 此值 **不会** 影响您获取软件包和操作系统的 Nixpkgs 版本, 因此更改它 **不会** 升级您的系统——关于如何实际进行升级
-  #
-  # 要实际执行此操作
-  #
-  # 此值低于当前 NixOS 发行版版本 **并不** 意味着您的系统已过时、不受支持或存在安全漏洞
-  #
-  # **请勿** 更改此值, 除非您已手动检查了它将为您的配置带来的所有更改, 并相应地迁移了您的数据
-  #
-  # 更多信息，请参阅 `man configuration.nix` 或 https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion
+  # stateVersion: 首次安装这个系统时的 NixOS 版本, 升级后不要随手改
+  # (它会改变若干选项的默认值与数据迁移行为)。当前 25.11 而 nixpkgs 已是 26.11 代 ——
+  # 要 bump 时先读 rl-2605 / rl-2611 的 release notes 并逐项验证
+  # (已知会影响本仓库的: HM xdg.userDirs.setSessionVariables 默认值翻转)
   system.stateVersion = "25.11";
 }
 
