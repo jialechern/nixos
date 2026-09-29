@@ -23,12 +23,8 @@
   # 启用 CUPS 以打印文档
   services.printing.enable = true;
 
-  # 如果你需要发现网络打印机
-  services.avahi = {
-    enable = true;
-    nssmdns4 = true;
-    openFirewall = true;
-  };
+  # 网络打印机发现 (AirPrint / mDNS) 也需要 avahi —— 它统一在 modules/network.nix
+  # 配置 (同一服务两处定义会让"谁生效 / 谁放行端口"变得难以排查), 这里不再重复
 
   # 添加常见的打印机驱动
   services.printing.drivers = [ pkgs.gutenprint pkgs.hplip ];
@@ -54,6 +50,8 @@
   #   pulse.enable = true;
   # };
 
-  # 启用触摸板支持(在大多数桌面环境中默认已启用)
+  # libinput: 本机 services.xserver.enable = false, 该模块在这里只装 libinput 的
+  # udev 规则 (触摸板/鼠标的实际行为由 niri 的 input {} 决定, 见
+  # home/desktop/niri/conf.d/input.kdl); 保留它只是为了那批 udev 规则
   services.libinput.enable = true;
 }
