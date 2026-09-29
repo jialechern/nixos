@@ -17,43 +17,10 @@ let
     exit 0
   '';
 
-  # 构建期校验 niri 配置: 语法/选项写错时 rebuild 直接失败
-  # (只校验 home/desktop/niri, 生成的两份可选 include 不参与)
-  niriConfig = pkgs.runCommand "niri-config-checked" {
-    nativeBuildInputs = [ pkgs.niri ];
-  } ''
-    cp -r ${./niri} $out
-    chmod -R u+w $out
-    niri validate --config $out/config.kdl
-  '';
-in
-{
-  # --- 配置一致性守卫 ---
-  # 本模块在下方按 hostName 生成 conf.d/local-override.kdl; 若仓库里存在手写的
-  # 同名文件, HM 的文件部署层会重叠 (递归目录源里那份会静默胜出), 使本机覆盖项
-  # 失效且无任何告警 —— 用断言在求值期拦住。
-  # (注: HM 自带的重复目标断言 (modules/files.nix) 只看显式声明, 看不到这种
-  #  递归目录源内部嵌同名文件的情形, 所以需要这条自建守卫。)
-  assertions = [
-    {
-      assertion = !(builtins.pathExists ./niri/conf.d/local-override.kdl);
-      message = ''
-        请勿在仓库中手写 home/desktop/niri/conf.d/local-override.kdl:
-        它由本模块按 hostName 生成 (见下方 xdg.configFile)。
-      '';
-    }
-  ];
-
-  # niri 主配置; recursive = true 让 HM 逐文件软链, 下方生成的
-  # local-override.kdl 才能落在同一目录 (文件只读, 临时试验用 local-live.kdl)
-  xdg.configFile."niri" = {
-    source = niriConfig;
-    recursive = true;
-  };
-
   # 本机特定配置 (外接显示器、渲染设备等), 按 hostName 注入;
-  # 由 config.kdl 末行的 include optional=true 加载
-  xdg.configFile."niri/conf.d/local-override.kdl".text =
+  # 注意: 下面这份生成文本也参与构建期 niri validate (见下方 niriConfig),
+  # 写成字段名错误时 rebuild 直接失败, 而不是登录后 niri 静默回退到默认配置。
+  localOverride =
     if hostName == "omen" then ''
       // local-override.kdl
       // 此处存放特定机器的特殊配置, 本文件由 /etc/nixos 仓库生成
@@ -164,6 +131,50 @@ in
       // local-override.kdl
       // 本机 (${hostName}) 暂无覆盖项; 保留占位是为了让 include optional=true 命中
     '';
+
+  # 构建期校验 niri 配置: 语法/选项写错时 rebuild 直接失败
+  # 校验范围: home/desktop/niri/ 全部 KDL + 按主机生成的 local-override.kdl
+  # (local-live.kdl 是运行时热改文件, 不参与)
+  niriConfig = pkgs.runCommand "niri-config-checked" {
+    nativeBuildInputs = [ pkgs.niri ];
+  } ''
+    cp -r ${./niri} $out
+    chmod -R u+w $out
+    # 把按主机生成的 local-override.kdl 也放进校验树 (config.kdl 的
+    # include optional=true 会加载它), 让 niri validate 连生成文本一起解析;
+    # 校验后删除, 保持部署树里没有该文件 (它由下方 xdg.configFile 单独部署)。
+    printf '%s\n' ${lib.escapeShellArg localOverride} > $out/conf.d/local-override.kdl
+    niri validate --config $out/config.kdl
+    rm $out/conf.d/local-override.kdl
+  '';
+in
+{
+  # --- 配置一致性守卫 ---
+  # 本模块在下方按 hostName 生成 conf.d/local-override.kdl; 若仓库里存在手写的
+  # 同名文件, HM 的文件部署层会重叠 (递归目录源里那份会静默胜出), 使本机覆盖项
+  # 失效且无任何告警 —— 用断言在求值期拦住。
+  # (注: HM 自带的重复目标断言 (modules/files.nix) 只看显式声明, 看不到这种
+  #  递归目录源内部嵌同名文件的情形, 所以需要这条自建守卫。)
+  assertions = [
+    {
+      assertion = !(builtins.pathExists ./niri/conf.d/local-override.kdl);
+      message = ''
+        请勿在仓库中手写 home/desktop/niri/conf.d/local-override.kdl:
+        它由本模块按 hostName 生成 (见下方 xdg.configFile)。
+      '';
+    }
+  ];
+
+  # niri 主配置; recursive = true 让 HM 逐文件软链, 下方生成的
+  # local-override.kdl 才能落在同一目录 (文件只读, 临时试验用 local-live.kdl)
+  xdg.configFile."niri" = {
+    source = niriConfig;
+    recursive = true;
+  };
+
+  # 本机特定配置 (外接显示器、渲染设备等), 按 hostName 生成;
+  # 文本定义在本文件头部 let 的 localOverride 里 (为了参与构建期校验), 这里只做引用。
+  xdg.configFile."niri/conf.d/local-override.kdl".text = localOverride;
 
   # --- 本机热改文件 conf.d/local-live.kdl ---
   # 用 tmpfiles 创建而不是 xdg.configFile (后者是只读软链); 直接编辑即被 niri 热重载
