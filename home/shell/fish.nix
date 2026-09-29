@@ -52,7 +52,6 @@
     # 若其他模块也为 fish 定义了别名, 可启用 preferAbbrs 以优先使用缩写
     preferAbbrs = true;
     # fish 专属缩写可加在此; 通用别名由 common.nix 提供 (preferAbbrs 已使其以缩写生效)
-    shellAbbrs = { };
 
     # --- 自定义补全 ---
     # 为不在标准路径中的命令添加补全
