@@ -387,9 +387,10 @@ binds {
     // 打开剪切板历史
     Mod+Ctrl+X { spawn "alacritty" "-e" "sh" "-c" "cliphist list | fzf | cliphist decode | wl-copy"; }
 
-    // 开启/隐藏 状态栏
+    // 开启/隐藏 状态栏 (SIGUSR1 = 切换显示/隐藏; --kill-whom=main 只发给主进程 ——
+    // 默认的 --kill-whom=all 会向整个 cgroup 发信号, 误伤 waybar 的 on-click/exec 子进程)
     // Mod+B { spawn "killall" "-SIGUSR1" "waybar"; }
-    Mod+B { spawn "systemctl" "--user" "kill" "-s" "SIGUSR1" "waybar"; }
+    Mod+B { spawn "systemctl" "--user" "kill" "--kill-whom=main" "-s" "SIGUSR1" "waybar"; }
 
     // 打开壁纸管理器
     // fill: fill(自动匹配屏幕尺寸) | stretch(强制匹配屏幕尺寸) | fit(保持图片尺寸) | center(居中图片) | tile
