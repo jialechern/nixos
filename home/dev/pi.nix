@@ -76,7 +76,7 @@ let
   # ---------------------------------------------------------------------------
   pushDeny = {
     action = "deny";
-    reason = "本机策略: 不允许 agent 执行 git push (含 git -C/-c 变体与 timeout/env/bash -c 等包装形态)。需要推送时请让用户在自己的终端手动执行, 不要尝试绕过。";
+    reason = "本机策略: 不允许 agent 执行 git push (含 git -C/-c 变体与 timeout/env/bash -c/bash -lc 等包装形态)。需要推送时请让用户在自己的终端手动执行, 不要尝试绕过";
   };
 in
 {
@@ -420,6 +420,9 @@ in
           "*.git" = "deny";
           "*.git/*" = "deny";
         };
+        # 方向不可静态证明的命令 (循环体 / 命令替换 / 子 shell) 不走这个 allow, 会落到
+        # umbrella external_directory (fail-closed): 如 `for f in /nix/store/*; do
+        # echo "$f"; done` 被拒, 而同路径 `ls` 放行 (2026-09-29 实测, 预期行为备忘)
         external_directory_read = {
           "*" = "allow";
         };
@@ -434,25 +437,29 @@ in
         #     会被 floor 成 ask —— 而 yoloMode 会把 ask 静默放行, 所以 deny 必须
         #     整串覆盖这些形态, 否则包装一下就能绕过;
         #   * 同 surface 内最后命中者胜, 而 builtins.toJSON 按属性名字母序输出,
-        #     所以规则顺序由字母序决定 ("*" 恒在最前)。
+        #     所以规则顺序由字母序决定 ("*" 恒在最前); 新增 allow 时注意: 键的字母序
+        #     若排在同命中的 deny 之后会静默覆盖 deny (例: 将来加 "sudo -n *" allow
+        #     会废掉 "sudo *" deny —— 字母序上 '*' 早于 '-')。
         # 覆盖形态: git push [args] / git <选项> push / <wrapper> git push /
-        #           <wrapper> git <选项> push / <不透明包装> …git…push…。
-        # 已知残余 (文本规则无法覆盖的自由): 混淆写法 (git pu'sh)、git 别名、
-        #   把 push 写进脚本文件再执行 —— 想彻底拦需 git 侧 hook, 目前不引入。
-        # 已知误伤 (刻意接受): 以散文形式含 " git push " 的少数命令 (如 echo 提示语);
-        #   引号包裹的 grep/rg 检索不受影响 (旧规则 "*git push*" 的误伤由此消除)。
+        #           <wrapper> git <选项> push / <不透明包装> …git…push… (含组合短标志
+        #           -lc/-ec 与路径前缀 /bin/bash, 由下方 "*sh *c*git*push*" 宽模式覆盖)。
+        # 已知残余 (文本规则无法覆盖的自由): 混淆写法 (git pu'sh)、git 别名、脚本内推送、
+        #   非 shell 解释器 (node -e / python3 -c)、远端 (ssh host "git push") ——
+        #   想彻底拦需 git 侧 hook, 目前不引入。
+        # 已知误伤 (刻意接受): ① 散文形式含 " git push " 的命令 (如 echo 提示语);
+        #   ② 含 "…sh …c…git…push…" 序列的文本 (宽模式所及, 如提到 bash -c git push
+        #   的提交信息); 引号包裹的 grep/rg 'git push' 检索仍不受影响。
         bash = {
           "*" = "allow";
           "git push *" = pushDeny; # 直接形式 (尾部 " *" 可省参数, 裸 git push 也命中)
           "git * push *" = pushDeny; # git 选项在 push 前: git -C dir push / 双空格
           "* git push*" = pushDeny; # 前缀/包装 + 直接形式 (尾部自由, 兼顾末尾带引号)
           "* git * push*" = pushDeny; # 前缀/包装 + 选项形式: timeout 30 git -C x push
-          "bash -c *git*push*" = pushDeny;
-          "dash -c *git*push*" = pushDeny;
-          "ksh -c *git*push*" = pushDeny;
-          "sh -c *git*push*" = pushDeny;
-          "zsh -c *git*push*" = pushDeny;
-          "eval *git*push*" = pushDeny;
+          # 宽模式: "sh " 覆盖 bash/sh/dash/zsh/ksh/fish 及其路径/包装前缀, 中间的
+          # "*c*" 覆盖组合短标志 (-lc/-ec/-xc…) 与长标志 (--login -c), 引号载荷由 "*"
+          # 跨越 (2026-09-29: 组合标志/路径前缀/引号载荷曾整体漏过, 见复评 NEW-R3-B1)
+          "*sh *c*git*push*" = pushDeny;
+          "*eval *git*push*" = pushDeny;
           "sudo *" = "deny";
           "mkfs*" = "deny";
         };
