@@ -5,6 +5,9 @@
     # bash/zsh/fish 共享的别名、函数与 PATH
     ./shell/common.nix
 
+    # niri-gpu 诊断命令 (ngpu 别名依赖它; 从 common.nix 拆出以保持职责单一)
+    ./shell/niri-gpu.nix
+
     ./shell/bash.nix
     ./shell/fish.nix
     ./shell/zsh.nix
