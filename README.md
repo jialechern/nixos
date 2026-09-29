@@ -29,7 +29,7 @@
         ```
 #### 使用 ssh 进行远程安装
 使用 ssh 进行远程安装有着可以 复制/粘贴 命令和错误警告的好处.
-1. 修改 root 密码 `sudo passwd root` 当然也可以顺便把当前用户的密码也修改了 `password $USER`
+1. 修改 root 密码 `sudo passwd root` 当然也可以顺便把当前用户的密码也修改了 `passwd $USER`
 2. 启用 sshd
     ```bash,zsh
     # 查看 sshd 状态
@@ -76,8 +76,9 @@
     ```
 6. 挂载子卷(如有多块磁盘, 可以跨磁盘挂载)并开启"透明压缩"
     ```bash,zsh
-    # 通用挂载选项 (开启 zstd 压缩, 关闭文件访问时间记录以提升性能)
-    BTRFS_OPTS="compress=zstd,noatime,discard=async"
+    # 通用挂载选项: zstd 压缩 + 自动碎片整理 + 异步 discard
+    # (与 hosts/*/configuration.nix 声明的选项保持一致; /swap 子卷另加 noatime, 见下文)
+    BTRFS_OPTS="compress=zstd,autodefrag,discard=async"
 
     # 挂载根目录子卷
     mount -t btrfs -o subvol=@,$BTRFS_OPTS /dev/nvme0n1p2 /mnt
@@ -117,7 +118,7 @@
 
     **网络问题:**
         - 初次构建系统可以使用 `nixos-install.sh` 进行安装, 其中已经包含了初次运行时的国内源设置
-        - 部分软件包会因为 hash 对不上而固执的跑到境外网站下载(`modules/system-dependencies-require-proxy.nix`、`home/desktop/applications-require-proxy.nix` 等带有 `*-require-proxy.nix` 字样的文件), 好在这些软件并不影响整体的系统功能, 在第一次 安装/构建 系统是可以将它们移走, 等代理服务能够正常运行后再将它们移入重新构建它们.
+        - 部分软件包会固执地从境外站点下载 (`modules/system-dependencies-require-proxy.nix`、`home/desktop/applications-require-proxy.nix` 等带 `*-require-proxy.nix` 字样的文件), 另有 `home/skills.nix` 用 `fetchFromGitHub` 拉取 skills —— 这些都不影响系统主功能, 第一次 安装/构建 时可以把它们一并移走, 等代理可用后再放回并重新构建.
         - 私密数据管理模块 `sops-nix` 必须使用透明代理才能够正常构建并使用, 故第一次构建时(如果没有代理)需要将 `sops.nix` 移走. 并且将 `flake.nix` 中的 `inputs` 属性集以及 `outputs` 参数集的 `sops-nix` 相关配置注释, 如下:
         ```nix
         # ...
@@ -125,9 +126,12 @@
         inputs = {
             # ...
         
-            # # --- --- --- GEGIN 需要注释的部分 --- --- ---
+            # # --- --- --- BEGIN 需要注释的部分 --- --- ---
             # # 引入 sops-nix 源
-            # sops-nix.url = "github:Mic92/sops-nix";
+            # sops-nix = {
+            #   url = "github:Mic92/sops-nix";
+            #   inputs.nixpkgs.follows = "nixpkgs";
+            # };
             # # --- --- --- END   需要注释的部分 --- --- ---
 
             # ...
@@ -138,7 +142,7 @@
         outputs = {
                     # ...
 
-                    # # --- --- --- GEGIN 需要注释的部分 --- --- ---
+                    # # --- --- --- BEGIN 需要注释的部分 --- --- ---
                     # sops-nix,
                     # # --- --- --- END   需要注释的部分 --- --- ---
 
@@ -192,13 +196,15 @@
     }];
     # ...
     ```
-5. 重新复位机器
+    **注意:** `hardware-configuration.nix` 是 `nixos-generate-config` 生成的 (文件头写着 "Do not modify this file!"), 再次运行生成器会覆盖它。安装阶段这一次修改是必要的, 但更稳的做法是把上面 `fileSystems."/swap"` 与 `swapDevices` 两段写进 `hosts/<HOSTNAME>/configuration.nix` —— 它与生成文件是按 list/attr 合并的, 不会冲突。
+
+4. 重新构建以应用(交换文件由上游用 `btrfs filesystem mkswapfile` 自动创建, 无需手工 mkswap/chattr)
     ```zsh,bash
     sudo nixos-rebuild switch --flake <flake.nix-path>#<host-name>
     ```
-6. 检查交换空间的 开启/使用 情况
+5. 检查交换空间的 开启/使用 情况
     ```zsh,bash
-    # 一下两种选其一即可
+    # 以下两种选其一即可
     swapon --show
     free -h
     ```
@@ -214,11 +220,11 @@
     sudo btrfs subvolume delete /mnt/snapshots/@home_old
     ```
 3. 查看磁盘的真实使用情况 `sudo btrfs filesystem usage /`
-4. 简易文件恢复(假设创建了一个快照 `/@home_backup`, 而刚刚不小心删掉了 `~/important.txt`)
+4. 简易文件恢复(假设事先做过 home 子卷快照 `@home_20260324`, 而刚刚不小心删掉了 `~/important.txt`)
     ```bash,zsh
     # 快照在 Btrfs 里就是一个普通的只读文件夹
     # 直接进去拷贝出来即可
-    cp /mnt/snapshots/@home_backup/jlc/important.txt ~/important.txt
+    cp /mnt/snapshots/@home_20260324/jlc/important.txt ~/important.txt
     ```
 5. 系统级全量回滚(如果升级系统后发现完全无法进桌面, 或者误删了重要的系统组件)
     ```bash,zsh
@@ -228,8 +234,9 @@
     cd /mnt
     # 把坏掉的子卷挪个位置(或者删掉)
     mv @ @_broken
-    # 把之前备份的快照变成新的正式子卷
-    btrfs subvolume snapshot snapshots/@_backup @
+    # 把之前备份的快照变成新的正式子卷 (前提: 事先做过根子卷快照, 例如
+    # `sudo btrfs subvolume snapshot -r / /mnt/snapshots/@root_backup`)
+    btrfs subvolume snapshot snapshots/@root_backup @
     # 重启: 此时系统会加载那个完好的 @ 快照, 仿佛一切都没发生过
     ```
 6. 文件自检(Btrfs 会存储数据的校验和, 如果怀疑硬盘有坏道或数据腐烂(Bitrot)可以自检)
