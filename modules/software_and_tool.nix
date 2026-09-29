@@ -4,8 +4,11 @@
   # 允许非自由的软件源
   nixpkgs.config.allowUnfree = true;
 
-  # 把 Linux 内核的 perf 访问限制放宽到最宽松的级别
-  boot.kernel.sysctl."kernel.perf_event_paranoid" = -1;
+  # perf / bpftrace 调试需要放宽 perf_event_paranoid, 但不必到最宽松的 -1:
+  # 1 = 允许 per-process 的用户态 + 内核态采样, 仍禁止 system-wide 采样
+  # (内核文档: Documentation/admin-guide/perf-security.rst)
+  # 真需要 system-wide 时用 sudo, 或给 perf 二进制加 cap_perfmon, 而不是放开全系统
+  boot.kernel.sysctl."kernel.perf_event_paranoid" = 1;
 
   environment.systemPackages = with pkgs; [
     # 基础工具

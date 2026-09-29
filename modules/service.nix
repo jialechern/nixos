@@ -22,9 +22,9 @@ in
   # 或者完全禁用防火墙
   # networking.firewall.enable = false;
 
-  networking.firewall.trustedInterfaces = [
-    "virbr0" # 放行默认虚拟网桥
-  ];
+  # 注: 曾用 networking.firewall.trustedInterfaces = [ "virbr0" ] 放行 libvirt
+  # 虚拟网桥, 但那等于放行 guest 直连宿主的所有端口; 没有实测需求, 已删除。
+  # 若日后要让 guest 访问宿主上的某个服务, 开那个具体端口, 不要放行整个接口。
 
   # --- 其它 ---
   # 电源管理
