@@ -33,8 +33,8 @@
       accents = [ "mauve" ];
     }) # GTK 主题
     papirus-icon-theme # 图标主题
-    noto-fonts-cjk-sans # 核心中文字体
-    noto-fonts-color-emoji # 表情符号支持
+    # noto 字体 (cjk-sans / color-emoji) 由系统层 fonts.packages 统一提供,
+    # 见 modules/input-method_and_font.nix, 此处不再重复安装
 
     # --- Latex && Typst 环境 ---
     typst
