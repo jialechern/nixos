@@ -42,7 +42,7 @@ usage() {
   -s, --substituters STR  覆盖默认的 substituters
   -k, --trusted-keys STR  覆盖默认的 trusted-public-keys
   --impure                允许构建依赖于系统状态的 flake (在未提交 Git 时非常有用)
-  --trace                 开启详细的错误追踪 (调试用)
+  --trace                 开启详细的错误追踪与构建日志 (调试用)
   -h, --help              显示此帮助信息并退出
 
 示例:
@@ -96,7 +96,9 @@ if [ "$IMPURE" -eq 1 ]; then
 fi
 
 if [ "$SHOW_TRACE" -eq 1 ]; then
-    CMD+=(--show-trace --print-build-logs)
+    # nixos-install 不接受 --print-build-logs; --log-format raw 才是它认识的
+    # 等价选项 (上游脚本把它并入传给内部 nix 的 extraBuildFlags)
+    CMD+=(--show-trace --log-format raw)
 fi
 
 echo "🚀 即将执行的安装命令:"
