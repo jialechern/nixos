@@ -200,7 +200,8 @@ in
 
       # --- 网络代理 (可选) ---
       # 国内访问海外 API (如 OpenCode Zen/Go ...) 时启用, 走本机代理 127.0.0.1:20172
-      # pi 会将其应用为 HTTP_PROXY / HTTPS_PROXY (仅全局设置, 项目设置可覆盖)
+      # pi 会将其应用为 HTTP_PROXY / HTTPS_PROXY。只能在 agent 目录级 settings 配置
+      # (pi 文档 docs/settings.md: "Can only be set in agent-directory settings"), 项目级不可覆盖
       # httpProxy = "http://127.0.0.1:20172";
 
       # --- 全局扩展包 ---
@@ -234,7 +235,7 @@ in
     "${piConfigDir}/prompts/code-review.md".source = ./pi/prompts/code-review.md;
 
     # pi-web-access 搜索配置: 复用 sops 注入的 TAVILY_API_KEY / FIRECRAWL_API_KEY
-    # $VAR 在请求时解析 (环境变量由 pi 包装脚本从 ~/.config/pi/secrets.env 注入)
+    # $VAR 在请求时解析 (环境变量由 pi 包装脚本启动时从 sops 密钥文件读出并导出)
     ".pi/agent/web-search.json".text = builtins.toJSON {
       # --- 搜索凭据 ---
       # 显式声明凭据来源便于自文档化; 环境变量优先级高于此处的字面值
