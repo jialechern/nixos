@@ -46,9 +46,9 @@ in
   # 启用 libvirt 服务
   virtualisation.libvirtd.enable = true;
 
-  systemd.tmpfiles.rules = [
-    "L+ /var/lib/qemu/firmware - - - - ${pkgs.qemu}/share/qemu/firmware"
-  ]; # 给 virt-manager / libvirt 提供 UEFI 固件
+  # 注: /var/lib/qemu/firmware 由 libvirtd 模块自带的 tmpfiles 规则指向
+  # qemu-ovmf-metadata (同一个目标路径后者生效, 实测本仓库这条会被覆盖),
+  # 这里不再重复声明
   
   virtualisation.libvirtd.qemu.vhostUserPackages = with pkgs; [
     virtiofsd # 共享目录更顺手

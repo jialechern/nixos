@@ -35,7 +35,6 @@
       # 电子书与 PDF 查看器
       "application/pdf" = [ "org.pwmt.zathura.desktop" ];
       "application/epub+zip" = [ "org.pwmt.zathura.desktop" ];
-      "application/x-filler" = [ "org.pwmt.zathura.desktop" ];
       "image/vnd.djvu" = [ "org.pwmt.zathura.desktop" ];
       "application/x-cbr" = [ "org.pwmt.zathura.desktop" ];
       "application/x-cbz" = [ "org.pwmt.zathura.desktop" ];

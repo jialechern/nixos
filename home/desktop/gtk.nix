@@ -73,8 +73,7 @@
     };
   };
 
-  # 深色模式的环境变量支持
-  home.sessionVariables = {
-    GTK_THEME = "catppuccin-mocha-mauve-standard";
-  };
+  # 不设 GTK_THEME: 它是调试用的覆盖变量, 会盖掉逐应用主题并破坏 libadwaita 的
+  # 深浅色跟随; 主题名与 color-scheme 已由上面的 gtk.theme / gtk.colorScheme
+  # 写入 settings.ini 与 dconf, 应用会自己读取
 }
