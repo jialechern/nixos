@@ -134,7 +134,7 @@ in
 
       # --- 应用操作 ---
       # 会话选择器专用键: 原默认 ctrl+p (切换路径显示) / ctrl+n (仅命名会话过滤)
-      # 与 tui.select.up/down 冲突, 换绑到 ctrl+shift+p / ctrl+shift+n
+      # 与 tui.select.up/down 冲突, 已改绑到 ctrl+. / ctrl+,
       # (两者当前均空闲; 如需完全禁用可改为 [])
       "app.session.togglePath" = "ctrl+."; # 切换路径显示
       "app.session.toggleNamedFilter" = "ctrl+,"; # 仅显示命名会话
@@ -151,59 +151,13 @@ in
 
     # -------------------------------------------------------------------------
     # 自定义模型 (models.json)
-    # 当前 providers 为空 (下面的配置样例整段被注释掉了); 保留以备 pi.dev 远程目录
-    # 尚未收录某个新模型时启用。
+    # providers 目前留空: 内置目录已覆盖当前所用模型 (deepseek-flash 的 contextWindow /
+    # maxTokens / thinkingLevelMap / cost 都在内置条目里, 认证由 /login deepseek 写入
+    # auth.json)。只有 pi.dev 远程目录尚未收录某个新模型时, 才在这里加 provider 条目
+    # (baseUrl / api / models[...]), 字段写法参考内置条目。
     # -------------------------------------------------------------------------
     models = {
-      providers = {
-        # ===================================================================
-        # DeepSeek 官方 API
-        # 认证: auth 由 /login deepseek 写入 ~/.pi/agent/auth.json, 故不写 apiKey
-        # base_url: https://api.deepseek.com (OpenAI 兼容)
-        # ===================================================================
-        # deepseek = {
-        #   baseUrl = "https://api.deepseek.com";
-        #   api = "openai-completions";
-        # 
-        #   models = [
-        #     # --- deepseek-flash (2026-09-10 上线, 即 V4.1 Flash 的正式 API 名称) ---
-        #     # 线上 /models 目前只返回 deepseek-flash 与 deepseek-v4-pro 两项, 旧名
-        #     # deepseek-v4-flash 与内测 ID deepseek-v4.1-flash-expires-on-0910 均被
-        #     # 重定向到同一后端; 该模型原生多模态 (实测可读图)。
-        #     # 官方文档与 pi.dev 远程目录尚未收录, 故在此本地补齐。
-        #     # 上下文 / 输出上限沿用同 provider 内置条目公布的 1M / 384K: 新模型尚未
-        #     # 被官方价格页收录, 无更权威数值可依。不填 cost —— 单价未公布, 留空
-        #     # 好过按 V4-Flash 旧价误导显示。
-        #     {
-        #       id = "deepseek-flash";
-        #       name = "DeepSeek Flash (V4.1)";
-        #       reasoning = true;
-        #       input = [ "text" "image" ]; # 原生多模态
-        #       contextWindow = 1000000;
-        #       maxTokens = 384000;
-        #       # 官方仅支持 low / high / max 三档, 其余置 null 从 UI 中隐藏;
-        #       # 关闭思考交由 thinkingFormat = "deepseek" 发送 thinking.type = "disabled"
-        #       # 实现 (2026-09-10 实测该模型支持)。
-        #       thinkingLevelMap = {
-        #         "minimal" = null;
-        #         "low" = "low";
-        #         "medium" = null;
-        #         "high" = "high";
-        #         "xhigh" = null;
-        #         "max" = "max";
-        #       };
-        #       # compat 与内置 deepseek 条目保持一致
-        #       compat = {
-        #         supportsStore = false;
-        #         supportsDeveloperRole = false;
-        #         maxTokensField = "max_tokens";
-        #         requiresReasoningContentOnAssistantMessages = true;
-        #         thinkingFormat = "deepseek";
-        #       };
-        #     }
-        #   ];
-        # };
-      };
+      providers = { };
     };
 
     # -------------------------------------------------------------------------
@@ -370,16 +324,16 @@ in
       cursorStyle = "block";
 
       # 全屏模式下鼠标滚轮每格滚动行数, 取值 1-10 (超出会被 clamp)。
-      # 实现上是 Reflect.set 写 pi 的私有字段 tui.wheelScrollLines (注释标明针对
-      # pi 0.84.2); 当前 pi 0.85.1 若不兼容会自动降级为 pi 默认值, 只是该项无效,
-      # 不会报错。
+      # 实现上是 Reflect.set 写 pi 的私有字段 tui.wheelScrollLines (字段名以
+      # pi 0.84.2 源码为准); 若某版本改了字段名, 该赋值会静默失效 (自动降级为
+      # pi 默认值), 不会报错。
       fullscreen = {
         wheelScrollLines = 4;
       };
 
-      # 图标集 (auto | nerd | ascii)。auto 走 detectNerdFont(): 识别 TERM=xterm-kitty
-      # → nerd (本机 kitty 已配 JetBrainsMono Nerd Font Mono), 同时 ssh 到其它终端时
-      # 会自行退化为 ascii, 所以保留 auto 比硬写 nerd 更稳。
+      # 图标集 (auto | nerd | ascii)。auto 调用 detectNerdFont(), 判定条件是
+      # "TERM != dumb && stdout 是 TTY && locale 含 UTF-8" —— 它并不真的探测字体
+      # 是否含 Nerd 字形; 保留 auto 比硬写 nerd 更稳 (非 TTY / dumb 终端会退化)。
       icons = {
         mode = "auto";
       };
