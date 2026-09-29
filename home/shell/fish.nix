@@ -18,24 +18,9 @@
       # -------- 关闭启动欢迎语 --------
       set -g fish_greeting ""
 
-      # -------- VI 模式提示符 --------
-      function fish_mode_prompt
-        switch $fish_bind_mode
-          case default
-            set_color --bold red
-            echo "[N]"
-          case insert
-            set_color --bold green
-            echo "[I]"
-          case replace_one
-            set_color --bold yellow
-            echo "[R]"
-          case visual
-            set_color --bold magenta
-            echo "[V]"
-        end
-        set_color normal
-      end
+      # 注意: 不要在这里自绘 fish_mode_prompt —— starship 的 fish 集成会在运行时
+      # 执行 `builtin functions -e fish_mode_prompt` 把它删掉 (定义必然失效)。
+      # VI 模式指示改用 starship 的 character.vimcmd_symbol / vimcmd_replace_symbol。
 
       # -------- VI 模式光标形状(仅支持支持 DECSCUSR 的终端)--------
       # 普通模式     → 方块 (闪烁)

@@ -25,13 +25,9 @@
       share = true;
     };
 
-    # 插件
-    plugins = [
-      {
-        name = "zsh-completions";
-        src = pkgs.zsh-completions;
-      }
-    ];
+    # 注意: 不要用 plugins 引 zsh-completions —— 该包只装 share/zsh/site-functions/
+    # (无 *.plugin.zsh), HM 的 `[[ -f ... ]] && source` 会静默跳过。补全实际来自
+    # HM 注入的 fpath ($profile/share/zsh/site-functions), 包仍由 home.packages 安装。
 
     # 需要最后加载的 zsh 配置
     # (通用别名见 ./common.nix)
