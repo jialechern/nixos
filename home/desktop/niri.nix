@@ -103,7 +103,7 @@ let
       }
       // 注意:
       // - 启动时选定渲染设备, 热重载不生效, 修改后须重启 niri 会话;
-      // - 验证 (推荐): 直接运行 `ngpu` (脚本定义见 home/shell/common.nix), 它会反查
+      // - 验证 (推荐): 直接运行 `ngpu` (脚本定义见 home/shell/niri-gpu.nix), 它会反查
       //   上述 by-path 映射并直接判定当前是独显渲染还是回退核显;
       // - 手工验证: journalctl --user -u niri -b --no-pager -o cat | grep "using as the render node"
       //   注意: niri 打印的是解析后的 renderD 编号, 而非此处配置的 by-path 路径 (26.04 实测),
