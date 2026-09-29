@@ -261,6 +261,11 @@ in
     # --- 提示词模板 (/init) ---
     "${piConfigDir}/prompts/init.md".source = ./pi/prompts/init.md;
 
+    # --- 提示词模板 (/code-review) ---
+    # 流程: 侦察基线 → 清点模块 → 按 35% 上下文预算切只读 lane → 一次 async workflow 委派
+    # → 主 agent 复核 P0/P1 → 架构审阅 → 落成 docs/code-review-<日期>.md (默认只读)
+    "${piConfigDir}/prompts/code-review.md".source = ./pi/prompts/code-review.md;
+
     # pi-web-access 搜索配置: 复用 sops 注入的 TAVILY_API_KEY / FIRECRAWL_API_KEY
     # $VAR 在请求时解析 (环境变量由 pi 包装脚本从 ~/.config/pi/secrets.env 注入)
     ".pi/agent/web-search.json".text = builtins.toJSON {
