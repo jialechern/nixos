@@ -27,9 +27,7 @@
     ];
   };
 
-  # 确保环境能够让 OBS 原生运行在 Wayland 上
-  home.sessionVariables = {
-    # 强制 OBS 使用 Wayland 原生运行，而不是走 Xwayland
-    OBS_USE_EGL = "1";
-  };
+  # 注: 旧配置里的 OBS_USE_EGL 在 obs-studio 32.2.2 的二进制与 nixpkgs 全树都是
+  # 0 命中 (变量不存在), 属死配置, 已删除; 真要让 OBS 走 Wayland 原生, 用
+  # QT_QPA_PLATFORM=wayland (OBS 本体是 Qt 程序, 平台插件由 qt.nix 侧决定)
 }

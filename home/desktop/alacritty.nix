@@ -67,7 +67,10 @@
         padding = { x = 13; y = 7; }; # 内边距
         decorations = "None";         # niri 平铺 WM 下隐藏标题栏
         opacity = 0.7;                # 不透明度
-        blur = true;                  # 背景模糊 (需 winit 支持 ext-background-effect, niri >= 26.04)
+        # blur: alacritty 0.17 的窗口模糊只走 KDE 的 org_kde_kwin_blur 协议
+        # (alacritty(5): "works on macOS/KDE Wayland"), 而 niri 26.04 只暴露
+        # ext_background_effect_manager_v1, 会话里没有 KDE blur 全局 ⇒ 设了不生效。
+        # 窗口毛玻璃由 niri 侧负责 (见 conf.d/window-rule.kdl 的 background-effect)
       };
 
       # --- --- --- URL 提示 --- --- ---
