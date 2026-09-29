@@ -21,6 +21,11 @@
   # --- 输入法环境变量 ---
   # i18n.inputMethod (waylandFrontend) 只设 XMODIFIERS/QT_PLUGIN_PATH, 其余变量在此定义;
   # 不要设置 GDK_BACKEND —— 官方警告会破坏 screencast portal
+  #
+  # 已知风险 (保留是有意的): fcitx 官方 "Using Fcitx 5 on Wayland" 明确建议 Wayland 下
+  # 不要设 GTK_IM_MODULE —— 设了 GTK3/4 会放弃原生 text-input-v3 通道改用 IM module。
+  # 这里为了 Electron / 走 XWayland 的 GTK 程序仍能输入而保留;
+  # 若发现 GTK 原生 Wayland 应用输入异常, 先删掉 GTK_IM_MODULE 再试。
   environment.sessionVariables = {
     GTK_IM_MODULE = "fcitx"; # GTK2 / 走 XWayland 的 GTK 程序 / Electron
     QT_IM_MODULE = "fcitx"; # Qt5 及自带 Qt 输入法模块的程序 (Qt6 的 Wayland 原生输入走 text-input-v3)
