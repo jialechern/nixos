@@ -26,8 +26,9 @@
       page-h-padding = 3; # 页面水平间距
       statusbar-h-padding = 8; # 状态栏水平内边距
       statusbar-v-padding = 2; # 状态栏垂直内边距
-      scroll-hstep = -1; # 垂直滚动步长 (-1 表示平滑)
-      scroll-step = 40; # 水平滚动步长
+      # 已删 scroll-hstep (水平) 与 scroll-step (纵向): 二者上游默认分别是 -1 / 40,
+      # 此处原值与默认相同 (且注释把两个方向写反了)。平滑滚动由 scroll 命令的
+      # smooth-up / smooth-down 参数提供, 不是这两个选项的取值。
       zoom-step = 10; # 缩放步长
 
       # --- 系统与行为 ---
