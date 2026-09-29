@@ -40,9 +40,11 @@
   #   [profile.dev|release|test|bench] 整节 (opt-level / debug / codegen-units / panic /
   #   lto / overflow-checks / debug-assertions / incremental 逐项等于 cargo 内置默认)
   #
-  # 另有两项是**有害**偏离, 一并删除 (这两项默认是 auto-detect, 强设 true 会让
-  # 非 TTY / 非 UTF-8 场景也照样输出超链接与 Unicode 字符, 污染重定向的日志):
-  #   term.hyperlinks = true、term.unicode = true
+  # 另有三项是**有害**偏离, 一并删除 (默认都是 auto-detect, 写死会破坏自动判断):
+  #   term.hyperlinks = true、term.unicode = true —— 非 TTY / 非 UTF-8 场景也照样
+  #   输出超链接与 Unicode 字符, 污染重定向的日志;
+  #   cargo-new.vcs = "git" —— 覆盖了"已在 VCS 内则默认 none"的自动判断,
+  #   在仓库内跑 `cargo new` 会多建一个嵌套 git 仓库
   # =========================================================================
   programs.cargo = {
     # 启用后才会把下面的 settings 写进 $CARGO_HOME/config.toml
