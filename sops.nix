@@ -11,12 +11,12 @@
     # 告知 sops-nix 的 age 私钥位置 (用于解密)
     age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
 
-    # 默认的加密文件路径 (可选, 如果有多个文件, 可以在 secrets 中单独指定)
-    defaultSopsFile = ./secrets/default.yaml;
+    # 注: 不设 defaultSopsFile —— 每个 secret 都显式写了 sopsFile; 默认文件
+    # (secrets/default.yaml) 只是个空文件, 已删除
 
     # 声明要解密的秘密变量
     secrets = {
-      # 不把它放到默认的 `/run/user/...` 目录
+      # 不放到 sops-nix 的默认路径 (~/.config/sops-nix/secrets/<name>)
       # 而是直接映射到 SSH 默认读取的路径
       "id_ed25519" = {
         sopsFile = ./secrets/ssh_keys/git.yaml;
@@ -47,23 +47,8 @@
     };
 
     templates = {
-      "pi-secrets.env" = {
-        path = "${config.home.homeDirectory}/.config/pi/secrets.env";
-        content = ''
-          # --- DeepSeek 官方 API ---
-          DEEPSEEK_API_KEY=${config.sops.placeholder.deepseek_api_key}
-          # --- pi-web-access 联网搜索 ---
-          TAVILY_API_KEY=${config.sops.placeholder.tavily}
-          FIRECRAWL_API_KEY=${config.sops.placeholder.firecrawl}
-          # --- context7 文档查询 ---
-          CONTEXT7_API_KEY=${config.sops.placeholder.context7}
-          # --- pi-web-access GitHub 能力 (gh CLI 认证) ---
-          # 复用 .netrc 同源的只读令牌; 实际可访问范围取决于该 token 自身权限
-          GH_TOKEN=${config.sops.placeholder."github_pull_only_token"}
-        '';
-        mode = "0600";
-      };
-
+      # 注: 不再生成 ~/.config/pi/secrets.env —— pi 的包装脚本 (home/dev/pi.nix)
+      # 直接读上面 secrets 声明的文件, 少一份明文落盘 (旧的 env 文件可手动删除)
       "netrc" = {
         path = "${config.home.homeDirectory}/.netrc";
         content = ''

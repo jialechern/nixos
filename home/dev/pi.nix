@@ -75,8 +75,13 @@ in
     # 必须启用才会安装软件包并生成配置
     enable = true;
 
-    # 使用包装过后的软件包: 启动时加载 sops 生成的密钥文件
-    # 密钥由 sops.nix 的 "pi-secrets.env" 模板生成, 文件不存在时静默跳过
+    # 使用包装过后的软件包: 启动时把 sops-nix 生成的密钥注入 pi 进程环境
+    # 直接读 sops-nix 的密钥文件 (由 sops.nix 的 secrets 声明生成, 权限 0400/0600),
+    # 不再额外落一份明文 env 文件 —— 旧的 ~/.config/pi/secrets.env 可以手动删掉
+    #
+    # 有意取舍: 这些变量会随 pi 进程进入它派生的所有子进程环境 (包括 bash 工具),
+    # 因为 pi 的联网搜索/文档查询/GitHub 能力都从进程环境里读 key。
+    # 若以后要收紧, 可改成只给需要的扩展单独传 env, 而不是在启动时全量导出。
     package = pkgs.symlinkJoin {
       name = "pi-coding-agent-wrapped";
       paths = [ pkgs.pi-coding-agent ];
@@ -84,12 +89,11 @@ in
       postBuild = ''
         wrapProgram $out/bin/pi \
           --run '
-            SECRET_FILE="$HOME/.config/pi/secrets.env"
-            if [ -f "$SECRET_FILE" ]; then
-              set -a
-              source "$SECRET_FILE"
-              set +a
-            fi
+            export DEEPSEEK_API_KEY="$(cat "${config.sops.secrets.deepseek_api_key.path}" 2>/dev/null)"
+            export TAVILY_API_KEY="$(cat "${config.sops.secrets.tavily.path}" 2>/dev/null)"
+            export FIRECRAWL_API_KEY="$(cat "${config.sops.secrets.firecrawl.path}" 2>/dev/null)"
+            export CONTEXT7_API_KEY="$(cat "${config.sops.secrets.context7.path}" 2>/dev/null)"
+            export GH_TOKEN="$(cat "${config.sops.secrets.github_pull_only_token.path}" 2>/dev/null)"
           '
       '';
     };
