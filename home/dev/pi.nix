@@ -98,11 +98,16 @@ in
       postBuild = ''
         wrapProgram $out/bin/pi \
           --run '
-            export DEEPSEEK_API_KEY="$(cat "${config.sops.secrets.deepseek_api_key.path}" 2>/dev/null)"
-            export TAVILY_API_KEY="$(cat "${config.sops.secrets.tavily.path}" 2>/dev/null)"
-            export FIRECRAWL_API_KEY="$(cat "${config.sops.secrets.firecrawl.path}" 2>/dev/null)"
-            export CONTEXT7_API_KEY="$(cat "${config.sops.secrets.context7.path}" 2>/dev/null)"
-            export GH_TOKEN="$(cat "${config.sops.secrets.github_pull_only_token.path}" 2>/dev/null)"
+            # 只在密钥文件存在且非空时导出: 直接 export 空串会覆盖用户已有环境变量,
+            # 并让 pi 的扩展抛 environment-empty 而不是回退 (2026-09-29 复评 NEW-10);
+            # 注意 wrapper 由 makeWrapper 以 bash -e 运行, 守卫必须 errexit 安全
+            # (不能用 "&&" 结尾 —— 缺失文件时会因返回非零而中止整个 pi 启动)
+            load_secret() { local k; k="$(cat "$2" 2>/dev/null || true)"; [ -z "$k" ] || export "$1=$k"; }
+            load_secret DEEPSEEK_API_KEY "${config.sops.secrets.deepseek_api_key.path}"
+            load_secret TAVILY_API_KEY "${config.sops.secrets.tavily.path}"
+            load_secret FIRECRAWL_API_KEY "${config.sops.secrets.firecrawl.path}"
+            load_secret CONTEXT7_API_KEY "${config.sops.secrets.context7.path}"
+            load_secret GH_TOKEN "${config.sops.secrets.github_pull_only_token.path}"
           '
       '';
     };
