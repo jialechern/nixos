@@ -8,7 +8,7 @@
   ];
 
   # --- --- --- zsh 配置 --- --- ---
-  # 注: 通用别名 / nclean 函数 / PATH 见 ./common.nix
+  # 注: 通用别名(含 nclean) / PATH 见 ./common.nix
   programs.zsh = {
     enable = true;
     # 注: enableCompletion 与 history.{size,path,ignoreDups,share} 都等于 HM 默认值

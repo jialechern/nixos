@@ -33,7 +33,7 @@
     ];
 
     # --- --- --- .bashrc 级配置(所有 Bash 调用均执行) --- --- ---
-    # 注: 通用别名 / nclean 函数 / PATH 见 ./common.nix
+    # 注: 通用别名(含 nclean) / PATH 见 ./common.nix
     bashrcExtra = ''
       # 历史命令时间戳格式(用于 history 命令输出和审计)
       HISTTIMEFORMAT="%F %T  "

@@ -1,6 +1,8 @@
 # shell 的共享配置:
-# 通用别名与 PATH 只在此定义一次, 避免在每个 shell 文件里重复
-{ config, pkgs, ... }:
+# 通用别名与 PATH 只在此定义一次, 避免在每个 shell 文件里重复。
+# 注意: fish 侧 programs.fish.preferAbbrs = true, 这里的别名在 fish 里以缩写(abbr)
+# 生效 (输入完按空格自动展开为完整命令, 展开后仍可编辑); zsh/bash 侧是普通 alias。
+{ config, ... }:
 
 {
   # --- 通用别名: home.shellAliases 自动注入所有已启用的 shell ---
