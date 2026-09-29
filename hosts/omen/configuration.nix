@@ -18,27 +18,23 @@
   networking.hostName = "omen";
 
   # --- --- --- 文件系统 --- --- ---
-  fileSystems."/home" = {
-    device = "/dev/disk/by-uuid/63088d49-836a-40b8-9e99-aa987455ca7f";
-    fsType = "btrfs";
-    options = [
-      "defaults"
-      "compress=zstd"
-      "autodefrag"
-      "discard=async"
-    ];
-  };
+  # 存储布局 (device / fsType / subvol=...) 由 hardware-configuration.nix 定义
+  # (生成文件的职责; nixos-generate-config 对 btrfs 只输出 subvol, 不含压缩等选项);
+  # 这里只追加配置性挂载选项 —— options 是 list 合并, 不会覆盖生成文件里的 subvol=@。
+  # 注意: 别因为这里"看起来完整"就删掉 hw-cfg 里的条目, subvol 只在那里, 删了挂载会失败。
+  fileSystems."/".options = [
+    "defaults"
+    "compress=zstd"
+    "autodefrag"
+    "discard=async"
+  ];
 
-  fileSystems."/" = {
-    device = "/dev/disk/by-uuid/0abb0e77-a3f1-46e5-a054-3e0c48069f28";
-    fsType = "btrfs";
-    options = [
-      "defaults"
-      "compress=zstd"
-      "autodefrag"
-      "discard=async"
-    ];
-  };
+  fileSystems."/home".options = [
+    "defaults"
+    "compress=zstd"
+    "autodefrag"
+    "discard=async"
+  ];
 
   # --- --- --- 用户与组 --- --- ---
   users.groups.nix-users = { };
