@@ -10,6 +10,10 @@
   #
   # 即使您更新了 Home Manager，也不应更改此值。如果您确实
   # 想要更新此值, 请务必先查看 Home Manager 的发布说明
+  # 本仓库受此值门控的已知项 (与 system.stateVersion 无关):
+  #  - xdg.userDirs.setSessionVariables 默认值翻转 (下方 xdg.userDirs 已显式声明保留旧默认);
+  #  - programs.zsh.dotDir 迁移: xdg.enable 下默认从 $HOME 迁到 ~/.config/zsh,
+  #    .zshrc / .zsh_history 随之迁移 (本仓库未开 xdg.enable, 暂不受影响)。
   home.stateVersion = "25.11"; # 请在更改前阅读注释
 
   # 已经通过 follows 确保了 home-manager 和 nixpkgs 的兼容性

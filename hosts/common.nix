@@ -17,8 +17,9 @@
   # (生成文件的职责; nixos-generate-config 对 btrfs 只输出 subvol, 不含压缩等选项);
   # 这里只追加配置性挂载选项 —— options 是 list 合并, 不会覆盖生成文件里的 subvol=@。
   # 注意: 别因为这里"看起来完整"就删掉 hw-cfg 里的条目, subvol 只在那里, 删了挂载会失败。
-  # (两台机器共用同一套 btrfs 子卷布局, 见 README 安装流程; 若新机器布局不同,
-  #  在自己的 configuration.nix 里用 lib.mkForce 覆盖对应 options)
+  # (两台机器共用同一套 btrfs 子卷布局, 见 README 安装流程; 若新机器布局不同需覆盖,
+  #  注意 options 是 list、lib.mkForce 是整体替换 —— 会把 hw-cfg 里的 subvol= 一并丢掉,
+  #  必须在强制列表里重述 subvol= 等必需项, 或直接改该机 hw-cfg 的 options)
   fileSystems."/".options = [
     "defaults"
     "compress=zstd"
@@ -54,6 +55,8 @@
   # (已知会影响本仓库的: HM xdg.userDirs.setSessionVariables 默认值翻转;
   #  programs.zsh.dotDir 在 xdg.enable 下默认从 $HOME 迁到 ~/.config/zsh,
   #  .zshrc / .zsh_history 随之迁移)
+  #  注: 上面两项由 HM 的 home.stateVersion + xdg.enable 门控 (详情见 home.nix),
+  #  不在 system.stateVersion —— 只 bump 本值不会触发。
   # 用 mkDefault: 两台机器同为 25.11, 共享此默认值; 将来新装机器若初始版本不同,
   # 在自己的 configuration.nix 里直接赋 system.stateVersion 即可覆盖 (mkDefault 优先级最低)。
   system.stateVersion = lib.mkDefault "25.11";
