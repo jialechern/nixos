@@ -54,7 +54,9 @@
   # stateVersion: 首次安装这个系统时的 NixOS 版本, 升级后不要随手改
   # (它会改变若干选项的默认值与数据迁移行为)。当前 25.11 而 nixpkgs 已是 26.11 代 ——
   # 要 bump 时先读 rl-2605 / rl-2611 的 release notes 并逐项验证
-  # (已知会影响本仓库的: HM xdg.userDirs.setSessionVariables 默认值翻转)
+  # (已知会影响本仓库的: HM xdg.userDirs.setSessionVariables 默认值翻转;
+  #  programs.zsh.dotDir 在 xdg.enable 下默认从 $HOME 迁到 ~/.config/zsh,
+  #  .zshrc / .zsh_history 随之迁移)
   system.stateVersion = "25.11";
 }
 
