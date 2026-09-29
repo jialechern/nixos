@@ -80,16 +80,12 @@
   # 缺库时往 libraries 里加; 需要完整 FHS 路径的程序仍用 `fhs` 沙箱
   programs.nix-ld = {
     enable = true;
-    # 缺什么库加什么包: 这里追加的会和 nixpkgs 默认清单合并
+    # 这里只需写上游默认清单里没有的: nixpkgs 已默认提供 zlib / zstd / stdenv.cc.cc
+    # (libstdc++.so.6) / curl / openssl / attr / libssh / libxml2 / acl 等
+    # (listOf 是合并语义, 重复列只会让最终清单里出现重复项)
     libraries = with pkgs; [
-      # 通用运行底座: 让各类预编译二进制 (uv 托管的 python、manylinux
-      # wheel、其它从网络下载的 ELF 程序) 直接运行;
-      # 报 libstdc++.so.6 / libz / libssl / libffi 缺失时在此补对应包
-      stdenv.cc.cc.lib # libstdc++.so.6 (很多 C 扩展轮子需要)
-      zlib
-      openssl
-      libffi
-      glibc
+      libffi # 部分 manylinux wheel 会链接它, 上游默认清单里没有
+      glibc # 少数预编译二进制需要比 nix-ld 自带 ld.so 更新的 glibc 符号
     ];
   };
 
@@ -98,20 +94,8 @@
   # 而 NixOS 的证书束在 /etc/ssl/certs/ca-bundle.crt;
   # 补一个软链, 否则这类程序的 https 请求报 SSLCertVerificationError
   environment.etc."ssl/cert.pem".source = "/etc/ssl/certs/ca-bundle.crt";
-  # 开启文档功能(man)
-  documentation = {
-    enable = true;
-    man.enable = true;
-    dev.enable = true;
-  };
-
-  # 列出系统配置文件中安装的软件包。
-  # 您可以使用 https://search.nixos.org/ 查找更多软件包(和选项)
-  # environment.systemPackages = with pkgs; [
-  # 别忘了添加编辑器来编辑 configuration.nix 文件！Nano 编辑器默认也已安装
-  #   vim
-  #   wget
-  # ];
+  # 文档: documentation.enable 与 man.enable 默认即 true, 这里只显式打开 dev 文档
+  documentation.dev.enable = true;
 
   # 某些程序需要 SUID 包装器, 可以进一步配置或在用户会话中启动
   # programs.mtr.enable = true;

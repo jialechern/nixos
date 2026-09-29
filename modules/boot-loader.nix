@@ -25,9 +25,6 @@
       gfxmodeEfi = "1920x1080";
     };
 
-    # 彻底关闭默认的极简引导
-    systemd-boot.enable = false;
-
     efi.canTouchEfiVariables = true;
   };
 

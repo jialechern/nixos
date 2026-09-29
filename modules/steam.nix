@@ -14,9 +14,6 @@
     ];
   };
 
-  # Steam 需要的环境
-  hardware.steam-hardware.enable = true;
-
   # 游戏工具
   environment.systemPackages = with pkgs; [
     mangohud
