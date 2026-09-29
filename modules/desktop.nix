@@ -11,19 +11,6 @@
     useNautilus = false;
   };
 
-  # --- 配置一致性断言 ---
-  # local-override.kdl 由 home/desktop/niri.nix 按主机生成; 仓库里同名文件会让
-  # HM 的两处定义重叠 (默认静默保留仓库那份), 使本机覆盖项失效
-  assertions = [
-    {
-      assertion = !(builtins.pathExists ./../dotfiles/niri/conf.d/local-override.kdl);
-      message = ''
-        请不要手写 dotfiles/niri/conf.d/local-override.kdl:
-        它应由 home/desktop/niri.nix 按 hostName 生成。
-      '';
-    }
-  ];
-
   services.greetd = {
     enable = true;
 

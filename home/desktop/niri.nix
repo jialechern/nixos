@@ -18,7 +18,7 @@ let
   '';
 
   # 构建期校验 niri 配置: 语法/选项写错时 rebuild 直接失败
-  # (只校验 dotfiles/niri, 生成的两份可选 include 不参与)
+  # (只校验 home/desktop/niri, 生成的两份可选 include 不参与)
   niriConfig = pkgs.runCommand "niri-config-checked" {
     nativeBuildInputs = [ pkgs.niri ];
   } ''
@@ -28,6 +28,22 @@ let
   '';
 in
 {
+  # --- 配置一致性守卫 ---
+  # 本模块在下方按 hostName 生成 conf.d/local-override.kdl; 若仓库里存在手写的
+  # 同名文件, HM 的文件部署层会重叠 (递归目录源里那份会静默胜出), 使本机覆盖项
+  # 失效且无任何告警 —— 用断言在求值期拦住。
+  # (注: HM 自带的重复目标断言 (modules/files.nix) 只看显式声明, 看不到这种
+  #  递归目录源内部嵌同名文件的情形, 所以需要这条自建守卫。)
+  assertions = [
+    {
+      assertion = !(builtins.pathExists ./niri/conf.d/local-override.kdl);
+      message = ''
+        请勿在仓库中手写 home/desktop/niri/conf.d/local-override.kdl:
+        它由本模块按 hostName 生成 (见下方 xdg.configFile)。
+      '';
+    }
+  ];
+
   # niri 主配置; recursive = true 让 HM 逐文件软链, 下方生成的
   # local-override.kdl 才能落在同一目录 (文件只读, 临时试验用 local-live.kdl)
   xdg.configFile."niri" = {
