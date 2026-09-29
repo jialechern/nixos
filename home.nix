@@ -79,9 +79,10 @@
     package = pkgs.kdePackages.breeze;
     name = "breeze_cursors";
     size = 24;
-    # 同时开启 GTK 和 X11 光标支持
+    # 只开 GTK 侧: Wayland 会话下唯一有消费者的路径。
+    # x11.enable 只做 `xsetroot -xcf` 并写 ~/.Xresources, 而 xsession.enable = false
+    # 时这两样都没有读者 (属确定性失效配置), 故不开启。
     gtk.enable = true;
-    x11.enable = true;
   };
 
   # --- 下载即使用的软件 ---
