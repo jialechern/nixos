@@ -56,6 +56,8 @@
             # 引入默认配置
             ./modules.nix
             # 引入需要网络代理的系统依赖
+            # 注意: pathExists 只看 git 已索引的文件 —— 新增该文件后必须先 `git add`,
+            # 否则开关静默为 false (flake 源只拷贝 tracked 文件)
             (lib.optional (builtins.pathExists ./modules/system-dependencies-require-proxy.nix) ./modules/system-dependencies-require-proxy.nix)
 
             # 将 Home Manager 作为 NixOS 的一个子模块嵌入
@@ -89,6 +91,8 @@
             # 引入 intel 核显配置
             ./modules/intel-extra.nix
             # 引入需要网络代理的系统依赖
+            # 注意: pathExists 只看 git 已索引的文件 —— 新增该文件后必须先 `git add`,
+            # 否则开关静默为 false (flake 源只拷贝 tracked 文件)
             (lib.optional (builtins.pathExists ./modules/system-dependencies-require-proxy.nix) ./modules/system-dependencies-require-proxy.nix)
 
             # 将 Home Manager 作为 NixOS 的一个子模块嵌入

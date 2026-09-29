@@ -26,6 +26,7 @@
 
   ] ++ (builtins.filter builtins.pathExists [
     # 需要网络代理才能下载的应用列表配置
+    # (pathExists 只看 git 已索引的文件: 新增后必须先 git add, 否则静默不生效)
     ./desktop/applications-require-proxy.nix
   ]);
 

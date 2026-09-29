@@ -27,7 +27,7 @@
     ./shell/yt-dlp.nix
     ./shell/jq.nix
   ] ++ (builtins.filter builtins.pathExists [
-    # neovim 配置
+    # neovim 配置 (pathExists 只看 git 已索引的文件: 新增后必须先 git add)
     ./shell/nvim.nix
   ]);
 

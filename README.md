@@ -111,6 +111,7 @@
 
     **本仓库默认配置的一些说明:**
         - nvim、keepassxc 的配置不再由本仓库声明式管理, 本仓库只负责安装软件与运行时依赖(`home/shell/nvim.nix`、`home/desktop/applications.nix`), `~/.config/nvim/`、`~/.config/keepassxc/` 由本地手动维护; niri 的配置已并入本仓库的 `home/desktop/niri/`, 由 `home/desktop/niri.nix` 以逐文件软链方式部署到 `~/.config/niri/`(只读软链, 改完需重建), 其中 `conf.d/local-override.kdl` 由该模块按主机生成, 不要手写同名文件放回仓库(`home/desktop/niri.nix` 有构建期断言拦截)。
+        - 可选模块由 `builtins.pathExists` 做开关(如 `home/desktop.nix`、`sops.nix`、`home/skills.nix`、`modules/system-dependencies-require-proxy.nix`)。flake 只包含 git 已索引的文件, 所以**新增这类开关文件后必须先 `git add`**, 否则开关静默为 false、模块不会生效(Nix 手册 `nix flake` 一节: "files which are matched by .gitignore or have never been git add-ed will not be available in the flake"); `modules/nix-config.nix` 的 `warn-dirty = false` 又关掉了脏树提示, 因此不会有任何警告。
         - 壁纸目录为 `~/Wallpapers/`, 不再由 flake 输入提供 (也不再是软链), 而是由 `home.nix` 的 `xdg.userDirs.extraConfig.WALLPAPERS` 声明, 并由 `createDirectories = true` 在构建时自动创建; niri 的启动项与快捷键以该路径为默认壁纸目录 (递归其全部子目录), 壁纸图片由用户自行存放在该路径下.
         - 如果使用核显, 则不应该在 `nixpkgs.lib.nixosSystem { ... }` 的参数 `modules` 中引入形如 `./modules/nvidia.nix` 的独立显卡驱动配置项, 而应当引入形如 `./modules/intel-extra.nix` 这样的核显适配的配置项.
 

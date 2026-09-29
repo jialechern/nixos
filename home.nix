@@ -32,6 +32,8 @@
     ./home/other.nix
 
   ] ++ (builtins.filter builtins.pathExists [
+    # 注意: pathExists 只看 git 已索引的文件 —— 新增这三个开关文件后必须先 git add,
+    # 否则开关静默为 false (flake 源只拷贝 tracked 文件; warn-dirty 也已关掉)
     # 桌面环境配置(部分需要网络代理, 非必要时可删除, 或是删除其中部分模块)
     ./home/desktop.nix
 
