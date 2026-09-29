@@ -4,7 +4,12 @@
   # Qt 风格统一
   qt = {
     enable = true;
-    platformTheme.name = "qt6ct"; # 让 Qt6 程序读取 qt6ct 的配置
+    # qtct = 同时安装 qt5ct 与 qt6ct, 并由 HM 设 QT_QPA_PLATFORMTHEME=qt5ct;
+    # 该值对两个 Qt 主版本都命中: Qt5 侧是 qt5ct 的插件 key, Qt6 侧 qt6ct 的插件
+    # 也注册了 "qt5ct" 别名 key (qt6ct 源码 src/qt6ct-qtplugin/qt6ct.json)。
+    # 注意: "qt6ct" 不在 HM 的 platformPackages 枚举里, 只写它不会安装任何包
+    # (平台主题插件缺失, 环境变量却照写), 所以这里必须用 qtct。
+    platformTheme.name = "qtct";
     style.name = "kvantum"; # 启用更高级的 Catppuccin 风格主题
 
     # Catppuccin Mocha Kvantum 主题
