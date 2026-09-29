@@ -413,7 +413,9 @@ binds {
 
     // 刷新状态栏
     // 用单元自带的 reload (ExecReload = kill -SIGUSR2; waybar(5): SIGUSR2 默认 reload);
-    // pkill 会被 Restart=on-failure 自动拉起, 并与 shell 新起的实例并存
+    // pkill 会被 Restart=on-failure 自动拉起, 并与 shell 新起的实例并存。
+    // reload 只重读配置/CSS, 不换二进制 —— waybar 升级后的新二进制由 rebuild 时
+    // HM 重启单元自然生效, 不要在此重启单元。
     Mod+Ctrl+Shift+S { spawn "systemctl" "--user" "reload" "waybar"; }
 
 }
