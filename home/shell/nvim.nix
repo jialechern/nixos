@@ -69,8 +69,6 @@ let
     # UI 插件
     { plugin = noice-nvim;        optional = true; }
     { plugin = nui-nvim;          optional = true; }
-    # 文本对齐插件
-    { plugin = vim-easy-align;    optional = true; }
     # 模糊搜索插件
     { plugin = telescope-nvim;             optional = true; }
     { plugin = plenary-nvim;               optional = true; }
