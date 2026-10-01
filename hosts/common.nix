@@ -5,7 +5,12 @@
 #   - hardware-configuration.nix 的导入
 #   - networking.hostName
 #   - 将来只属于该机器的差异项
-{ lib, pkgs, username, ... }:
+{
+  lib,
+  pkgs,
+  username,
+  ...
+}:
 
 {
   # 复制 NixOS 配置文件并将其链接到生成的系统中
@@ -39,7 +44,14 @@
   users.users."${username}" = {
     isNormalUser = true;
     shell = pkgs.bashInteractive;
-    extraGroups = [ "networkmanager" "wheel" "video" "audio" "nix-users" "libvirtd" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "video"
+      "audio"
+      "nix-users"
+      "libvirtd"
+    ];
   };
 
   users.users.root = {

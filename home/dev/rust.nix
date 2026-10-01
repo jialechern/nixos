@@ -59,7 +59,10 @@
         rr = "run --release"; # release 模式运行
         ca = "check --all-targets"; # 检查所有目标 (lib/bin/test/example)
         cr = "check --release";
-        re = [ "run" "--example" ]; # cargo re <名称> 运行某个 example
+        re = [
+          "run"
+          "--example"
+        ]; # cargo re <名称> 运行某个 example
         up = "update"; # cargo up <crate> 只更新单个依赖
         nt = "nextest run"; # 依赖上面的 cargo-nextest
         nta = "nextest run --all-targets";

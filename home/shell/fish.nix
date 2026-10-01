@@ -39,12 +39,21 @@
     # --- 插件 ---
     plugins = [
       # 长时间运行命令结束后发送桌面通知
-      { name = "done"; src = pkgs.fishPlugins.done.src; }
+      {
+        name = "done";
+        src = pkgs.fishPlugins.done.src;
+      }
       # fzf 模糊搜索集成 (本插件提供 Ctrl+R 历史搜索、Ctrl+Alt+F/L/S 等;
       # Ctrl+T 文件搜索来自 programs.fzf 的原生集成, 不是本插件提供)
-      { name = "fzf-fish"; src = pkgs.fishPlugins.fzf-fish.src; }
+      {
+        name = "fzf-fish";
+        src = pkgs.fishPlugins.fzf-fish.src;
+      }
       # 自动补全配对的括号、引号
-      { name = "autopair"; src = pkgs.fishPlugins.autopair.src; }
+      {
+        name = "autopair";
+        src = pkgs.fishPlugins.autopair.src;
+      }
     ];
 
     # --- 缩写(abbr)---

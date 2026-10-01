@@ -74,7 +74,11 @@ in
         # ═══════════════════════════════════════════════
         backlight = {
           format = "{icon}  {percent}%";
-          format-icons = [ "󰃞" "󰃟" "󰃠" ];
+          format-icons = [
+            "󰃞"
+            "󰃟"
+            "󰃠"
+          ];
           scroll-step = 5;
           interval = 2;
           tooltip-format = "亮度: {percent}%";
@@ -99,7 +103,16 @@ in
           waves = false;
           noise_reduction = 0.77;
           input_delay = 2;
-          "format-icons" = [ "▁" "▂" "▃" "▄" "▅" "▆" "▇" "█" ];
+          "format-icons" = [
+            "▁"
+            "▂"
+            "▃"
+            "▄"
+            "▅"
+            "▆"
+            "▇"
+            "█"
+          ];
           "on-click" = "playerctl play-pause";
         };
 
@@ -113,7 +126,8 @@ in
           "format-ethernet" = "󰈀  {bandwidthUpBits}";
           "format-disconnected" = "󰤮  断开";
           "format-alt" = "{ipaddr}/{cidr}";
-          "tooltip-format" = "{ifname}: {ipaddr}/{cidr}\n信号: {signalStrength}%\n上行: {bandwidthUpBits}\n下行: {bandwidthDownBits}";
+          "tooltip-format" =
+            "{ifname}: {ipaddr}/{cidr}\n信号: {signalStrength}%\n上行: {bandwidthUpBits}\n下行: {bandwidthDownBits}";
           "on-click-right" = "nm-connection-editor";
         };
 
@@ -127,7 +141,11 @@ in
           "format-bluetooth" = "{icon} 󰂰";
           "format-bluetooth-muted" = "󰝟";
           "format-icons" = {
-            "default" = [ "󰕿" "󰖀" "󰕾" ];
+            "default" = [
+              "󰕿"
+              "󰖀"
+              "󰕾"
+            ];
           };
           "tooltip-format" = "{desc}\n音量: {volume}%";
           "scroll-step" = 5;
@@ -233,7 +251,18 @@ in
 
           # 右键切换为剩余时间预估
           "format-alt" = "{icon} {time}";
-          "format-icons" = [ "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹" ];
+          "format-icons" = [
+            "󰁺"
+            "󰁻"
+            "󰁼"
+            "󰁽"
+            "󰁾"
+            "󰁿"
+            "󰂀"
+            "󰂁"
+            "󰂂"
+            "󰁹"
+          ];
           "tooltip-format" = "电量: {capacity}%\n剩余时间: {time}\n功耗: {power} W";
         };
       };
@@ -475,4 +504,3 @@ in
     '';
   };
 }
-

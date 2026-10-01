@@ -1,4 +1,10 @@
-{ config, lib, pkgs, username, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  username,
+  ...
+}:
 
 let
   # 自定义模板文件的路径(若不需要自定义模板, 可忽略)
@@ -19,7 +25,7 @@ in
   programs.pandoc = {
     # -------------------------------------------------------------------
     # 1. programs.pandoc.enable (布尔值, 默认 false)
-    #   是否启用 pandoc 配置. 
+    #   是否启用 pandoc 配置.
     # -------------------------------------------------------------------
     enable = true;
 
@@ -44,10 +50,10 @@ in
       # metadata: 设置文档的默认元数据字段(作者、标题、日期等),
       #           可在命令行中通过 --metadata 覆盖.
       metadata = {
-        author = "${username}";      # 默认作者名
+        author = "${username}"; # 默认作者名
         # title = "";              # 默认标题(留空表示由源文件指定)
         # date = "";               # 默认日期(留空表示由源文件指定)
-        lang = "zh-CN";            # 默认语言(影响引号样式、连字符等)
+        lang = "zh-CN"; # 默认语言(影响引号样式、连字符等)
       };
 
       # --- PDF 引擎 ---

@@ -51,8 +51,8 @@ let
     local = {
       src = ./skills;
       names = [
-        "nix-tool"      # 用 nix 临时获取/运行 CLI 工具
-        "proxy-access"  # 网络受限时探测并使用代理
+        "nix-tool" # 用 nix 临时获取/运行 CLI 工具
+        "proxy-access" # 网络受限时探测并使用代理
       ];
     };
 
@@ -75,31 +75,36 @@ let
   };
 
   # 将 skills 属性集展平为 [{ name, src }] 列表, 便于统一安装
-  skillEntries = builtins.concatLists (builtins.map
-    (group: builtins.map
-      (name: { inherit name; src = "${group.src}/${name}"; })
-      group.names)
-    (builtins.attrValues skills));
+  skillEntries = builtins.concatLists (
+    builtins.map (
+      group:
+      builtins.map (name: {
+        inherit name;
+        src = "${group.src}/${name}";
+      }) group.names
+    ) (builtins.attrValues skills)
+  );
 
   # 去除 skills 中可能重复的 skill
   names = builtins.map (e: e.name) skillEntries;
-  uniqueNames = builtins.foldl'
-    (acc: n: if builtins.elem n acc then acc else acc ++ [ n ])
-    [ ]
-    names;
-  dupNames = builtins.filter
-    (n: (builtins.length (builtins.filter (x: x == n) names)) > 1)
-    uniqueNames;
+  uniqueNames = builtins.foldl' (acc: n: if builtins.elem n acc then acc else acc ++ [ n ]) [ ] names;
+  dupNames = builtins.filter (
+    n: (builtins.length (builtins.filter (x: x == n) names)) > 1
+  ) uniqueNames;
 
   checked =
-    if dupNames == [ ] then skillEntries
-    else throw "home/skills.nix: 同名 skill 出现在多个分组: ${builtins.concatStringsSep ", " dupNames}";
+    if dupNames == [ ] then
+      skillEntries
+    else
+      throw "home/skills.nix: 同名 skill 出现在多个分组: ${builtins.concatStringsSep ", " dupNames}";
 in
 {
   # 统一生成 home.file 条目, 均部署到 ~/.agents/skills/<name>
   # (pi 会读取该目录 —— 见 pi 文档 docs/skills.md; 其它 agent 是否读取未在本机验证)
-  home.file = builtins.listToAttrs (builtins.map (e: {
-    name = ".agents/skills/${e.name}";
-    value.source = e.src;
-  }) checked);
+  home.file = builtins.listToAttrs (
+    builtins.map (e: {
+      name = ".agents/skills/${e.name}";
+      value.source = e.src;
+    }) checked
+  );
 }

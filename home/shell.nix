@@ -29,7 +29,8 @@
     ./shell/proxychains.nix
     ./shell/yt-dlp.nix
     ./shell/jq.nix
-  ] ++ (builtins.filter builtins.pathExists [
+  ]
+  ++ (builtins.filter builtins.pathExists [
     # neovim 配置 (pathExists 只看 git 已索引的文件: 新增后必须先 git add)
     ./shell/nvim.nix
   ]);
@@ -70,7 +71,12 @@
       # [pdf] OCR 引擎 (pytesseract/pdf2image 的后端, 扫描件转写用);
       # 顺带满足 [pdf-parser] 的可选 OCR 分支;
       # eng 为 nixpkgs wrapper 强制要求, osd+chi_sim+chi_tra 覆盖中英/简繁, 按需增删
-      enableLanguages = [ "eng" "osd" "chi_sim" "chi_tra" ];
+      enableLanguages = [
+        "eng"
+        "osd"
+        "chi_sim"
+        "chi_tra"
+      ];
     })
   ];
 }

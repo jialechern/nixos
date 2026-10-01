@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
   # ---------------------------------------------------------------------------
@@ -129,7 +134,10 @@ in
     # -------------------------------------------------------------------------
     keybindings = {
       # --- 输入 ---
-      "tui.input.newLine" = [ "shift+enter" "ctrl+j" ]; # 插入换行
+      "tui.input.newLine" = [
+        "shift+enter"
+        "ctrl+j"
+      ]; # 插入换行
       "tui.input.submit" = "enter"; # 提交输入
       "tui.input.tab" = "tab"; # Tab / 自动补全
 
@@ -138,8 +146,14 @@ in
       # ctrl+p) 与 app.session.toggleNamedFilter (默认 ctrl+n) 的匹配优先于
       # tui.select.*, 会抢走这两个键。因此下面必须把这两个会话选择器专用键
       # 换绑, ctrl+p / ctrl+n 才能作为上下移动使用 (已在下方处理)。
-      "tui.select.up" = [ "up" "ctrl+p" ]; # 上移
-      "tui.select.down" = [ "down" "ctrl+n" ]; # 下移
+      "tui.select.up" = [
+        "up"
+        "ctrl+p"
+      ]; # 上移
+      "tui.select.down" = [
+        "down"
+        "ctrl+n"
+      ]; # 下移
       "tui.select.confirm" = "enter"; # 确认选择
       "tui.select.cancel" = [ "escape" ]; # 取消选择
 
@@ -228,8 +242,7 @@ in
   # ---------------------------------------------------------------------------
   home.file = {
     # --- 自定义主题 (Catppuccin Mocha mauve) ---
-    "${piConfigDir}/themes/catppuccin-mocha-mauve.json".source =
-      ./pi/catppuccin-mocha-mauve.json;
+    "${piConfigDir}/themes/catppuccin-mocha-mauve.json".source = ./pi/catppuccin-mocha-mauve.json;
 
     # --- 提示词模板 (/init) ---
     "${piConfigDir}/prompts/init.md".source = ./pi/prompts/init.md;
@@ -254,8 +267,17 @@ in
       # fallbackOn 决定哪类错误继续尝试下一个 provider; 它不含凭据类错误,
       # 所以 key 配错不会继续回退, 而是就地返回诊断
       searchRouting = {
-        providers = [ "tavily" "firecrawl" "exa" ];
-        fallbackOn = [ "transient" "quota" "network" "invalid-response" ];
+        providers = [
+          "tavily"
+          "firecrawl"
+          "exa"
+        ];
+        fallbackOn = [
+          "transient"
+          "quota"
+          "network"
+          "invalid-response"
+        ];
       };
 
       # --- 交互与快捷键 ---
@@ -272,23 +294,43 @@ in
 
       # --- 工具 / 命令 / 图片开关 (显式写出, 便于日后核对) ---
       tools = {
-        webSearch = { enabled = true; };
-        sourceCheck = { enabled = true; };
-        fetchContent = { enabled = true; };
-        getSearchContent = { enabled = true; };
+        webSearch = {
+          enabled = true;
+        };
+        sourceCheck = {
+          enabled = true;
+        };
+        fetchContent = {
+          enabled = true;
+        };
+        getSearchContent = {
+          enabled = true;
+        };
       };
       commands = {
-        websearch = { enabled = true; };
-        curator = { enabled = true; };
-        search = { enabled = true; };
-        "google-account" = { enabled = true; };
+        websearch = {
+          enabled = true;
+        };
+        curator = {
+          enabled = true;
+        };
+        search = {
+          enabled = true;
+        };
+        "google-account" = {
+          enabled = true;
+        };
       };
-      image = { enabled = true; };
+      image = {
+        enabled = true;
+      };
 
       # --- 内容提取 ---
       # fetch_content 内联切片, 同时是 get_search_content 的默认/最大切片
       maxInlineContentChars = 30000;
-      fetch = { timeout = 30; };
+      fetch = {
+        timeout = 30;
+      };
       # 无 Datalab / Gemini key, auto 会落到本地 unpdf (纯文本, 离线免费)
       pdf = {
         provider = "auto";
@@ -306,7 +348,9 @@ in
         maxRepoSizeMB = 350;
         cloneTimeoutSeconds = 30;
       };
-      githubPrIssue = { enabled = true; };
+      githubPrIssue = {
+        enabled = true;
+      };
 
       # --- 视频 ---
       # 无 GEMINI_API_KEY / Gemini Web cookie / Perplexity key 时, YouTube 与本地视频
@@ -314,8 +358,12 @@ in
       # ("Sign into Google ... or set GEMINI_API_KEY"), 优于静默退化成普通网页抓取。
       # 注意: 本地视频抽帧受 video.enabled 门控; YouTube 抽帧只受 image.enabled 门控,
       # 用 yt-dlp + ffmpeg 本地完成, 不需要 API key。
-      youtube = { enabled = true; };
-      video = { enabled = true; };
+      youtube = {
+        enabled = true;
+      };
+      video = {
+        enabled = true;
+      };
 
       # --- SSRF ---
       # 保持默认为空: 本机 v2raya 未使用 TUN/fake-IP (公共域名解析到真实 IP),

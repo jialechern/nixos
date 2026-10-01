@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   # --- 输入法(fcitx5) ---
@@ -53,8 +58,14 @@
         "JetBrainsMono Nerd Font Mono"
         "Sarasa Mono SC"
       ];
-      sansSerif = [ "DejaVu Sans" "Noto Sans CJK SC" ];
-      serif = [ "DejaVu Serif" "Noto Serif CJK SC" ];
+      sansSerif = [
+        "DejaVu Sans"
+        "Noto Sans CJK SC"
+      ];
+      serif = [
+        "DejaVu Serif"
+        "Noto Serif CJK SC"
+      ];
     };
   };
 }

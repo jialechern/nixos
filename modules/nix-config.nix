@@ -1,4 +1,10 @@
-{ config, lib, pkgs, inputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 
 {
   nix = {
@@ -6,7 +12,10 @@
       # 每次构建错误时显示详细信息
       show-trace = true;
       # 开启实验性功能: Flakes 和新的 Nix 命令
-      experimental-features = [ "nix-command" "flakes" ];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
       # 国内镜像源 (只列额外的即可 —— cache.nixos.org 由 nixpkgs 默认提供,
       # 此选项是合并语义, 重复列会在生效值里出现两次)
       substituters = [

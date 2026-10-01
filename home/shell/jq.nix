@@ -33,39 +33,39 @@
     enable = true;
     package = pkgs.jqp;
     settings = {
-        # 主题配置
-        theme = {
-          # chroma 内置主题名; 语法与 UI 颜色在下方全部覆盖为 Mocha 配色
-          name = "nord";
-          # ── 语法高亮颜色覆盖 (Catppuccin Mocha) ──
-          # chroma Token 短名参考:
-          #   https://github.com/alecthomas/chroma/blob/master/types.go#L210-L308
-          # JSON 词法规则参考:
-          #   https://github.com/alecthomas/chroma/blob/master/lexers/embedded/json.xml
-          chromaStyleOverrides = {
-            # 键名: Mocha Blue (#89b4fa) + 下划线
-            kc = "#89b4fa underline";
-            # 字符串值: Mocha Green (#a6e3a1)
-            str = "#a6e3a1";
-            # 数字: Mocha Peach (#fab387)
-            num = "#fab387";
-            # true/false/null: Mocha Mauve (#cba6f7)
-            nl = "#cba6f7";
-          };
-          # ── UI 非语法元素颜色覆盖 (Catppuccin Mocha) ──
-          # 五个固定字段, 对应 jqp 界面的不同区域文字色
-          styleOverrides = {
-            # 主文字色: Mocha Text (#cdd6f4)
-            primary = "#cdd6f4";
-            # 次要文字(状态栏等): Mocha Overlay0 (#7f849c)
-            secondary = "#7f849c";
-            # 错误/警告文字: Mocha Red (#f38ba8)
-            error = "#f38ba8";
-            # 非活跃区域文字: Mocha Surface1 (#45475a)
-            inactive = "#45475a";
-            # 成功/运行完成文字: Mocha Green (#a6e3a1)
-            success = "#a6e3a1";
-          };
+      # 主题配置
+      theme = {
+        # chroma 内置主题名; 语法与 UI 颜色在下方全部覆盖为 Mocha 配色
+        name = "nord";
+        # ── 语法高亮颜色覆盖 (Catppuccin Mocha) ──
+        # chroma Token 短名参考:
+        #   https://github.com/alecthomas/chroma/blob/master/types.go#L210-L308
+        # JSON 词法规则参考:
+        #   https://github.com/alecthomas/chroma/blob/master/lexers/embedded/json.xml
+        chromaStyleOverrides = {
+          # 键名: Mocha Blue (#89b4fa) + 下划线
+          kc = "#89b4fa underline";
+          # 字符串值: Mocha Green (#a6e3a1)
+          str = "#a6e3a1";
+          # 数字: Mocha Peach (#fab387)
+          num = "#fab387";
+          # true/false/null: Mocha Mauve (#cba6f7)
+          nl = "#cba6f7";
+        };
+        # ── UI 非语法元素颜色覆盖 (Catppuccin Mocha) ──
+        # 五个固定字段, 对应 jqp 界面的不同区域文字色
+        styleOverrides = {
+          # 主文字色: Mocha Text (#cdd6f4)
+          primary = "#cdd6f4";
+          # 次要文字(状态栏等): Mocha Overlay0 (#7f849c)
+          secondary = "#7f849c";
+          # 错误/警告文字: Mocha Red (#f38ba8)
+          error = "#f38ba8";
+          # 非活跃区域文字: Mocha Surface1 (#45475a)
+          inactive = "#45475a";
+          # 成功/运行完成文字: Mocha Green (#a6e3a1)
+          success = "#a6e3a1";
+        };
       };
     };
   };

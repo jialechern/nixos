@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   # --- 依赖程序 ---
@@ -46,7 +51,11 @@
     # --- yazi.toml ---
     settings = {
       mgr = {
-        ratio = [ 1 4 3 ]; # 左/中/右三个面板宽度比例
+        ratio = [
+          1
+          4
+          3
+        ]; # 左/中/右三个面板宽度比例
         sort_by = "alphabetical"; # 按字母排序
         sort_sensitive = false; # 排序时不区分大小写
         sort_reverse = false; # 不反向排序
@@ -67,53 +76,109 @@
         # cd 输入框
         cd_title = "Change directory:";
         cd_origin = "top-center";
-        cd_offset = [ 0 2 50 3 ];
+        cd_offset = [
+          0
+          2
+          50
+          3
+        ];
 
         # 新建文件/目录输入框
-        create_title = [ "Create:" "Create (dir):" ];
+        create_title = [
+          "Create:"
+          "Create (dir):"
+        ];
         create_origin = "top-center";
-        create_offset = [ 0 2 50 3 ];
+        create_offset = [
+          0
+          2
+          50
+          3
+        ];
 
         # 重命名输入框
         rename_title = "Rename:";
         rename_origin = "hovered";
-        rename_offset = [ 0 1 50 3 ];
+        rename_offset = [
+          0
+          1
+          50
+          3
+        ];
       };
 
       confirm = {
         trash_title = "Trash {n} selected file{s}?"; # 删除确认标题
         trash_origin = "center"; # 居中显示确认框
-        trash_offset = [ 0 0 70 20 ]; # 确认框尺寸/偏移
+        trash_offset = [
+          0
+          0
+          70
+          20
+        ]; # 确认框尺寸/偏移
       };
 
       plugin = {
         # git.yazi 的 fetcher：让 Yazi 在目录里收集 git 状态
         prepend_fetchers = [
-          { url = "*"; run = "git"; group = "git"; } # 普通文件
-          { url = "*/"; run = "git"; group = "git"; } # 目录
+          {
+            url = "*";
+            run = "git";
+            group = "git";
+          } # 普通文件
+          {
+            url = "*/";
+            run = "git";
+            group = "git";
+          } # 目录
         ];
       };
 
       # --- 打开器 ---
       opener = {
         edit = [
-          { run = "nvim %s"; block = true; desc = "Neovim"; "for" = "unix"; }
+          {
+            run = "nvim %s";
+            block = true;
+            desc = "Neovim";
+            "for" = "unix";
+          }
         ];
 
         image = [
-          { run = "loupe %s"; orphan = true; desc = "Loupe"; "for" = "unix"; }
+          {
+            run = "loupe %s";
+            orphan = true;
+            desc = "Loupe";
+            "for" = "unix";
+          }
         ];
 
         ebook = [
-          { run = "zathura %s"; orphan = true; desc = "Zathura"; "for" = "unix"; }
+          {
+            run = "zathura %s";
+            orphan = true;
+            desc = "Zathura";
+            "for" = "unix";
+          }
         ];
 
         media = [
-          { run = "mpv %s"; orphan = true; desc = "MPV"; "for" = "unix"; }
+          {
+            run = "mpv %s";
+            orphan = true;
+            desc = "MPV";
+            "for" = "unix";
+          }
         ];
 
         open = [
-          { run = "xdg-open %s"; orphan = true; desc = "Open"; "for" = "unix"; }
+          {
+            run = "xdg-open %s";
+            orphan = true;
+            desc = "Open";
+            "for" = "unix";
+          }
         ];
       };
 
@@ -121,34 +186,88 @@
         # 这里用 prepend_rules, 让规则优先于默认规则
         prepend_rules = [
           # --- 文本文件: 交给 neovim ---
-          { mime = "text/*"; use = "edit"; }
+          {
+            mime = "text/*";
+            use = "edit";
+          }
 
           # --- 图片: 交给 loupe ---
-          { mime = "image/*"; use = "image"; }
+          {
+            mime = "image/*";
+            use = "image";
+          }
 
           # --- 音频: 交给 mpv ---
-          { mime = "audio/*"; use = "media"; }
+          {
+            mime = "audio/*";
+            use = "media";
+          }
 
           # --- 视频: 交给 mpv ---
-          { mime = "video/*"; use = "media"; }
+          {
+            mime = "video/*";
+            use = "media";
+          }
 
           # --- 兜底: 有些文件 mime 识别不理想时, 按扩展名再补一层 ---
-          { url = "*.mp3"; use = "media"; }
-          { url = "*.flac"; use = "media"; }
-          { url = "*.wav"; use = "media"; }
-          { url = "*.aac"; use = "media"; }
-          { url = "*.ogg"; use = "media"; }
-          { url = "*.m4a"; use = "media"; }
-          { url = "*.mp4"; use = "media"; }
-          { url = "*.mkv"; use = "media"; }
-          { url = "*.mov"; use = "media"; }
-          { url = "*.webm"; use = "media"; }
+          {
+            url = "*.mp3";
+            use = "media";
+          }
+          {
+            url = "*.flac";
+            use = "media";
+          }
+          {
+            url = "*.wav";
+            use = "media";
+          }
+          {
+            url = "*.aac";
+            use = "media";
+          }
+          {
+            url = "*.ogg";
+            use = "media";
+          }
+          {
+            url = "*.m4a";
+            use = "media";
+          }
+          {
+            url = "*.mp4";
+            use = "media";
+          }
+          {
+            url = "*.mkv";
+            use = "media";
+          }
+          {
+            url = "*.mov";
+            use = "media";
+          }
+          {
+            url = "*.webm";
+            use = "media";
+          }
 
           # --- 电子书: 交给 Zathura ---
-          { url = "*.pdf"; use = "ebook"; }
-          { url = "*.epub"; use = "ebook"; }
-          { url = "*.mobi"; use = "ebook"; }
-          { url = "*.djvu"; use = "ebook"; }
+          {
+            url = "*.pdf";
+            use = "ebook";
+          }
+          {
+            url = "*.epub";
+            use = "ebook";
+          }
+          {
+            url = "*.mobi";
+            use = "ebook";
+          }
+          {
+            url = "*.djvu";
+            use = "ebook";
+          }
         ];
       };
     };
@@ -223,60 +342,139 @@
     # --- 快捷键 ---
     keymap = {
       mgr.prepend_keymap = [
-        { on = [ "q" ]; run = "quit"; desc = "退出程序"; }
-        { on = [ "<C-q>" ]; run = "quit"; desc = "退出程序"; }
-        { on = [ "Q" ]; run = "quit --no-cwd-file"; desc = "退出但不写 cwd 文件"; }
-        { on = [ "<C-c>" ]; run = "close"; desc = "关闭当前标签页"; }
-        { on = [ "<C-z>" ]; run = "suspend"; desc = "挂起程序"; }
+        {
+          on = [ "q" ];
+          run = "quit";
+          desc = "退出程序";
+        }
+        {
+          on = [ "<C-q>" ];
+          run = "quit";
+          desc = "退出程序";
+        }
+        {
+          on = [ "Q" ];
+          run = "quit --no-cwd-file";
+          desc = "退出但不写 cwd 文件";
+        }
+        {
+          on = [ "<C-c>" ];
+          run = "close";
+          desc = "关闭当前标签页";
+        }
+        {
+          on = [ "<C-z>" ];
+          run = "suspend";
+          desc = "挂起程序";
+        }
 
         # j/k 导航
-        { on = [ "k" ]; run = "arrow prev"; desc = "上一项"; }
-        { on = [ "j" ]; run = "arrow next"; desc = "下一项"; }
-        { on = [ "K" ]; run = "arrow -50%"; desc = "上翻半页"; }
-        { on = [ "J" ]; run = "arrow 50%"; desc = "下翻半页"; }
+        {
+          on = [ "k" ];
+          run = "arrow prev";
+          desc = "上一项";
+        }
+        {
+          on = [ "j" ];
+          run = "arrow next";
+          desc = "下一项";
+        }
+        {
+          on = [ "K" ];
+          run = "arrow -50%";
+          desc = "上翻半页";
+        }
+        {
+          on = [ "J" ];
+          run = "arrow 50%";
+          desc = "下翻半页";
+        }
 
         # -----------------------------------------------------
         # smart-enter: 一键进入目录或打开文件
         # -----------------------------------------------------
-        { on = [ "l" ]; run = "plugin smart-enter"; desc = "进入目录或打开文件"; }
+        {
+          on = [ "l" ];
+          run = "plugin smart-enter";
+          desc = "进入目录或打开文件";
+        }
 
         # -----------------------------------------------------
         # jump-to-char: 类似 vim/neovim 的 f<char>
         # -----------------------------------------------------
-        { on = [ "f" ]; run = "plugin jump-to-char"; desc = "跳转到首字母匹配项"; }
+        {
+          on = [ "f" ];
+          run = "plugin jump-to-char";
+          desc = "跳转到首字母匹配项";
+        }
 
         # -----------------------------------------------------
         # smart-filter: 更智能的过滤
         # -----------------------------------------------------
-        { on = [ "F" ]; run = "plugin smart-filter"; desc = "智能过滤"; }
+        {
+          on = [ "F" ];
+          run = "plugin smart-filter";
+          desc = "智能过滤";
+        }
 
         # -----------------------------------------------------
         # toggle-pane: 切换预览面板显示/隐藏
         # 这里是常用入口
         # -----------------------------------------------------
-        { on = [ "T" ]; run = "plugin toggle-pane min-preview"; desc = "显示或隐藏预览面板"; }
+        {
+          on = [ "T" ];
+          run = "plugin toggle-pane min-preview";
+          desc = "显示或隐藏预览面板";
+        }
 
         # -----------------------------------------------------
         # diff: 比较当前选中项和悬停项
         # -----------------------------------------------------
-        { on = [ "<C-d>" ]; run = "plugin diff"; desc = "比较选中项与悬停项"; }
+        {
+          on = [ "<C-d>" ];
+          run = "plugin diff";
+          desc = "比较选中项与悬停项";
+        }
 
         # -----------------------------------------------------
         # mount: 挂载管理
         # -----------------------------------------------------
-        { on = [ "M" ]; run = "plugin mount"; desc = "挂载管理"; }
+        {
+          on = [ "M" ];
+          run = "plugin mount";
+          desc = "挂载管理";
+        }
 
         # -----------------------------------------------------
         # chmod: 修改权限
         # 这里用 c + m 作为两段式按键
         # -----------------------------------------------------
-        { on = [ "c" "m" ]; run = "plugin chmod"; desc = "修改文件权限"; }
+        {
+          on = [
+            "c"
+            "m"
+          ];
+          run = "plugin chmod";
+          desc = "修改文件权限";
+        }
       ];
 
       cmp.prepend_keymap = [
-        { on = [ "<C-c>" ]; run = "close"; desc = "取消补全"; }
-        { on = [ "<A-k>" ]; run = "arrow prev"; desc = "上一项"; }
-        { on = [ "<A-j>" ]; run = "arrow next"; desc = "下一项"; }
+        {
+          on = [ "<C-c>" ];
+          run = "close";
+          desc = "取消补全";
+        }
+        {
+          on = [ "<A-k>" ];
+          run = "arrow prev";
+          desc = "上一项";
+        }
+        {
+          on = [ "<A-j>" ];
+          run = "arrow next";
+          desc = "下一项";
+        }
       ];
     };
 
@@ -290,19 +488,43 @@
       # 在官方主题基础上微调 (用户 theme.toml 优先级高于 flavor)
       mgr = {
         # 当前路径: Mocha Teal
-        cwd = { fg = "#94e2d5"; };
+        cwd = {
+          fg = "#94e2d5";
+        };
         # 搜索关键词: Mocha Yellow
-        find_keyword = { fg = "#f9e2af"; bold = true; italic = true; underline = true; };
+        find_keyword = {
+          fg = "#f9e2af";
+          bold = true;
+          italic = true;
+          underline = true;
+        };
         # 搜索位置: Mocha Pink
-        find_position = { fg = "#f5c2e7"; bg = "reset"; bold = true; italic = true; };
+        find_position = {
+          fg = "#f5c2e7";
+          bg = "reset";
+          bold = true;
+          italic = true;
+        };
         # 复制标记: Mocha Green
-        marker_copied = { fg = "#a6e3a1"; bg = "#a6e3a1"; };
+        marker_copied = {
+          fg = "#a6e3a1";
+          bg = "#a6e3a1";
+        };
         # 剪切标记: Mocha Red
-        marker_cut = { fg = "#f38ba8"; bg = "#f38ba8"; };
+        marker_cut = {
+          fg = "#f38ba8";
+          bg = "#f38ba8";
+        };
         # 已标记: Mocha Teal
-        marker_marked = { fg = "#94e2d5"; bg = "#94e2d5"; };
+        marker_marked = {
+          fg = "#94e2d5";
+          bg = "#94e2d5";
+        };
         # 已选中: Mocha Mauve
-        marker_selected = { fg = "#cba6f7"; bg = "#cba6f7"; };
+        marker_selected = {
+          fg = "#cba6f7";
+          bg = "#cba6f7";
+        };
       };
     };
   };

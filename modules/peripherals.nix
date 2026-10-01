@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   # --- 键盘布局 ---
@@ -27,7 +32,10 @@
   # 配置 (同一服务两处定义会让"谁生效 / 谁放行端口"变得难以排查), 这里不再重复
 
   # 添加常见的打印机驱动
-  services.printing.drivers = [ pkgs.gutenprint pkgs.hplip ];
+  services.printing.drivers = [
+    pkgs.gutenprint
+    pkgs.hplip
+  ];
 
   # --- 音频与蓝牙 ---
   security.rtkit.enable = true;

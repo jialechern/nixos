@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   # 通过 nmcli 或 nmtui 交互式配置网络连接
@@ -33,7 +38,7 @@
   #   - services.avahi          -> openFirewall = true 时自动放行 UDP 5353 (见上)
   # mDNS 只用 UDP (实测本机无 TCP:5353 监听), 所以不再手工放行 TCP 5353。
   networking.firewall.allowedTCPPorts = [
-    22    # SSH (openssh 也会自动放, 这里显式声明维护意图)
+    22 # SSH (openssh 也会自动放, 这里显式声明维护意图)
     20172 # v2raya HTTP 代理 (局域网设备经由此机代理上网, 需配合把监听地址改为 0.0.0.0)
   ];
   # 默认对未放行端口为 DROP (静默丢弃), 更安全; 若想明确拒绝、让端口扫描

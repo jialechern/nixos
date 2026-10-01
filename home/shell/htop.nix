@@ -162,18 +162,24 @@
       #   Hostname, Clock, Date, DateTime, Battery
       # =========================================================
     }
-    // (with config.lib.htop; leftMeters [
-      (bar "LeftCPUs")
-      (bar "Memory")
-      (bar "Swap")
-      (bar "NetworkIO")
-    ])
-    // (with config.lib.htop; rightMeters [
-      (bar "RightCPUs")
-      (text "Tasks")
-      (text "LoadAverage")
-      (text "Uptime")
-    ])
+    // (
+      with config.lib.htop;
+      leftMeters [
+        (bar "LeftCPUs")
+        (bar "Memory")
+        (bar "Swap")
+        (bar "NetworkIO")
+      ]
+    )
+    // (
+      with config.lib.htop;
+      rightMeters [
+        (bar "RightCPUs")
+        (text "Tasks")
+        (text "LoadAverage")
+        (text "Uptime")
+      ]
+    )
 
     # =========================================================
     # 默认进程列表列(Main screen)
@@ -185,18 +191,18 @@
     # =========================================================
     // {
       fields = with config.lib.htop.fields; [
-        PID          # 进程 ID
-        USER         # 用户名
-        PRIORITY     # 内核优先级
-        NICE         # Nice 值
-        M_VIRT       # 虚拟内存( VIRT )
-        M_RESIDENT   # 物理内存( RES )
-        M_SHARE      # 共享内存( SHR )
-        STATE        # 进程状态( S/R/D/Z/… )
-        PERCENT_CPU  # CPU 占用率
-        PERCENT_MEM  # 内存占用率
-        TIME         # 累计 CPU 时间
-        COMM         # 命令名
+        PID # 进程 ID
+        USER # 用户名
+        PRIORITY # 内核优先级
+        NICE # Nice 值
+        M_VIRT # 虚拟内存( VIRT )
+        M_RESIDENT # 物理内存( RES )
+        M_SHARE # 共享内存( SHR )
+        STATE # 进程状态( S/R/D/Z/… )
+        PERCENT_CPU # CPU 占用率
+        PERCENT_MEM # 内存占用率
+        TIME # 累计 CPU 时间
+        COMM # 命令名
       ];
     };
   };

@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
   # Linux 平台判断
@@ -41,7 +46,7 @@ in
         foreground = "#cdd6f4";
         selection_background = "#585b70";
         selection_foreground = "#cdd6f4";
-        cursor = "none";        # none = 反色: 光标颜色随所在单元格的文本颜色变化
+        cursor = "none"; # none = 反色: 光标颜色随所在单元格的文本颜色变化
         # cursor_text_color 在 cursor = none 时被官方忽略, 故不设置
         url_color = "#f9e2af";
         # 基本色 (color0-7) 与亮色 (color8-15)
@@ -94,16 +99,16 @@ in
         scrollback_pager_history_size = 32;
         shell = "${pkgs.fish}/bin/fish"; # 启动时直接进入 fish shell
         # 标签页栏: 位置与风格
-        tab_bar_edge = "top";        # 标签页栏置于顶部
+        tab_bar_edge = "top"; # 标签页栏置于顶部
         tab_bar_style = "powerline"; # Powerline 风格 (可选: fade / slant / separator / powerline / custom / hidden)
         tab_powerline_style = "slanted"; # powerline 箭头字形: angled(锐角) / slanted(斜切) / round(圆角)
         # 标签标题加序号, 呼应 alt+1..9 切换键
         # 铃铛/活动符号会被 kitty 自动前置 (红色); 命令进度百分比随之牺牲
         tab_title_template = "{index}:{title}";
         # 标签页栏配色
-        active_tab_background = "#89b4fa";   # 活动标签: 蓝
-        active_tab_foreground = "#1e1e2e";   # 活动标签文字: 深色
-        active_tab_font_style = "bold";      # 活动标签加粗
+        active_tab_background = "#89b4fa"; # 活动标签: 蓝
+        active_tab_foreground = "#1e1e2e"; # 活动标签文字: 深色
+        active_tab_font_style = "bold"; # 活动标签加粗
         inactive_tab_background = "#313244"; # 非活动标签: surface0
         inactive_tab_foreground = "#a6adc8"; # 非活动标签文字: subtext1
         inactive_tab_font_style = "normal";
@@ -122,7 +127,7 @@ in
         # ---------------------------------------------------------
         # 与标签栏配色一致: 活动窗口用 Mocha 蓝, 非活动用 surface0
         # (默认 active 为光标色、inactive 为背景自动变体, 与主题不协调)
-        active_border_color = "#89b4fa";   # 活动窗口分割线: 蓝
+        active_border_color = "#89b4fa"; # 活动窗口分割线: 蓝
         inactive_border_color = "#313244"; # 非活动窗口分割线: surface0
 
         # ---------------------------------------------------------

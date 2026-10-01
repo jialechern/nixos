@@ -6,4 +6,3 @@
     ./other/fhs.nix
   ];
 }
-

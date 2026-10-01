@@ -24,11 +24,11 @@
     # 注: HM 的 listOf 选项在显式定义时会整体替换默认值 (这里的 default 只在
     # 完全不写本选项时生效), 所以必须把 6 项列全
     shellOptions = [
-      "histappend"   # 追加到历史文件而非覆盖
-      "extglob"      # 扩展通配符
-      "globstar"     # ** 递归匹配所有层级目录
-      "checkjobs"    # 退出时警告仍在运行的后台作业
-      "cdspell"      # cd 时自动纠正少量拼写错误
+      "histappend" # 追加到历史文件而非覆盖
+      "extglob" # 扩展通配符
+      "globstar" # ** 递归匹配所有层级目录
+      "checkjobs" # 退出时警告仍在运行的后台作业
+      "cdspell" # cd 时自动纠正少量拼写错误
       "checkwinsize" # 每次命令后检查终端窗口尺寸
     ];
 

@@ -21,11 +21,12 @@
 
   # Outputs (输出): 定义系统配置
   outputs =
-    { self
-    , nixpkgs
-    , home-manager
-    , sops-nix
-    , ...
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      sops-nix,
+      ...
     }@inputs:
     let
       # 系统架构
@@ -75,7 +76,6 @@
             }
           ];
         };
-
 
         "hp" = nixpkgs.lib.nixosSystem {
           inherit system;
