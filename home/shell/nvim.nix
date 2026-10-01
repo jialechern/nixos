@@ -9,15 +9,9 @@ let
     zathura
 
     # nvim 运行时实际调用的命令行工具:
-    #   git     -> telescope 的 git_* picker 与 FilesCwd 里的 git rev-parse
-    #   gcc     -> after/ftplugin/{c,cpp}.lua 的 makeprg(g++ 同包)
-    #   gnumake -> after/ftplugin/make.lua 与各语言 <C-e> 走的 :make
-    #   lua5_4  -> after/ftplugin/lua.lua 的 makeprg(系统并没有独立的 lua 解释器;
-    #              想要 LuaJIT 语义就换成 luajit)
     git
     gcc
     gnumake
-    lua5_4
   ];
 
   lspDeps = with pkgs; [
@@ -34,7 +28,6 @@ let
     rust-analyzer
     typescript-language-server
     prettierd
-    # ruff 由 home/dev/python.nix 提供, 这里显式声明以免那里的改动悄悄破坏 lsp/ruff.lua
     ruff
     taplo
     texlab
