@@ -25,11 +25,11 @@ let
     ormolu
     clang-tools
     lua-language-server
+    stylua
     marksman
     nixd
     nixfmt
     basedpyright
-    black
     guile-lsp-server
     rust-analyzer
     typescript-language-server
@@ -46,8 +46,9 @@ let
   #   bash c cpp css go html java javascript json lua markdown markdown_inline nix python
   #   rust toml typescript vim vimdoc yaml zsh typst latex haskell scheme
   # (新增语言时两边都要加: 这里 + settings/treesitter.lua 的 filetypes)
-  treesitterParsers = pkgs.lib.filter pkgs.lib.isDerivation
-    (pkgs.lib.attrValues pkgs.vimPlugins.nvim-treesitter.parsers);
+  treesitterParsers = pkgs.lib.filter pkgs.lib.isDerivation (
+    pkgs.lib.attrValues pkgs.vimPlugins.nvim-treesitter.parsers
+  );
 
   # 把各 grammar derivation 里自带、但打包时被丢掉的 queries/ 汇总起来
   treesitterQueries = pkgs.runCommand "nvim-treesitter-queries" { } ''
@@ -63,20 +64,55 @@ let
   # 不写 optional 的进 start, 启动即加载 —— 两个 treesitter 包必须留在 start)
   nvimPlugins = with pkgs.vimPlugins; [
     # 主题插件
-    { plugin = catppuccin-nvim;   optional = true; }
+    {
+      plugin = catppuccin-nvim;
+      optional = true;
+    }
     # 状态栏插件
-    { plugin = lualine-nvim;      optional = true; }
+    {
+      plugin = lualine-nvim;
+      optional = true;
+    }
     # UI 插件
-    { plugin = noice-nvim;        optional = true; }
-    { plugin = nui-nvim;          optional = true; }
+    {
+      plugin = noice-nvim;
+      optional = true;
+    }
+    {
+      plugin = nui-nvim;
+      optional = true;
+    }
     # 模糊搜索插件
-    { plugin = telescope-nvim;             optional = true; }
-    { plugin = plenary-nvim;               optional = true; }
-    { plugin = telescope-fzf-native-nvim;  optional = true; }
+    {
+      plugin = telescope-nvim;
+      optional = true;
+    }
+    {
+      plugin = plenary-nvim;
+      optional = true;
+    }
+    {
+      plugin = telescope-fzf-native-nvim;
+      optional = true;
+    }
     # Snippet/LSP
-    { plugin = nvim-lspconfig;   optional = true; }
-    { plugin = mini-snippets;    optional = true; }
-    { plugin = friendly-snippets; optional = true; }
+    {
+      plugin = nvim-lspconfig;
+      optional = true;
+    }
+    {
+      plugin = mini-snippets;
+      optional = true;
+    }
+    {
+      plugin = friendly-snippets;
+      optional = true;
+    }
+    # 格式化
+    {
+      plugin = conform-nvim;
+      optional = true;
+    }
   ];
 in
 {
