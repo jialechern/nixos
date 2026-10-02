@@ -203,6 +203,10 @@ in
 
       # --- UI 与显示 ---
       theme = "catppuccin-mocha-mauve"; # 自定义 Catppuccin Mocha (mauve 强调色) 主题
+      # 显式钉住 regular: pi 0.99.2 默认即 regular (写出为幂等), 但 1.0.0 起默认改为
+      # fullscreen —— 写出该键保证将来 flake update 升级后 TUI 仍用终端原生滚动回滚,
+      # 行为不变。要体验 1.0.0 全屏模式时删掉本行或改为 "fullscreen" 即可
+      tuiMode = "regular";
 
       # --- 自动压缩 (官方文档示例推荐值) ---
       compaction = {
