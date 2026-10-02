@@ -202,7 +202,11 @@ in
       defaultThinkingLevel = "max"; # 默认思考等级
 
       # --- UI 与显示 ---
-      theme = "catppuccin-mocha-mauve"; # 自定义 Catppuccin Mocha (mauve 强调色) 主题
+      # system (0.99.0 起的内置默认): 运行时向终端取前景/背景/ANSI 调色板动态生成配色,
+      # 按 WCAG 4.5:1 对比度自动调明度。kitty 本身就是 Catppuccin Mocha, 让 pi 直接跟随
+      # 终端配色, 不再维护自定义主题文件 (原 catppuccin-mocha-mauve.json 已删除)。
+      # 注: system 是保留名; 若要精确控制各角色配色 (如 mauve 强调) 可再放回自定义主题
+      theme = "system";
       # 显式钉住 regular: pi 0.99.2 默认即 regular (写出为幂等), 但 1.0.0 起默认改为
       # fullscreen —— 写出该键保证将来 flake update 升级后 TUI 仍用终端原生滚动回滚,
       # 行为不变。要体验 1.0.0 全屏模式时删掉本行或改为 "fullscreen" 即可
@@ -245,8 +249,6 @@ in
   # 的符号链接, 在 pi 内改这些配置不会落盘, 改配置请改本文件后 rebuild。
   # ---------------------------------------------------------------------------
   home.file = {
-    # --- 自定义主题 (Catppuccin Mocha mauve) ---
-    "${piConfigDir}/themes/catppuccin-mocha-mauve.json".source = ./pi/catppuccin-mocha-mauve.json;
 
     # --- 提示词模板 (/init) ---
     "${piConfigDir}/prompts/init.md".source = ./pi/prompts/init.md;
