@@ -14,8 +14,6 @@
   home.packages = with pkgs; [
     # Scheme 解释器
     guile
-    # 系统调用的 trace 工具
-    strace
     # --- 开发必备工具链 ---
     gcc # 提供 C 编译器 (cc, gcc)
     # clang # clang 会和 gcc 冲突
