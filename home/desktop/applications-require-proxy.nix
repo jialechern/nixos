@@ -14,8 +14,6 @@
     wpsoffice-cn
     # 开源办公套件
     libreoffice-stable
-    # 几何画板
-    geogebra6
     # GNU 图形处理工具
     gimp
     # p2p 下载器
