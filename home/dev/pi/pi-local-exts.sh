@@ -1,15 +1,15 @@
 #!/bin/sh
 # pi 项目级 (--local) 扩展集合管理。
 #
-# 由 home/dev/pi.nix 的 pi-init / pi-coding / pi-clean 别名调用, 集合定义在
-# 该文件的 localBaseExtensions / localCodingExtensions 中。
+# 由 home/dev/pi.nix 的 pi-init / pi-memory / pi-coding / pi-clean 别名调用, 集合定义在
+# 该文件的 localBaseExtensions / localMemoryExtensions / localCodingExtensions 中。
 #
 # 用法:
 #   pi-local-exts install <pkg>...   把包追加到当前项目的 --local 扩展集合。
 #                                    幂等: 已装配的跳过, 不碰其他包。因此依次运行
 #                                    多个别名得到的是它们的"并集": 日常项目只跑
-#                                    pi-init 保持轻量, 复杂项目再叠加 pi-coding,
-#                                    主动用启动耗时换功能。
+#                                    pi-init 保持轻量, 复杂项目再叠加 pi-coding /
+#                                    pi-memory, 主动用启动耗时换功能。
 #   pi-local-exts clean              卸载当前项目全部 --local 扩展, 并清理
 #                                    ~/.pi/agent/npm 中不被 settings.json 识别的
 #                                    全局残留。这是唯一的"重置"手段。

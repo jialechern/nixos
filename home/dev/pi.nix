@@ -17,7 +17,7 @@ let
   # pi 项目级扩展集合 (--local)
   #
   # 这些包不进全局 settings.packages, 因此未装配它们的项目是零启动成本;
-  # 在项目目录内运行 pi-init / pi-coding 即可装配到该项目的 .pi/settings.json。
+  # 在项目目录内运行 pi-init / pi-memory / pi-coding 即可装配到该项目的 .pi/settings.json。
   # ---------------------------------------------------------------------------
 
   # 全局扩展集合: 被 nix 声明式管理, 是 pi 扩展出的最基础的能力
@@ -35,25 +35,28 @@ let
     "npm:@juicesharp/rpiv-todo"
     # 结构化提问 (MIT, juicesharp): ask_user_question 工具, 模型拿不准时以选项式对话框向你确认
     "npm:@juicesharp/rpiv-ask-user-question"
-    # TUI 界面扩展 (MIT, OldSuns): header / footer / 圆角编辑器 / 轮次遥测 / thinking peek
-    # 配置见下方 home.file 的 ~/.pi/agent/open-tui.json
-    "npm:pi-open-tui"
   ];
 
   # 基础集合 (pi-init): 通用能力, 任何项目都可能想要
   localBaseExtensions = [
     # 自主目标模式 (MIT, narumitw): 给 pi 一个会话级目标, 让它持续工作直到完成/暂停/等待/触达安全上限
     "npm:@narumitw/pi-goal"
-    # 持久记忆 + 会话搜索 + 密钥扫描
-    "npm:pi-hermes-memory"
     # 网页访问: 搜索 / 抓取 / GitHub 克隆 / PDF / 视频理解
     # 配置见下方 home.file 的 ~/.pi/agent/web-search.json
     "npm:pi-web-access"
   ];
 
-  # 编码集合 (pi-coding): 与基础集合正交, 只含编码相关
-  # 装配是幂等追加, 两组叠加即得并集: 日常项目跑 pi-init 即可,
-  # 编码项目再叠加 pi-coding, 主动用启动耗时换功能。
+  # 记忆集合 (pi-memory): 与基础/编码集合正交, 只含记忆相关 (持久记忆 / 会话搜索)。
+  # 从基础集合拆出成独立一组, 便于按项目单独装配与增减。
+  localMemoryExtensions = [
+    # 持久记忆 + 会话搜索 + 密钥扫描
+    "npm:pi-hermes-memory"
+  ];
+
+  # 编码集合 (pi-coding): 与基础/记忆集合正交, 只含编码相关
+  # 装配是幂等追加, 各组叠加即得并集: 日常项目跑 pi-init 即可,
+  # 编码项目再叠加 pi-coding, 需要持久记忆的项目再叠加 pi-memory,
+  # 主动用启动耗时换功能。
   # 需要继续细化时可再加一组 (如 localAuditExtensions → pi-audit)。
   localCodingExtensions = [
     # 实时代码反馈 (LSP 诊断 / linter / autofix)
@@ -68,7 +71,7 @@ let
   #
   # 语义是"幂等追加": 各别名只往当前项目追加自己那组包, 不卸载任何东西。
   # 所以依次运行多个别名得到的是它们的并集 —— 日常项目只跑 pi-init 保持轻量,
-  # 复杂项目再叠加 pi-coding, 主动用启动耗时换功能。要回退用 pi-clean。
+  # 复杂项目再叠加 pi-coding / pi-memory, 主动用启动耗时换功能。要回退用 pi-clean。
   # 注: --local 装配要求项目已被信任 (pi 的 trust 机制), 否则 pi install 会拒绝。
   #
   # 用 `sh <固定路径>` 调用, 既不依赖执行位, 也不会把会随内容变化的 store 路径写进别名。
@@ -213,9 +216,7 @@ in
       tuiMode = "regular";
 
       # 全屏模式 (tuiMode = "fullscreen") 下滚轮每格滚动行数: pi 0.99.0 起的官方
-      # 设置 (取值 1-100 或 "auto"), 取代 pi-open-tui 的 fullscreen.wheelScrollLines ——
-      # 后者是针对 pi 0.84.2 私有字段的兼容层写入, 新版 pi 下会静默回退 (见下方
-      # open-tui.json 注释)。regular 模式下不生效 (滚动由终端自身滚回接管)
+      # 设置 (取值 1-100 或 "auto")
       fullscreenWheelScrollLines = 4;
 
       # --- 自动压缩 (官方文档示例推荐值) ---
@@ -389,72 +390,6 @@ in
       collapseKey = "ctrl+shift+f";
     };
 
-    # pi-open-tui 配置 (TUI 界面扩展: header / footer / 圆角编辑器 / 轮次遥测 / thinking peek)
-    # 手册以扩展自带 README.zh-CN.md 为准 (本机与 npm latest 均为 0.3.10, 要求 Pi >= 0.85;
-    # 其全屏滚轮兼容层只对齐 pi 0.84.2 私有字段, 已迁移到 pi 官方设置, 见上方 settings 注释)
-    ".pi/agent/open-tui.json".text = builtins.toJSON {
-      # 总开关
-      enabled = true;
-
-      # /open-tui 设置界面的语言 (en | zh)
-      settingsLanguage = "zh";
-
-      # 0.3.x 新增: 把两条主要 footer 信息行移入编辑器上下边框以省两行垂直空间
-      # (扩展状态行仍显示在编辑器外)。保持默认 false = 维持现有双行 footer 布局
-      inlineFooter = false;
-
-      # 光标样式 (block | bar | underline)。本机 kitty 的 cursor_shape = "block",
-      # 保持一致; bar / underline 需终端支持光标形状切换。
-      cursorStyle = "block";
-
-      # 图标集 (auto | nerd | unicode | ascii)。auto 探测的是终端环境而非字体文件:
-      # UTF-8 交互 TTY → Nerd 图标; SSH 会话 → unicode 可移植图标 (0.3.10 新增档,
-      # 渲染字体由客户端终端决定); 非 TTY / TERM=dumb / 非 UTF-8 locale → ASCII。
-      # 保留 auto 比硬写 nerd 更稳; 图标异常时可在 /open-tui 外观页手动固定
-      icons = {
-        mode = "auto";
-      };
-
-      # footer 分段开关 (0.3.x 新增 hostname 与 capitalizeProviderName, 后者默认开)。
-      # 各段显示顺序由扩展内部固定, 本对象只管开关; footer 自带 compact/drop 逻辑,
-      # 横向不足时会自动舍弃右侧分段。沿用原选择: 关掉 sessionName / gitCommit /
-      # hostname 三个低频项 (hostname 只显短主机名, gitCommit 仅 detached HEAD 有内容)。
-      # 若仍嫌拥挤可继续关 cost / tokens; 关 extensionStatuses 会连 MCP 状态一起隐藏。
-      footerSegments = {
-        cwd = true;
-        hostname = false;
-        sessionName = false;
-        gitBranch = true;
-        gitStatus = true;
-        gitCommit = false;
-        runtime = true;
-        context = true;
-        tokens = true;
-        cost = true;
-        extensionStatuses = true;
-        capitalizeProviderName = true; # 提供商名首字母大写 (0.3.x 新增, 沿用默认开)
-      };
-
-      # 每轮结束后的遥测行: TPS / TTFT / 耗时 / tokens / stall 次数 / 牌价速率。
-      # 注意 cost 是模型牌价单价 (usage.cost.total), 不是会话累计花费 —— 后者在 footer。
-      telemetry = {
-        enabled = true;
-        tps = true;
-        ttft = true;
-        duration = true;
-        tokens = true;
-        stalls = true;
-        cost = true;
-      };
-
-      # pi 开启"隐藏思考"时, 用动态字幕替换静止的 "Thinking..." 标签
-      # (推理中滚动显示末尾片段, 开始输出正文后定格)。取值 0=关闭 | 1 | 2 行;
-      # 仅在模型真的流出思考内容时出现, 可见性仍由 pi 的 Hide thinking 开关控制。
-      thinkingPeek = {
-        lines = 1;
-      };
-    };
-
     # pi-permission-system 权限策略
     ".pi/agent/extensions/pi-permission-system/config.json".text = builtins.toJSON {
       # 有意取舍 (复评 BUG-10/SEC-01 登记): yoloMode 自动批准所有 ask ——
@@ -541,6 +476,9 @@ in
 
     # pi-init: 把"基础扩展集合"追加到当前项目 (.pi/settings.json)
     "pi-init" = "${piLocalExts} install ${lib.concatStringsSep " " localBaseExtensions}";
+
+    # pi-memory: 把"记忆扩展集合"追加到当前项目 (与 pi-init 叠加, 幂等)
+    "pi-memory" = "${piLocalExts} install ${lib.concatStringsSep " " localMemoryExtensions}";
 
     # pi-coding: 把"编码扩展集合"追加到当前项目 (与 pi-init 叠加, 幂等)
     "pi-coding" = "${piLocalExts} install ${lib.concatStringsSep " " localCodingExtensions}";
