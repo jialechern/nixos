@@ -197,8 +197,8 @@ in
     # -------------------------------------------------------------------------
     settings = {
       # --- 模型与思考 ---
-      defaultProvider = "deepseek"; # 默认提供商
-      defaultModel = "deepseek-flash"; # 默认模型
+      defaultProvider = "zai-coding-cn"; # 默认提供商
+      defaultModel = "glm-5.3-flash"; # 默认模型
       defaultThinkingLevel = "max"; # 默认思考等级
 
       # --- UI 与显示 ---
