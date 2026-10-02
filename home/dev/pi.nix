@@ -212,6 +212,12 @@ in
       # 行为不变。要体验 1.0.0 全屏模式时删掉本行或改为 "fullscreen" 即可
       tuiMode = "regular";
 
+      # 全屏模式 (tuiMode = "fullscreen") 下滚轮每格滚动行数: pi 0.99.0 起的官方
+      # 设置 (取值 1-100 或 "auto"), 取代 pi-open-tui 的 fullscreen.wheelScrollLines ——
+      # 后者是针对 pi 0.84.2 私有字段的兼容层写入, 新版 pi 下会静默回退 (见下方
+      # open-tui.json 注释)。regular 模式下不生效 (滚动由终端自身滚回接管)
+      fullscreenWheelScrollLines = 4;
+
       # --- 自动压缩 (官方文档示例推荐值) ---
       compaction = {
         enabled = true;
@@ -249,7 +255,6 @@ in
   # 的符号链接, 在 pi 内改这些配置不会落盘, 改配置请改本文件后 rebuild。
   # ---------------------------------------------------------------------------
   home.file = {
-
     # --- 提示词模板 (/init) ---
     "${piConfigDir}/prompts/init.md".source = ./pi/prompts/init.md;
 
@@ -385,6 +390,8 @@ in
     };
 
     # pi-open-tui 配置 (TUI 界面扩展: header / footer / 圆角编辑器 / 轮次遥测 / thinking peek)
+    # 手册以扩展自带 README.zh-CN.md 为准 (本机与 npm latest 均为 0.3.10, 要求 Pi >= 0.85;
+    # 其全屏滚轮兼容层只对齐 pi 0.84.2 私有字段, 已迁移到 pi 官方设置, 见上方 settings 注释)
     ".pi/agent/open-tui.json".text = builtins.toJSON {
       # 总开关
       enabled = true;
@@ -392,32 +399,30 @@ in
       # /open-tui 设置界面的语言 (en | zh)
       settingsLanguage = "zh";
 
+      # 0.3.x 新增: 把两条主要 footer 信息行移入编辑器上下边框以省两行垂直空间
+      # (扩展状态行仍显示在编辑器外)。保持默认 false = 维持现有双行 footer 布局
+      inlineFooter = false;
+
       # 光标样式 (block | bar | underline)。本机 kitty 的 cursor_shape = "block",
       # 保持一致; bar / underline 需终端支持光标形状切换。
       cursorStyle = "block";
 
-      # 全屏模式下鼠标滚轮每格滚动行数, 取值 1-10 (超出会被 clamp)。
-      # 实现上是 Reflect.set 写 pi 的私有字段 tui.wheelScrollLines (字段名以
-      # pi 0.84.2 源码为准); 若某版本改了字段名, 该赋值会静默失效 (自动降级为
-      # pi 默认值), 不会报错。
-      fullscreen = {
-        wheelScrollLines = 4;
-      };
-
-      # 图标集 (auto | nerd | ascii)。auto 调用 detectNerdFont(), 判定条件是
-      # "TERM != dumb && stdout 是 TTY && locale 含 UTF-8" —— 它并不真的探测字体
-      # 是否含 Nerd 字形; 保留 auto 比硬写 nerd 更稳 (非 TTY / dumb 终端会退化)。
+      # 图标集 (auto | nerd | unicode | ascii)。auto 探测的是终端环境而非字体文件:
+      # UTF-8 交互 TTY → Nerd 图标; SSH 会话 → unicode 可移植图标 (0.3.10 新增档,
+      # 渲染字体由客户端终端决定); 非 TTY / TERM=dumb / 非 UTF-8 locale → ASCII。
+      # 保留 auto 比硬写 nerd 更稳; 图标异常时可在 /open-tui 外观页手动固定
       icons = {
         mode = "auto";
       };
 
-      # footer 分段开关。显示顺序由 footer.ts 固定 (cwd → sessionName → git 段 →
-      # runtime → context → tokens → cost → 扩展状态), 本对象只管开关;
-      # 且 footer 自带 compact/drop 逻辑, 横向不足时会自动舍弃右侧分段。
-      # 沿用插件默认: 关掉 sessionName 与 gitCommit 两个低频项。
+      # footer 分段开关 (0.3.x 新增 hostname 与 capitalizeProviderName, 后者默认开)。
+      # 各段显示顺序由扩展内部固定, 本对象只管开关; footer 自带 compact/drop 逻辑,
+      # 横向不足时会自动舍弃右侧分段。沿用原选择: 关掉 sessionName / gitCommit /
+      # hostname 三个低频项 (hostname 只显短主机名, gitCommit 仅 detached HEAD 有内容)。
       # 若仍嫌拥挤可继续关 cost / tokens; 关 extensionStatuses 会连 MCP 状态一起隐藏。
       footerSegments = {
         cwd = true;
+        hostname = false;
         sessionName = false;
         gitBranch = true;
         gitStatus = true;
@@ -427,6 +432,7 @@ in
         tokens = true;
         cost = true;
         extensionStatuses = true;
+        capitalizeProviderName = true; # 提供商名首字母大写 (0.3.x 新增, 沿用默认开)
       };
 
       # 每轮结束后的遥测行: TPS / TTFT / 耗时 / tokens / stall 次数 / 牌价速率。
@@ -441,8 +447,9 @@ in
         cost = true;
       };
 
-      # pi 开启"隐藏思考"时, 用动态 ticker 替换静止的 "Thinking..." 标签。
-      # 取值 0=关闭 | 1 | 2 行 (其它值回落到默认 1); 仅在模型真的流出思考内容时出现。
+      # pi 开启"隐藏思考"时, 用动态字幕替换静止的 "Thinking..." 标签
+      # (推理中滚动显示末尾片段, 开始输出正文后定格)。取值 0=关闭 | 1 | 2 行;
+      # 仅在模型真的流出思考内容时出现, 可见性仍由 pi 的 Hide thinking 开关控制。
       thinkingPeek = {
         lines = 1;
       };
