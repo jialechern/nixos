@@ -39,8 +39,8 @@ let
 
   # 基础集合 (pi-init): 通用能力, 任何项目都可能想要
   localBaseExtensions = [
-    # 自主目标模式 (MIT, narumitw): 给 pi 一个会话级目标, 让它持续工作直到完成/暂停/等待/触达安全上限
-    "npm:@narumitw/pi-goal"
+    # 自主目标模式: 给 pi 一个会话级目标, 让它持续工作直到完成/暂停/等待/触达安全上限
+    "npm:pi-goal-x"
     # 网页访问: 搜索 / 抓取 / GitHub 克隆 / PDF / 视频理解
     # 配置见下方 home.file 的 ~/.pi/agent/web-search.json
     "npm:pi-web-access"
@@ -61,8 +61,6 @@ let
   localCodingExtensions = [
     # 实时代码反馈 (LSP 诊断 / linter / autofix)
     "npm:pi-lens"
-    # 官方 Context7 扩展 (MIT, Upstash): 给 agent 注入最新的库文档 (不依赖训练数据)
-    "npm:@upstash/context7-pi"
   ];
 
   # ---------------------------------------------------------------------------
