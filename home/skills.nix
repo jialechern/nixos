@@ -51,8 +51,7 @@ let
     local = {
       src = ./skills;
       names = [
-        "nix-tool" # 用 nix 临时获取/运行 CLI 工具
-        "proxy-access" # 网络受限时探测并使用代理
+        # 需要安装的本地 skill
       ];
     };
 
