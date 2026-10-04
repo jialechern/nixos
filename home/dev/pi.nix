@@ -295,7 +295,10 @@ in
       # --- npm 镜像 ---
       # pi 安装 packages 里的 npm 扩展 (本文件上方 globalExtensions) 时使用;
       # 写进配置就不依赖 ~/.npmrc —— 对应上面注释里"若国内拉取失败, 请配置 npm 镜像"
-      npmCommand = [ "npm" "--registry=https://registry.npmmirror.com" ];
+      npmCommand = [
+        "npm"
+        "--registry=https://registry.npmmirror.com"
+      ];
 
       # --- 全局扩展包 ---
       packages = globalExtensions;
