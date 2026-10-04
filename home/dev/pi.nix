@@ -454,6 +454,7 @@ in
           "*" = "allow";
           "~/.ssh/*" = "deny";
           "~/.config/sops/age/*" = "deny";
+          "~/.config/sops-nix/*" = "deny";
           "~/.gnupg/*" = "deny";
           "~/.config/gh/*" = "deny";
           "~/.aws/*" = "deny";
