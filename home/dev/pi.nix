@@ -97,29 +97,41 @@ in
     # 直接读 sops-nix 的密钥文件 (由 sops.nix 的 secrets 声明生成, 权限 0400/0600),
     # 不再额外落一份明文 env 文件 —— 旧的 ~/.config/pi/secrets.env 可以手动删掉
     #
+    # sops.nix 是 pathExists 可选开关 (home.nix:45-56), 它缺席时 config.sops 这棵
+    # 选项树整个不存在, 所以包装与否必须在求值期分支 (if 两支惰性求值):
+    # 用 config ? sops 判断 "sops-nix 的 HM 模块是否被导入", 与 home.nix 的开关同构。
+    # 否则按 README 的无代理首装流程移走 sops.nix 后, 这里会抛
+    # "attribute 'sops' missing", 失败面是全部 HM 配置 (2026-10-04 复评 P1-1)。
+    # 没有 sops 时退回上游原包: pi 照常可用, 只是拿不到这几个 API key
+    # (扩展按缺 key 降级), 运行期的密钥缺失守卫 (下方 load_secret) 仍然生效。
+    #
     # 有意取舍: 这些变量会随 pi 进程进入它派生的所有子进程环境 (包括 bash 工具),
     # 因为 pi 的联网搜索/文档查询/GitHub 能力都从进程环境里读 key。
     # 若以后要收紧, 可改成只给需要的扩展单独传 env, 而不是在启动时全量导出。
-    package = pkgs.symlinkJoin {
-      name = "pi-coding-agent-wrapped";
-      paths = [ inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.default ];
-      buildInputs = [ pkgs.makeWrapper ];
-      postBuild = ''
-        wrapProgram $out/bin/pi \
-          --run '
-            # 只在密钥文件存在且非空时导出: 直接 export 空串会覆盖用户已有环境变量,
-            # 并让 pi 的扩展抛 environment-empty 而不是回退 (2026-09-29 复评 NEW-10);
-            # 注意 wrapper 由 makeWrapper 以 bash -e 运行, 守卫必须 errexit 安全
-            # (不能用 "&&" 结尾 —— 缺失文件时会因返回非零而中止整个 pi 启动)
-            load_secret() { local k; k="$(cat "$2" 2>/dev/null || true)"; [ -z "$k" ] || export "$1=$k"; }
-            load_secret DEEPSEEK_API_KEY "${config.sops.secrets.deepseek_api_key.path}"
-            load_secret TAVILY_API_KEY "${config.sops.secrets.tavily.path}"
-            load_secret FIRECRAWL_API_KEY "${config.sops.secrets.firecrawl.path}"
-            load_secret CONTEXT7_API_KEY "${config.sops.secrets.context7.path}"
-            load_secret GH_TOKEN "${config.sops.secrets.github_pull_only_token.path}"
-          '
-      '';
-    };
+    package =
+      if config ? sops then
+        pkgs.symlinkJoin {
+          name = "pi-coding-agent-wrapped";
+          paths = [ inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.default ];
+          buildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram $out/bin/pi \
+              --run '
+                # 只在密钥文件存在且非空时导出: 直接 export 空串会覆盖用户已有环境变量,
+                # 并让 pi 的扩展抛 environment-empty 而不是回退 (2026-09-29 复评 NEW-10);
+                # 注意 wrapper 由 makeWrapper 以 bash -e 运行, 守卫必须 errexit 安全
+                # (不能用 "&&" 结尾 —— 缺失文件时会因返回非零而中止整个 pi 启动)
+                load_secret() { local k; k="$(cat "$2" 2>/dev/null || true)"; [ -z "$k" ] || export "$1=$k"; }
+                load_secret DEEPSEEK_API_KEY "${config.sops.secrets.deepseek_api_key.path}"
+                load_secret TAVILY_API_KEY "${config.sops.secrets.tavily.path}"
+                load_secret FIRECRAWL_API_KEY "${config.sops.secrets.firecrawl.path}"
+                load_secret CONTEXT7_API_KEY "${config.sops.secrets.context7.path}"
+                load_secret GH_TOKEN "${config.sops.secrets.github_pull_only_token.path}"
+              '
+          '';
+        }
+      else
+        inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
     # 扩展包运行时依赖: pi install npm:... 安装扩展 (如 @termdraw/pi) 需要 npm 与 bun
     # gh: pi-web-access 的 GitHub 能力 (PR/Issue 富字段视图、私有库、超大仓库 API 路径)
