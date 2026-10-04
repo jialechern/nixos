@@ -147,56 +147,51 @@ in
 
     # -------------------------------------------------------------------------
     # pi 快捷键 (keybindings.json)
+    #
+    # 原则: 只写"pi 默认没给, 或默认键要让给别人"的项, 其余全部吃默认值。
+    # 一个键要按得动, 必须穿过四层: niri(Super+*) → kitty → pi 动作层 → 扩展。
+    # kitty 把 ctrl+shift+* 当自留地 (它自带 86 条默认 map, 见 home/desktop/kitty.nix),
+    # 让路手段是 `map <key> no_op`。所以下面一律选"两层都空闲"的键:
+    # 不用 ctrl+shift+* (除 ctrl+shift+\), 不用 alt+f/h/j/k/l/n/p/r/w/x/1-9 (kitty 已占),
+    # 也不用 alt+s (kitty 的 chord 前缀)。
+    # 插件自己的键不在这里: rpiv-todo 的 collapseKey、web-search.json 的 shortcuts。
     # -------------------------------------------------------------------------
     keybindings = {
-      # --- 输入 ---
-      "tui.input.newLine" = [
-        "shift+enter"
-        "ctrl+j"
-      ]; # 插入换行
-      "tui.input.submit" = "enter"; # 提交输入
-      "tui.input.tab" = "tab"; # Tab / 自动补全
+      # --- 列表导航 (vim 风格) ---
+      # 默认只有 ↑↓; 加上 ctrl+p / ctrl+n 后, 模型选择器 / 会话恢复 / 问答对话框
+      # 等所有选择列表统一为 vim 键位。代价是这两个键本是 app.model.cycleForward
+      # (ctrl+p) 与 app.session.toggleNamedFilter (ctrl+n) 的默认值, 故下面分别
+      # 改到 ctrl+\ 与 ctrl+,; 又因 /resume 里 app.session.togglePath /
+      # toggleNamedFilter 的匹配优先于 tui.select.*, 那两个专用键也必须一起让位。
+      "tui.select.up" = [ "up" "ctrl+p" ]; # 上移
+      "tui.select.down" = [ "down" "ctrl+n" ]; # 下移
 
-      # --- 选择列表 (模型选择器 /model、会话恢复等通用列表) ---
-      # 注意: /resume (pi -r) 的会话选择器里, app.session.togglePath (默认
-      # ctrl+p) 与 app.session.toggleNamedFilter (默认 ctrl+n) 的匹配优先于
-      # tui.select.*, 会抢走这两个键。因此下面必须把这两个会话选择器专用键
-      # 换绑, ctrl+p / ctrl+n 才能作为上下移动使用 (已在下方处理)。
-      "tui.select.up" = [
-        "up"
-        "ctrl+p"
-      ]; # 上移
-      "tui.select.down" = [
-        "down"
-        "ctrl+n"
-      ]; # 下移
-      "tui.select.confirm" = "enter"; # 确认选择
-      "tui.select.cancel" = [ "escape" ]; # 取消选择
-
-      # --- 转录搜索 (全屏/滚动视口) ---
-      # 内置默认 ctrl+shift+f 被 rpiv-todo 的面板折叠键占用 (见下方 web-search.json
-      # 之后那段 rpiv-todo 配置), 改绑到 ctrl+shift+s; 该键原为 pi-web-access 的
-      # curate 快捷键, 已在下方 web-search.json 的生成配置中把 curate 改绑到空闲键
-      # ctrl+shift+u (旧写法 shortcuts.curate = "off" 不是官方支持语义)
-      # 注: 1.0.2 文档把 tui.altScreen.* 整组归入 Fullscreen 章节, tuiMode = "regular"
-      # 下本键很可能不生效 (未实测); 保留它是为了将来切到 fullscreen 时直接可用。
-      "tui.altScreen.search" = "ctrl+shift+s"; # 搜索转录内容 (仅全屏模式)
-
-      # --- 应用操作 ---
-      # 会话选择器专用键: 原默认 ctrl+p (切换路径显示) / ctrl+n (仅命名会话过滤)
-      # 与 tui.select.up/down 冲突, 已改绑到 ctrl+. / ctrl+,
-      # (两者当前均空闲; 如需完全禁用可改为 [])
+      # --- 会话选择器 (/resume) 专用键 ---
+      # 默认 ctrl+p (切换路径显示) / ctrl+n (仅命名会话过滤), 与上面的列表导航撞键
+      # 且匹配优先级更高; 改到 ctrl+. / ctrl+, (pi 与 kitty 两层都空闲)
       "app.session.togglePath" = "ctrl+."; # 切换路径显示
       "app.session.toggleNamedFilter" = "ctrl+,"; # 仅显示命名会话
-      "app.interrupt" = "escape"; # 取消/中止
-      "app.exit" = "ctrl+q"; # 退出 (输入为空时)
+
+      # --- 模型循环 ---
+      # 默认 ctrl+p / shift+ctrl+p: 前者已让给列表导航, 后者在 kitty 层是 chord 前缀
+      # (kitty_mod+p>shift+f 等 9 条), 故改用两层都空闲的 ctrl+\ / ctrl+shift+\
       "app.model.cycleForward" = "ctrl+\\"; # 循环到下一个模型
       "app.model.cycleBackward" = "ctrl+shift+\\"; # 循环到上一个模型
-      "app.thinking.cycle" = "shift+tab"; # 循环思考等级
+
+      # --- 思考块折叠 ---
+      # 默认 ctrl+t, 改用 ctrl+f (两层都空闲)。注意 ctrl+f 同键还有编辑器动作
+      # tui.editor.cursorRight, 二者谁优先上游没有明文规定 (docs/keybindings.md 只写了
+      # fullscreen 组优先于 editor); 若实测是"光标右移"胜出, 想折叠思考块就换回
+      # ctrl+t 或其它空闲键 —— 两种情况都不丢功能 (方向键 right 仍在)。
       "app.thinking.toggle" = "ctrl+f"; # 折叠/展开思考块
-      # "app.message.copy" = "ctrl+x"; # 复制最后一条助手消息
-      "app.message.followUp" = "ctrl+enter"; # 排队跟进消息
-      "app.message.dequeue" = "ctrl+up"; # 撤回排队消息到输入框
+
+      # --- 显式禁用 ---
+      # 全屏模式下的转录搜索 (本机 tuiMode = "regular", 该动作惰性)。
+      # 默认 ctrl+shift+f 与 rpiv-todo 的面板折叠键同键, 而 tui.altScreen.search 不在
+      # pi 的"扩展不许抢"保留清单里 (src 的 RESERVED_KEYBINDINGS_FOR_EXTENSION_CONFLICTS,
+      # 共 18 条) ⇒ 会被扩展抢走并每次启动告警; 且该键在 kitty 层被 toggle_fullscreen
+      # 拦截, 本来就按不到。置空 = 不绑任何键, 无冲突无告警。
+      "tui.altScreen.search" = [ ];
     };
 
     # -------------------------------------------------------------------------
