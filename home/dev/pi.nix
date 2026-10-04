@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  inputs,
   ...
 }:
 
@@ -88,6 +89,10 @@ in
     # 必须启用才会安装软件包并生成配置
     enable = true;
 
+    # 包来源: 上游官方 flake (flake.nix 的 pi input, 跟踪 stable 分支 ⇒ 最新正式版),
+    # 不再是 nixpkgs 的 pi-coding-agent。上游包 pname = "pi"、bin/pi 与 meta.mainProgram
+    # 不变, 所以下面的 wrapProgram 与 extraPackages 全部无需改动。
+    #
     # 使用包装过后的软件包: 启动时把 sops-nix 生成的密钥注入 pi 进程环境
     # 直接读 sops-nix 的密钥文件 (由 sops.nix 的 secrets 声明生成, 权限 0400/0600),
     # 不再额外落一份明文 env 文件 —— 旧的 ~/.config/pi/secrets.env 可以手动删掉
@@ -97,7 +102,7 @@ in
     # 若以后要收紧, 可改成只给需要的扩展单独传 env, 而不是在启动时全量导出。
     package = pkgs.symlinkJoin {
       name = "pi-coding-agent-wrapped";
-      paths = [ pkgs.pi-coding-agent ];
+      paths = [ inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.default ];
       buildInputs = [ pkgs.makeWrapper ];
       postBuild = ''
         wrapProgram $out/bin/pi \
