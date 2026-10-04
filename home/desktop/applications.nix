@@ -28,11 +28,10 @@
     keepassxc # 密码管理器
 
     # --- 字体、主题与图标 ---
-    (pkgs.catppuccin-gtk.override {
-      variant = "mocha";
-      accents = [ "mauve" ];
-    }) # GTK 主题
-    papirus-icon-theme # 图标主题
+    # GTK 主题与图标不在这里装: `home/desktop/gtk.nix` 通过 gtk.theme.package /
+    # gtk.iconTheme.package 声明, HM 会把这些包自动加进 home.packages
+    # (home-manager/modules/misc/gtk/default.nix); 两处重复声明参数相同时今天无差异,
+    # 但将来只改一处的 override 会静默不生效 —— 2026-10-04 复评 P2-B5
     # noto 字体 (cjk-sans / color-emoji) 由系统层 fonts.packages 统一提供,
     # 见 modules/input-method_and_font.nix, 此处不再重复安装
 
