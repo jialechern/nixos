@@ -166,8 +166,14 @@ in
       # (ctrl+p) 与 app.session.toggleNamedFilter (ctrl+n) 的默认值, 故下面分别
       # 改到 ctrl+\ 与 ctrl+,; 又因 /resume 里 app.session.togglePath /
       # toggleNamedFilter 的匹配优先于 tui.select.*, 那两个专用键也必须一起让位。
-      "tui.select.up" = [ "up" "ctrl+p" ]; # 上移
-      "tui.select.down" = [ "down" "ctrl+n" ]; # 下移
+      "tui.select.up" = [
+        "up"
+        "ctrl+p"
+      ]; # 上移
+      "tui.select.down" = [
+        "down"
+        "ctrl+n"
+      ]; # 下移
 
       # --- 会话选择器 (/resume) 专用键 ---
       # 默认 ctrl+p (切换路径显示) / ctrl+n (仅命名会话过滤), 与上面的列表导航撞键
@@ -289,6 +295,18 @@ in
       # 默认全部加载; 本机不使用本地 GGUF 模型 (/llama), 故禁用 llama.cpp 那一项。
       # "-" 前缀表示禁用, "+" 表示显式启用; 项目级 settings 可用 + 覆盖本项。
       extensions = [ "-builtin:llama.cpp" ];
+
+      # --- 默认工具集 ---
+      # builtin:codemode 注册的 codemode 工具默认 inactive (内置扩展的激活只有两种途径:
+      # 本项显式启用, 或 MCP 服务器以 codemode 暴露时自动激活), 这里显式打开试水。
+      # "+" 前缀表示在继承的默认选择 (read/bash/edit/write) 上追加, 不替换它们。
+      # 代价: 每次请求的固定前缀 +约 500 token (实测 499, deepseek-flash 计数;
+      # 构成 = codemode 自身声明 ~1520 字符 + 每个已声明工具描述尾追加一行 ~52 字符
+      # + 系统提示词 tools/rules 两段 ~190 字符)。位于稳定前缀内, 缓存命中后开销可忽略。
+      # 收益: 脚本内并行调多个工具、先把大输出过滤再回传; 接 MCP 后其工具不占声明位。
+      # 试用不满意就把本项删掉 (或写成 [ "-codemode" ]) 后 rebuild。
+      # 参考 pi 1.0.2 文档 docs/codemode.md 与 docs/cli.md#enable-codemode
+      defaultTools = [ "+codemode" ];
 
       # --- npm 镜像 ---
       # pi 安装 packages 里的 npm 扩展 (本文件上方 globalExtensions) 时使用;
