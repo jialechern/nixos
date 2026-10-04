@@ -30,7 +30,10 @@ let
     "npm:@gotgenes/pi-permission-system"
     # 待办清单 (MIT, juicesharp): todo 工具 + /todos 命令 + 编辑器上方实时面板
     # 面板折叠键在 ~/.config/rpiv-todo/config.json 绑定为 ctrl+shift+f
-    # (该键与内置 tui.altScreen.search 冲突, 后者已在上方 keybindings 改绑 ctrl+shift+s)
+    # 注意 (2026-10-04 核实): 该键被 kitty 的 toggle_fullscreen 拦截
+    # (home/desktop/kitty.nix 的 "ctrl+shift+f"), pi 收不到 —— 折叠功能实际不可用;
+    # 换到 alt+t 之类 kitty 层空闲的键即可恢复。pi 侧已把同键的
+    # tui.altScreen.search 置空, 因此这里不产生扩展抢键告警。
     "npm:@juicesharp/rpiv-todo"
     # 结构化提问 (MIT, juicesharp): ask_user_question 工具, 模型拿不准时以选项式对话框向你确认
     "npm:@juicesharp/rpiv-ask-user-question"
@@ -433,8 +436,10 @@ in
     };
 
     # rpiv-todo 配置: 折叠面板的快捷键
-    # 绑定 ctrl+shift+f; 该键与内置 tui.altScreen.search 冲突,
-    # 后者已在上方 keybindings 改绑到 ctrl+shift+s
+    # 插件默认 ctrl+shift+t, 本机为 ctrl+shift+f —— 但两者都被 kitty 拦截
+    # (ctrl+shift+t = new_tab, ctrl+shift+f = 本仓库绑定的 toggle_fullscreen),
+    # pi 收不到, 折叠功能目前实际不可用; 换成 alt+t / alt+o (kitty 层空闲) 即可恢复。
+    # pi 侧已把同键的 tui.altScreen.search 置空, 所以这里不产生扩展抢键告警。
     # 文档: https://github.com/juicesharp/rpiv-mono/tree/main/packages/rpiv-todo
     ".config/rpiv-todo/config.json".text = builtins.toJSON {
       collapseKey = "ctrl+shift+f";
