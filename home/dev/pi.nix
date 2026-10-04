@@ -476,17 +476,41 @@ in
           "*.git" = "deny";
           "*.git/*" = "deny";
         };
-        # 方向不可静态证明的命令 (循环体 / 命令替换 / 子 shell) 不走这个 allow, 会落到
-        # umbrella external_directory (fail-closed): 如 `for f in /nix/store/*; do
-        # echo "$f"; done` 被拒, 而同路径 `ls` 放行 (2026-09-29 实测, 预期行为备忘)
+        # 项目目录之外的访问按"方向是否可静态证明"分流 (pi-permission-system 39.0.3,
+        # 上游 docs/configuration.md 的 Access effect 一节):
+        #   ① 可证明是读 → 走下面这个 allow。只有扩展冻结的"纯读核心"算证明, 名单:
+        #      awk basename cat cd diff dirname echo egrep fd fgrep find grep head ls
+        #      pwd realpath rg sed sort stat tail wc which
+        #      (内置 read 工具也算证明: 工具身份即证明方向, 实测可读项目外文件)
+        #   ② 可证明是写 (如重定向到项目外) → 命中 external_directory_write 的
+        #      "*" = "deny", 只有 /tmp/* 例外
+        #   ③ 方向不可证明 (循环体 / 命令替换 / 子 shell / 非核心命令如 readlink、jq、
+        #      python3 -c / wrapper 如 xargs / 以及链式命令里含以上任一项) → 归到裸家族
+        #      external_directory, 由解析器折叠读、写两个成员并取最严者, 于是命中 ② 的
+        #      deny。这不是"未声明 gate 的默认值", 而是本配置写侧 deny 的直接后果
+        #      (上游原文: An access whose direction cannot be established consults
+        #      both surfaces and takes the more restrictive answer)
+        # 实测 (2026-10-04 复评, 审计日志在 ~/.pi/agent/extensions/pi-permission-system/
+        # logs/): for 循环被拒 (2026-09-29 同样判过); `ls -l <项目外软链>` 与
+        # `realpath <项目外软链>` 放行; `ls …; readlink -f …` 与 `jq <项目外 json>` 被拒
+        # (日志: surface=external_directory, effect=unproven, matchedPattern="*")
+        # 需要读项目外时的正解是"换写法", 而不是放宽策略:
+        #   readlink -f X → realpath X; jq 读文件 → 内置 read 工具;
+        #   需要解释器处理的, 先用 ① 里的命令把内容取出再处理
+        # 有意不放开 ③: yoloMode 已经把 ask 全部自动批准 (见上), deny 是最后一道防线,
+        # 而 ③ 恰是"分不清读写"的形态 —— 放开它等于允许方向不明的命令写项目外。
+        # 也不要用 piInfrastructureReadPaths 兜底: 那个 bypass 只对"读工具身份"生效
+        # (源码 isPiInfrastructureRead 先查 READ_ONLY_PATH_BEARING_TOOLS), 对 bash 无效。
         external_directory_read = {
           "*" = "allow";
         };
         external_directory_write = {
-          "*" = "deny";
+          "*" = "deny"; # ③ 被拒的根因: 折叠到最严时命中这一行
           "/tmp/*" = "allow";
         };
-        # bash 匹配语义 (pi-permission-system v35, docs/configuration.md#bash-surface):
+        # bash 匹配语义 (截至 pi-permission-system 39.0.3 复核; npm 条目不 pin 版本,
+        # 上游升级后下面这些结论需要重新复核 —— 2026-10-04 复评 P2-C4);
+        # 文档: docs/configuration.md#bash-surface
         #   * 链式命令拆分后逐条匹配整串文本, 前缀 env 赋值剥离;
         #   * wrapper (sudo/env/xargs/timeout/nohup/nice/find -exec/...) 与不透明包装
         #     (bash|sh|dash|zsh|ksh -c, eval) 不解析内层, 只按整串文本匹配, 且 allow
