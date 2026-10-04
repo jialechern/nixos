@@ -56,7 +56,10 @@
       emoji = [ "Noto Color Emoji" ];
       monospace = [
         "JetBrainsMono Nerd Font Mono"
-        "Sarasa Mono SC"
+        # CJK 等宽回退: 用 noto-fonts-cjk-sans 里实际安装的 Mono 版。
+        # (原来写的是 "Sarasa Mono SC", 但仓库从未安装 sarasa-gothic, 该项一直
+        #  静默回退到字体链的下一个 —— 2026-10-04 复评 P2-B3)
+        "Noto Sans Mono CJK SC"
       ];
       sansSerif = [
         "DejaVu Sans"
