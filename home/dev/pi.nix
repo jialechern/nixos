@@ -21,7 +21,8 @@ let
   # 在项目目录内运行 pi-init / pi-memory / pi-coding 即可装配到该项目的 .pi/settings.json。
   # ---------------------------------------------------------------------------
 
-  # 全局扩展集合: 被 nix 声明式管理, 是 pi 扩展出的最基础的能力
+  # 全局扩展集合: 被 nix 声明式管理, 只放与项目无关的横切能力;
+  # 其余扩展都按项目装配, 见下方 local*Extensions
   # 声明后 pi 首次启动时会自动通过 npm 安装到 ~/.pi/agent/npm/ 并加载
   # (需要网络; 若国内拉取失败, 请配置 npm 镜像或临时注释对应条目)
   globalExtensions = [
@@ -262,7 +263,7 @@ in
       fullscreenWheelScrollLines = 4;
 
       # 启动横幅 (1.0.0 起): "header" 只保留 logo/版本/按键提示,
-      # 隐藏模型范围行与已加载资源清单 (本机全局扩展 3 个, 该清单较长)
+      # 隐藏模型范围行与已加载资源清单 (清单随项目装配的扩展变化, 通常占好几行)
       quietStartup = "header";
 
       # 升级后显示精简 changelog: 版本由 flake update 驱动, 升级后一眼看到改了什么
