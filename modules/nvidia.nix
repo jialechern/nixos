@@ -6,6 +6,9 @@
 }:
 
 {
+  # GPU 模块互斥守卫 (声明见 modules.nix: 本项取值唯一, 两模块同时导入即求值期报错)
+  machine.gpu.driver = "nvidia";
+
   # 加载 NVIDIA 驱动
   services.xserver.videoDrivers = [ "nvidia" ];
 
