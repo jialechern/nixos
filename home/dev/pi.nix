@@ -166,7 +166,9 @@ in
       # 之后那段 rpiv-todo 配置), 改绑到 ctrl+shift+s; 该键原为 pi-web-access 的
       # curate 快捷键, 已在下方 web-search.json 的生成配置中把 curate 改绑到空闲键
       # ctrl+shift+u (旧写法 shortcuts.curate = "off" 不是官方支持语义)
-      "tui.altScreen.search" = "ctrl+shift+s"; # 搜索转录内容
+      # 注: 1.0.2 文档把 tui.altScreen.* 整组归入 Fullscreen 章节, tuiMode = "regular"
+      # 下本键很可能不生效 (未实测); 保留它是为了将来切到 fullscreen 时直接可用。
+      "tui.altScreen.search" = "ctrl+shift+s"; # 搜索转录内容 (仅全屏模式)
 
       # --- 应用操作 ---
       # 会话选择器专用键: 原默认 ctrl+p (切换路径显示) / ctrl+n (仅命名会话过滤)
@@ -205,6 +207,28 @@ in
       defaultModel = "deepseek-flash"; # 默认模型
       defaultThinkingLevel = "high"; # 默认思考等级
 
+      # --- 模型作用域 (0.99.0 起) ---
+      # 限定"启动选择"与 ctrl+\ 循环的模型集合 (= /scoped-models 显示的那份)。
+      # 匹配规则: pi 内部对 "provider/modelId" 与裸模型 id 各做一次大小写不敏感的
+      # minimatch (dist/core/model-resolver.js), 所以用 provider 前缀限定即可。
+      # 需要临时用别的模型时改这里再 rebuild, 或用 /scoped-models 做会话级调整。
+      enabledModels = [
+        "deepseek/*"
+        "zai-coding-cn/*"
+      ];
+
+      # 每个模型的起始思考等级 (0.99.0 起; 键为 provider/modelId, 优先于 defaultThinkingLevel)。
+      # 两家模型的可用档位一致: low / high / max (内置目录里 minimal/medium 为 null),
+      # 显式写出后, 切换模型时不会被全局默认值带偏。
+      modelThinkingLevels = {
+        "deepseek/deepseek-flash" = "high";
+        "zai-coding-cn/glm-5.3-flash" = "high";
+      };
+
+      # 缓存未命中 / 成功预热 / 压缩 / 供应商恢复等提示 (默认关闭)
+      # deepseek 的 cacheRead 单价 $0.006/M 而输入 $0.3/M (约 1/50), 值得观察命中情况
+      showCacheMissNotices = true;
+
       # --- UI 与显示 ---
       # system (0.99.0 起的内置默认): 运行时向终端取前景/背景/ANSI 调色板动态生成配色,
       # 按 WCAG 4.5:1 对比度自动调明度。kitty 本身就是 Catppuccin Mocha, 让 pi 直接跟随
@@ -217,8 +241,19 @@ in
       tuiMode = "regular";
 
       # 全屏模式 (tuiMode = "fullscreen") 下滚轮每格滚动行数: pi 0.99.0 起的官方
-      # 设置 (取值 1-100 或 "auto")
+      # 设置 (取值 1-100 或 "auto")。注意: 仅 fullscreen 模式生效 —— 当前
+      # tuiMode = "regular" 时它是惰性的, 保留以便以后试验全屏。
       fullscreenWheelScrollLines = 4;
+
+      # 启动横幅 (1.0.0 起): "header" 只保留 logo/版本/按键提示,
+      # 隐藏模型范围行与已加载资源清单 (本机全局扩展 3 个, 该清单较长)
+      quietStartup = "header";
+
+      # 升级后显示精简 changelog: 版本由 flake update 驱动, 升级后一眼看到改了什么
+      collapseChangelog = true;
+
+      # kitty 标签页显示进度 (OSC 9;4)
+      terminal.showTerminalProgress = true;
 
       # --- 自动压缩 (官方文档示例推荐值) ---
       compaction = {
@@ -238,6 +273,17 @@ in
       # pi 会将其应用为 HTTP_PROXY / HTTPS_PROXY。只能在 agent 目录级 settings 配置
       # (pi 文档 docs/settings.md: "Can only be set in agent-directory settings"), 项目级不可覆盖
       # httpProxy = "http://127.0.0.1:20172";
+
+      # --- 内置扩展开关 (0.99.0 起) ---
+      # 内置扩展名为 builtin:mcp / builtin:llama.cpp / builtin:codemode / builtin:tool-search,
+      # 默认全部加载; 本机不使用本地 GGUF 模型 (/llama), 故禁用 llama.cpp 那一项。
+      # "-" 前缀表示禁用, "+" 表示显式启用; 项目级 settings 可用 + 覆盖本项。
+      extensions = [ "-builtin:llama.cpp" ];
+
+      # --- npm 镜像 ---
+      # pi 安装 packages 里的 npm 扩展 (本文件上方 globalExtensions) 时使用;
+      # 写进配置就不依赖 ~/.npmrc —— 对应上面注释里"若国内拉取失败, 请配置 npm 镜像"
+      npmCommand = [ "npm" "--registry=https://registry.npmmirror.com" ];
 
       # --- 全局扩展包 ---
       packages = globalExtensions;
