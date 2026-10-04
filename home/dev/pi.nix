@@ -344,13 +344,14 @@ in
       # --- 交互与快捷键 ---
       # none: web_search 直接返回原始结果, 不弹浏览器策展窗口
       workflow = "none";
-      # curate 默认 ctrl+shift+s 与内置转录搜索 (上方 keybindings 的
-      # tui.altScreen.search) 撞键; pi 核心的冲突检测里该内置键不在保留白名单,
-      # 扩展会胜出并告警, 故把 curate 让到空闲键 ctrl+shift+u。
-      # activity (活动监控) 保持默认 ctrl+shift+w
+      # 两个默认键都被 kitty 拦截 (2026-10-04 核实, 规则见 home/desktop/kitty.nix):
+      #   curate   ctrl+shift+s → kitty 的 search_scrollback
+      #   activity ctrl+shift+w → kitty 的 close_window (按一下直接关窗口)
+      # 故一并改到 kitty 层空闲的 alt 键。注: 扩展注册的是字面量键, 不能用
+      # keybindings.json 改, 只能在这里改 (web-search.json 也是 builtins.toJSON 生成)。
       shortcuts = {
-        curate = "ctrl+shift+u";
-        activity = "ctrl+shift+w";
+        curate = "alt+u";
+        activity = "alt+a";
       };
 
       # --- 工具 / 命令 / 图片开关 (显式写出, 便于日后核对) ---
