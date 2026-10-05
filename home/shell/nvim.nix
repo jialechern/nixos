@@ -138,6 +138,28 @@ in
     recursive = true;
   };
 
+  # --- --- --- 本机热调试通道 --- --- ---
+  # ~/.config/nvim/after/plugin/local-live.lua 是 nvim 启动时自动 source 的最后一个
+  # 挂载点(runtimepath 末尾的 after/), 由 tmpfiles 建成**可写实体文件** —— 它不在
+  # flake 里, 不受构建期 luajit 检查约束, 改完用 :luafile % 或 :restart 生效,
+  # 不需要 rebuild。用法与骨架见 home/shell/nvim/AGENTS.md。
+  systemd.user.tmpfiles.rules = [
+    "f %h/.config/nvim/after/plugin/local-live.lua 0644 - - -"
+  ];
+
+  # 仓库里若手写了同名文件, 上面的 xdg.configFile(recursive) 会用只读软链把它顶掉,
+  # 热调试通道静默失效。HM 自带的重复目标断言看不到递归目录源内部的文件, 故自建守卫
+  # (niri.nix 对 local-override.kdl 有同样的断言)。
+  assertions = [
+    {
+      assertion = !(builtins.pathExists ./nvim/after/plugin/local-live.lua);
+      message = ''
+        请勿在仓库中手写 home/shell/nvim/after/plugin/local-live.lua:
+        它由本模块的 tmpfiles 规则创建为可写的热调试文件, 同名仓库文件会以只读软链静默顶掉它。
+      '';
+    }
+  ];
+
   # home.packages 让这些工具在 shell 里也能直接用(home/shell/nvim/AGENTS.md 的离线类型检查等要用);
   # programs.neovim.extraPackages 另外把它们写进 nvim 进程的 PATH —— 从桌面启动器这类
   # 没有登录 shell PATH 的环境启动时也能找到 rg/fd/gcc, 两者不能只留一侧。

@@ -12,12 +12,31 @@
 
 ## 部署链路: 改完不等于生效
 
-- 真源是本仓库的 `home/shell/nvim/`; `home/shell/nvim.nix` 用 `pkgs.runCommand` 复制这份目录(构建期去掉 `AGENTS.md`、对全部 lua 跑 `luajit -bl` 语法检查)后, 经 `xdg.configFile."nvim"`(recursive) 以**只读软链**逐文件部署到 `~/.config/nvim`。所以 **改完必须 `sudo nixos-rebuild switch`** 才会作用到日常启动的 nvim; `~/.config/nvim` 里是 /nix/store 的软链, 不能就地编辑。
+- 真源是本仓库的 `home/shell/nvim/`; `home/shell/nvim.nix` 用 `pkgs.runCommand` 复制这份目录(构建期去掉 `AGENTS.md`、对全部 lua 跑 `luajit -bl` 语法检查)后, 经 `xdg.configFile."nvim"`(recursive) 以**只读软链**逐文件部署到 `~/.config/nvim`。所以 **改完必须 `sudo nixos-rebuild switch`** 才会作用到日常启动的 nvim; `~/.config/nvim` 里是 /nix/store 的软链, 不能就地编辑(唯一例外是下节的热调试文件)。
 - 新增或改名的文件必须先在 /etc/nixos 里 `git add` 再 rebuild: flake 只复制 git 已索引的文件, 未跟踪的 lua 文件不会进部署树(且不会有任何告警)。
 - 插件同源: 插件目录由 nix 声明并挂到 `~/.local/share/nvim/site/pack/hm/{start,opt}`, 新增/删除/改名插件必须改 `home/shell/nvim.nix` 的 `programs.neovim.plugins` 并 rebuild, 本目录的 `packadd` 才能找到它们。
 - `programs.neovim.sideloadInitLua` 必须保持 `true`: nix 侧的 `initLua`(luajit `package.path` + 关闭 provider)靠它走 wrapper 的 `--cmd` 注入; 设成 `false` 时 HM 会把它写成 `~/.config/nvim/init.lua`, 与上面的部署同目标冲突。
 - 例外: Neovim 自带的 dist 包(`$VIMRUNTIME/pack/dist/opt/` 下的 `nvim.undotree`/`nvim.difftool`)不归 nix 清单管, `packadd` 直接可用, 不要为它们改 nvim.nix。
 - 不 rebuild 也能验证: 按下一节的方式用 `-u "$PWD/init.lua" --cmd "set rtp^=$PWD"` 从本目录启动, 加载的就是工作区代码(此时线上 `~/.config/nvim` 仍是旧配置)。这样跑 nvim 会写 `~/.local/share/nvim`(treesitter parser 等)与 `~/.local/state/nvim`, 属 state/cache 侧常规文件, 但别拿它当"临时沙箱"来试破坏性改动。
+
+## 热调试通道: `~/.config/nvim/after/plugin/local-live.lua`
+
+给"不想为一次试验 rebuild"留的口子(niri 的 `conf.d/local-live.kdl` 同款思路):
+
+- 它由 `home/shell/nvim.nix` 的 tmpfiles 规则建成**可写实体文件**(不是 store 软链), 不在本仓库/flake 里 —— rebuild 不覆盖它, 写坏语法也不会让构建失败。
+- 加载点是 nvim 原生机制: `runtimepath` 末尾的 `~/.config/nvim/after` 会在启动时自动 source 它的 `plugin/*.lua`, 所以它在**仓库配置与全部插件之后**执行, 可以覆盖它们; `--noplugin`/`-u NONE` 下不加载(上面那些自检命令因此不受它影响)。
+- 生效方式: `:e ~/.config/nvim/after/plugin/local-live.lua` 边改边试, `:luafile %` 立即重载; `:restart`(保留会话)/`:restart!`(不保留) 全量重跑启动流程 —— 想在保存时自动重载就把下面这段放在文件开头(自重注册, 重载不会重复累积):
+
+  ```lua
+  vim.api.nvim_create_autocmd('BufWritePost', {
+      group = vim.api.nvim_create_augroup('LocalLive', { clear = true }),
+      pattern = 'local-live.lua',
+      callback = function() vim.cmd.source(vim.fn.expand('<afile>')) end,
+  })
+  ```
+
+- 其他注意事项: 写 autocmd 要用 `clear = true` 的 augroup, 否则每次重载会重复注册(选项/键位这类写法天然幂等); `.luarc.json` 与 `.stylua.toml` 就在上层目录, 所以编辑它有 `vim.*` 类型补全, 保存时 conform 会按仓库风格用 stylua 格式化; 在**别的** nvim 实例或外部编辑器里保存, 本实例不会自动重载(那是 `:restart` 的活)。
+- 仓库里**不要**手写同名文件: 递归部署会用只读软链顶掉它(`home/shell/nvim.nix` 有求值期断言拦截)。
 
 ## 验证(全部在本目录下跑, 均不联网, 且**不需要 rebuild** —— 它们直接加载工作区代码; `-i NONE` 避免写 shada; #3 完整加载仍会追加 `~/.local/state/nvim/lsp.log`、写 catppuccin 编译缓存, 并按 `settings/base.lua` 的 mkview 给打开过的 buffer 各写一个 `~/.local/state/nvim/view/*`, 均属 state/cache 侧常规文件)
 
@@ -49,7 +68,7 @@ stylua --check $(git ls-files --cached --others --exclude-standard '*.lua')
 
 ## 结构与加载顺序
 
-- `init.lua` → `require('settings')` → (`vim.o.loadplugins` 为真时)`require('plugins')` → `require('keymaps')`。
+- `init.lua` → `require('settings')` → (`vim.o.loadplugins` 为真时)`require('plugins')` → `require('keymaps')`。nvim 还会在启动末尾自动 source `~/.config/nvim/after/plugin/local-live.lua`(见上节的热调试通道), 它不在这条 require 链里。
 - `lua/settings.lua`: 顺序有意义, `settings.lsp` **必须最先**(否则错过 `LspAttach`); 无插件时(`loadplugins` 为假, 即 `--noplugin`; `-u NONE` 时配置整体不加载, 该分支不可达)才走 `settings.transparency`。
 - 插件三步接入: 在 `/etc/nixos/home/shell/nvim.nix` 的 `programs.neovim.plugins` 里声明(懒加载写 `{ plugin = <包>; optional = true; }`, 进 `pack/hm/opt`; 直接写包名则进 `start`, 启动即加载) → 新建 `lua/plugins/<name>.lua`(**被 require 时直接执行**: 先 `vim.cmd.packadd('<目录名>')` 再配置; 不写 `setup()` 壳, 也没有 `local M`/`return M`) → 在 `lua/plugins.lua` 里按顺序加一行 `require('plugins.<name>')`。那里的顺序就是加载顺序(直接执行, 所以不要随手挪动)。
   - `packadd` 认**目录名**(通常是插件仓库名, 如 `lualine.nvim`、`mini.snippets`), 与 nixpkgs 属性名(`lualine-nvim`、`mini-snippets`)不一定相同; 名字对不上时的表现分两个阶段: init 阶段(启动期的所有调用点; 运行时调用点仅有 `keymaps/base.lua` 撤销树回调里的 dist 包 `packadd`, 恒存在不适用)抛 `E919`, 启动完成后同一调用才变成静默成功 —— `lua/plugins/noice.lua` 与 `lua/plugins/telescope.lua` 的 `pcall(vim.cmd.packadd, …)` 守卫正是靠 init 阶段会抛错才有效, 把这种调用挪到 autocmd/懒加载里就会永远返回 true。核对方法(nix 侧 opt 目录列表)写在 `lua/plugins.lua` 头部。

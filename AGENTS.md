@@ -84,6 +84,11 @@ single-sourced keymaps, treesitter, folding) live in `home/shell/nvim/AGENTS.md`
   (luajit `package.path`, disabled providers) out of `~/.config/nvim/init.lua`,
   injecting it through wrapper `--cmd` flags instead. Setting it to `false`
   makes HM write that file and collide with the deployed config.
+- The hot-debug channel is `~/.config/nvim/after/plugin/local-live.lua`: a
+  tmpfiles-created writable file (not in the flake, never overwritten by a
+  rebuild, cannot fail the build) that nvim auto-sources as the last step of
+  startup. Apply edits with `:luafile %` or `:restart`; the subtree AGENTS.md
+  has the recipe.
 - Checking a change needs no rebuild — run from `home/shell/nvim/` (nvim writes
   only to `~/.local/{share,state}/nvim`, never into the config dir):
   - all Lua parses: `nvim --headless -u NONE -i NONE -c 'lua for _,f in ipairs(vim.fn.glob("**/*.lua",false,true)) do assert(loadfile(f)) end' -c 'qa!'`
