@@ -1,0 +1,23 @@
+{
+    "runtime.version": "LuaJIT",
+    "runtime.path": [
+        "lua/?.lua",
+        "lua/?/init.lua",
+        "?.lua",
+        "?/init.lua"
+    ],
+    "diagnostics.globals": [
+        "vim"
+    ],
+    "diagnostics.severity": {
+        "undefined-field": "Warning",
+        "different-requires": "Information"
+    },
+    "workspace.checkThirdParty": false,
+    "workspace.ignoreDir": [
+        ".pi"
+    ],
+    "workspace.library": [
+        "${env:VIMRUNTIME}/lua"
+    ]
+}

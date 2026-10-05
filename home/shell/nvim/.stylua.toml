@@ -1,0 +1,7 @@
+# stylua 配置: conform.nvim 的 lua 格式化器(plugins/conform.lua)会读它。
+# 缺这个文件时 stylua 落到内置默认(indent_type=Tabs + AutoPreferDouble),
+# 于是"保存 lua 文件"会把整文件重排成 Tab/双引号, 与仓库既有风格相反。
+# 三项都显式写出: 对上仓库风格后, 保存时的格式化就是幂等的(不再产生风格 diff)。
+indent_type = "Spaces"
+indent_width = 4
+quote_style = "AutoPreferSingle"
