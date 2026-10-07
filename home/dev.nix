@@ -3,7 +3,6 @@
 {
   imports = [
     ./dev/git.nix
-    ./dev/pi.nix
     ./dev/rust.nix
     ./dev/haskell.nix
     ./dev/python.nix

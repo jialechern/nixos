@@ -99,7 +99,7 @@ in
     # 直接读 sops-nix 的密钥文件 (由 sops.nix 的 secrets 声明生成, 权限 0400/0600),
     # 不再额外落一份明文 env 文件 —— 旧的 ~/.config/pi/secrets.env 可以手动删掉
     #
-    # sops.nix 是 pathExists 可选开关 (home.nix:45-56), 它缺席时 config.sops 这棵
+    # sops.nix 是 pathExists 可选开关 (home.nix:45-53), 它缺席时 config.sops 这棵
     # 选项树整个不存在, 所以包装与否必须在求值期分支 (if 两支惰性求值):
     # 用 config ? sops 判断 "sops-nix 的 HM 模块是否被导入", 与 home.nix 的开关同构。
     # 否则按 README 的无代理首装流程移走 sops.nix 后, 这里会抛

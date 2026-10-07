@@ -52,7 +52,7 @@
     };
 
     templates = {
-      # 注: 不再生成 ~/.config/pi/secrets.env —— pi 的包装脚本 (home/dev/pi.nix)
+      # 注: 不再生成 ~/.config/pi/secrets.env —— pi 的包装脚本 (home/shell/pi.nix)
       # 直接读上面 secrets 声明的文件, 少一份明文落盘 (旧的 env 文件可手动删除)
       "netrc" = {
         path = "${config.home.homeDirectory}/.netrc";

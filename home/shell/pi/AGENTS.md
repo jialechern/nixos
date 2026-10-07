@@ -1,6 +1,6 @@
 # 全局指令 (Pi)
 
-> 源: `/etc/nixos/home/dev/pi/AGENTS.md`, 由 home-manager 部署; `~/.pi/agent/AGENTS.md` 是只读软链, 直接改无效。
+> 源: `/etc/nixos/home/shell/pi/AGENTS.md`, 由 home-manager 部署; `~/.pi/agent/AGENTS.md` 是只读软链, 直接改无效。
 > 持久化规则请改源文件; 请用户 rebuild, 会话内 `/reload` 后生效。项目 `AGENTS.md` 后加载, 冲突时以其为准 (风险与凭据类除外)。
 
 - 回复一律用简体中文 (用户明确要求其他语言除外); 代码注释与 commit message 跟随项目约定, 无约定时用中文;

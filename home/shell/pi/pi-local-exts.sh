@@ -1,7 +1,7 @@
 #!/bin/sh
 # pi 项目级 (--local) 扩展集合管理。
 #
-# 由 home/dev/pi.nix 的 pi-init / pi-memory / pi-coding / pi-clean 别名调用, 集合定义在
+# 由 home/shell/pi.nix 的 pi-init / pi-memory / pi-coding / pi-clean 别名调用, 集合定义在
 # 该文件的 localBaseExtensions / localMemoryExtensions / localCodingExtensions 中。
 #
 # 用法:

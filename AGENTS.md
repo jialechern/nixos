@@ -40,8 +40,8 @@ import order and the order lands in the generated fstab (and the drv hash).
   of `home-manager`, `sops-nix` and `pi` are fetched from GitHub, and `pi`
   additionally pulls a fixed-output model catalog and npm tarball from `pi.dev`
   at build time, so it belongs on the "needs a proxy on a first install" list
-  too (README's 网络问题 section). Unlike `sops.nix`, `home/dev/pi.nix` has no
-  `pathExists` switch: it is imported unconditionally by `home/dev.nix`, so
+  too (README's 网络问题 section). Unlike `sops.nix`, `home/shell/pi.nix` has no
+  `pathExists` switch: it is imported unconditionally by `home/shell.nix`, so
   disabling it means commenting that import out. No
   external dotfiles inputs remain: the Neovim config now lives in this repo at
   `home/shell/nvim/` and is deployed to `~/.config/nvim` by

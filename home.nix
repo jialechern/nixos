@@ -94,7 +94,7 @@
   # home.file: 声明式部署 dotfiles (各模块也有自己的 home.file / xdg.configFile)
   home.file = {
     # pi 项目级扩展集合管理脚本 (pi-init / pi-coding / pi-clean 别名调用)
-    ".local/bin/pi-local-exts".source = ./home/dev/pi/pi-local-exts.sh;
+    ".local/bin/pi-local-exts".source = ./home/shell/pi/pi-local-exts.sh;
   };
 
   # Home Manager 也可以通过 'home.sessionVariables' 管理环境变量
