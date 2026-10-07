@@ -29,7 +29,8 @@ let
   # 启停 / 扩展:
   #   - 停用单个 skill:   注释掉 names 里对应的一行
   #   - 停用整个分组:     注释掉整个分组 (顶部对应 fetch 随之不被求值)
-  #   - 新增本地 skill:   在 ./skills/ 下建 <name>/SKILL.md, 把名字加进 local.names
+  #   - 新增本地 skill:   在 ./skills/ (home/other/skills/) 下建 <name>/SKILL.md,
+  #                       把名字加进 local.names (新增文件需 git add, 否则 flake 看不见)
   #   - 新增外部来源:     先在顶部 fetch 对应仓库, 再照下列格式加一个分组
   # ===========================================================================
   skills = {
@@ -72,7 +73,7 @@ let
     if dupNames == [ ] then
       skillEntries
     else
-      throw "home/skills.nix: 同名 skill 出现在多个分组: ${builtins.concatStringsSep ", " dupNames}";
+      throw "home/other/skills.nix: 同名 skill 出现在多个分组: ${builtins.concatStringsSep ", " dupNames}";
 in
 {
   # 统一生成 home.file 条目, 均部署到 ~/.agents/skills/<name>

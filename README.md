@@ -113,14 +113,14 @@
 
     **本仓库默认配置的一些说明:**
         - nvim 的配置已并入本仓库的 `home/shell/nvim/`, 由 `home/shell/nvim.nix` 在构建期校验(全部 lua 跑 `luajit -bl`, 失败则构建失败)后以逐文件软链方式部署到 `~/.config/nvim/`(只读软链, 改完需重建; 新增文件要先 `git add`, 否则 flake 看不见); 另有 tmpfiles 创建的可写热调试文件 `~/.config/nvim/after/plugin/local-live.lua`(不在本仓库/flake 里, 不随 rebuild 部署, 改完用 `:luafile %` 或 `:restart` 生效); niri 的配置已并入本仓库的 `home/desktop/niri/`, 由 `home/desktop/niri.nix` 以逐文件软链方式部署到 `~/.config/niri/`(只读软链, 改完需重建), 其中 `conf.d/local-override.kdl` 由该模块按主机生成, 不要手写同名文件放回仓库(`home/desktop/niri.nix` 有构建期断言拦截); keepassxc 的配置不入本仓库, 本仓库只负责安装软件与运行时依赖(`home/desktop/applications.nix`), `~/.config/keepassxc/` 由本地手动维护。
-        - 可选模块由 `builtins.pathExists` 做开关(如 `home/desktop.nix`、`sops.nix`、`home/skills.nix`、`modules/system-dependencies-require-proxy.nix`)。flake 只包含 git 已索引的文件, 所以**新增这类开关文件后必须先 `git add`**, 否则开关静默为 false、模块不会生效(Nix 手册 `nix flake` 一节: "files which are matched by .gitignore or have never been git add-ed will not be available in the flake"); `modules/nix-config.nix` 的 `warn-dirty = false` 又关掉了脏树提示, 因此不会有任何警告。
+        - 可选模块由 `builtins.pathExists` 做开关(如 `home/desktop.nix`、`sops.nix`、`home/other/skills.nix`、`modules/system-dependencies-require-proxy.nix`)。flake 只包含 git 已索引的文件, 所以**新增这类开关文件后必须先 `git add`**, 否则开关静默为 false、模块不会生效(Nix 手册 `nix flake` 一节: "files which are matched by .gitignore or have never been git add-ed will not be available in the flake"); `modules/nix-config.nix` 的 `warn-dirty = false` 又关掉了脏树提示, 因此不会有任何警告。
         - 壁纸目录为 `~/Wallpapers/`, 不再由 flake 输入提供 (也不再是软链), 而是由 `home.nix` 的 `xdg.userDirs.extraConfig.WALLPAPERS` 声明, 并由 `createDirectories = true` 在构建时自动创建; niri 的启动项与快捷键以该路径为默认壁纸目录 (递归其全部子目录), 壁纸图片由用户自行存放在该路径下.
         - 如果使用核显, 则不应该在 `nixpkgs.lib.nixosSystem { ... }` 的参数 `modules` 中引入形如 `./modules/nvidia.nix` 的独立显卡驱动配置项, 而应当引入形如 `./modules/intel-extra.nix` 这样的核显适配的配置项. 这条约定现在由 `modules.nix` 的 `machine.gpu.driver` 选项在求值期把关(两个 GPU 模块同现即报错, 新主机漏加 GPU 模块也会被断言拦住).
         - pi 的配置由 `home/dev/pi.nix` 以 `builtins.toJSON` 生成, 并部署为指向 Nix store 的只读软链 (如 `~/.pi/agent/config.json`), 所以改配置必须重新构建才生效; 其中 `packages` 里的 npm 扩展在 pi 首次启动时联网安装到 `~/.pi/agent/npm/`, **不在 Nix store 里**, 因此不受 `flake.lock` 约束 (上游发新版即跟随变化).
 
     **网络问题:**
         - 初次构建系统可以使用 `nixos-install.sh` 进行安装, 其中已经包含了初次运行时的国内源设置
-        - 部分软件包会固执地从境外站点下载 (`modules/system-dependencies-require-proxy.nix`、`home/desktop/applications-require-proxy.nix` 等带 `*-require-proxy.nix` 字样的文件), 另有 `home/skills.nix` 用 `fetchFromGitHub` 拉取 skills —— 这些都不影响系统主功能, 第一次 安装/构建 时可以把它们一并移走, 等代理可用后再放回并重新构建.
+        - 部分软件包会固执地从境外站点下载 (`modules/system-dependencies-require-proxy.nix`、`home/desktop/applications-require-proxy.nix` 等带 `*-require-proxy.nix` 字样的文件), 另有 `home/other/skills.nix` 用 `fetchFromGitHub` 拉取 skills —— 这些都不影响系统主功能, 第一次 安装/构建 时可以把它们一并移走, 等代理可用后再放回并重新构建.
         - `pi` 同样依赖外网: 它的 flake input 来自 GitHub (`flake.nix` 里的 `pi`), 构建期还要从 `pi.dev` 拉取固定输出的 model catalog 与 npm tarball. 无代理首装时把 `home/dev.nix` 里的 `./dev/pi.nix` 注释掉, 并按下面 `sops-nix` 的同样做法注释 `flake.nix` 中 `pi` 的 input 与 outputs 参数 —— 这样只是不安装 pi, 系统其余部分照常.
         - 私密数据管理模块 `sops-nix` 必须使用透明代理才能够正常构建并使用, 故第一次构建时(如果没有代理)需要将 `sops.nix` 移走. 并且将 `flake.nix` 中的 `inputs` 属性集以及 `outputs` 参数集的 `sops-nix` 相关配置注释, 如下:
         ```nix
