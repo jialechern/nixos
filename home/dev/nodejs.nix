@@ -3,6 +3,12 @@
 {
   home.packages = with pkgs; [
     nodejs # 包含 node 和 npm
+
+    # --- TypeScript 工具链 ---
+    # 版本由 nixpkgs 锁定 (当前 7.0.2, 与 npm 上的 latest 一致;
+    # 想升级就 `nix flake update nixpkgs` 后重建, 不要用 npm -g 装同名命令以免 PATH 里打架)
+    typescript # 官方编译器, 提供 tsc (TypeScript 7 为 Go 原生实现)
+    tsx # 直接运行/监视 .ts 文件 (ts-node 的现代替代)
   ];
 
   # 生成 .npmrc 文件
@@ -38,6 +44,9 @@
     # 在不稳定的网络下, 可以增加重试次数
     fetch-retries=5
   '';
+
+  # 说明: typescript-language-server (编辑器补全/跳转) 与 prettierd (格式化) 由
+  # home/shell/nvim.nix 的 lspDeps 提供并已在 PATH 上, 这里不再重复声明。
 
   # 配套配置环境变量
   home.sessionVariables = {
