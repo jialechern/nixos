@@ -15,15 +15,6 @@
         sympy # 符号计算库
         scipy # 科学计算库
         pypdf # pdf 合并/拆分/旋转/加密/水印/表单 (基础操作主力)
-
-        # --- PDF skill 依赖 ---
-        # 来源标注: [pdf-parser] = memtomem
-        # pdf-parser (部署于 ~/.agents/skills, 见 home/skills.nix);
-        # 移除对应 skill 时同步清理; 系统侧配套 CLI (poppler/qpdf/tesseract)
-        # 在 home/shell.nix, 不要重复安装
-        pdfplumber # [pdf-parser] 文本/表格提取 (读 PDF 主力)
-        pymupdf # [pdf-parser] 文本层抽取与页面渲染主力 (fitz)
-        camelot # [pdf-parser] 可选: 框线表格高保真提取; 自动带入 opencv-python-headless
       ]
     ))
 
