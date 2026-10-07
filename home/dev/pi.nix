@@ -40,8 +40,6 @@ let
     # 换到 alt+t 之类 kitty 层空闲的键即可恢复。pi 侧已把同键的
     # tui.altScreen.search 置空, 因此这里不产生扩展抢键告警。
     "npm:@juicesharp/rpiv-todo"
-    # 结构化提问 (MIT, juicesharp): ask_user_question 工具, 模型拿不准时以选项式对话框向你确认
-    "npm:@juicesharp/rpiv-ask-user-question"
     # 子代理: 把任务委托给专注的子会话
     "npm:pi-subagents"
     # 网页访问: 搜索 / 抓取 / GitHub 克隆 / PDF / 视频理解
