@@ -60,23 +60,5 @@
     poppler-utils # pdf 工具集
     img2pdf # 图片无损封包成 pdf
     ocrmypdf # OCR 工具
-
-    # --- PDF skill 配套 CLI ---
-    # 来源: ~/.agents/skills 的 pdf (anthropics/skills 官方) 与 pdf-parser
-    # (memtomem), 见 home/skills.nix; python 侧配套库在 home/dev/python.nix,
-    # 两层按 skill 文档分工安装, 不要重复
-    # poppler-utils # [pdf] pdftotext/pdftoppm/pdfimages: 抽文本/页面渲染成图/抽内嵌图; 也是 pdf2image 的渲染后端
-    qpdf # [pdf] 命令行 合并/拆分/旋转/加解密/修复 (skill 提及的 pdftk 已老化, 由 qpdf 取代, 不装)
-    (tesseract5.override {
-      # [pdf] OCR 引擎 (pytesseract/pdf2image 的后端, 扫描件转写用);
-      # 顺带满足 [pdf-parser] 的可选 OCR 分支;
-      # eng 为 nixpkgs wrapper 强制要求, osd+chi_sim+chi_tra 覆盖中英/简繁, 按需增删
-      enableLanguages = [
-        "eng"
-        "osd"
-        "chi_sim"
-        "chi_tra"
-      ];
-    })
   ];
 }
