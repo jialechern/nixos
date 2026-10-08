@@ -108,10 +108,9 @@ single-sourced keymaps, treesitter, folding) live in `home/shell/nvim/AGENTS.md`
   imports are guarded by `builtins.pathExists`:
   `modules/system-dependencies-require-proxy.nix`,
   `home/desktop/applications-require-proxy.nix`, `home/shell/nvim.nix`, in
-  `home.nix`: `sops.nix`, `home/desktop.nix`, and in `home/other.nix`:
-  `home/other/skills.nix`. Move a file away to disable it; restore to
-  re-enable. Only `sops.nix` additionally needs its input and comments handled
-  in `flake.nix` (see README). A git flake only copies
+  `home.nix`: `sops.nix`, `home/desktop.nix`. Move a file away to disable it;
+  restore to re-enable. Only `sops.nix` additionally needs its input and
+  comments handled in `flake.nix` (see README). A git flake only copies
   files indexed by git, so a newly added switch file must be `git add`-ed first —
   otherwise the switch silently stays false, and `warn-dirty = false` in
   `modules/nix-config.nix` suppresses the only warning you would get. The same

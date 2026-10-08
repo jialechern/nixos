@@ -59,7 +59,7 @@
     # 命令行艺术字体生成工具
     figlet
     cmatrix
-    # pdf/文档 工具 (非 skill 依赖)
+    # pdf/文档 工具
     poppler-utils # pdf 工具集
     img2pdf # 图片无损封包成 pdf
     ocrmypdf # OCR 工具
