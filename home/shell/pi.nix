@@ -15,14 +15,24 @@ let
   piConfigDir = "${config.home.homeDirectory}/.pi/agent";
 
   # ---------------------------------------------------------------------------
-  # pi 项目级扩展集合 (--local)
+  # pi 项目级扩展集合 (extension groups)
   #
   # 这些包不进全局 settings.packages, 因此未装配它们的项目是零启动成本;
-  # 在项目目录内运行 pi-init / pi-memory / pi-coding 即可装配到该项目的 .pi/settings.json。
+  # 包列表内联在下方 home.file 的 ~/.pi/agent/extension-groups.json, 定义了
+  # init / memory / coding 三个组, 由用户级扩展 extensions-manager.ts (同样经
+  # home.file 部署) 的 /extensions 命令在 pi 会话内装配到当前项目的 .pi/settings.json:
+  #   装配基础集合  /extensions add-group init     (幂等, 已装的跳过)
+  #   装配记忆集合  /extensions add-group memory   (与基础/编码正交, 按需叠加)
+  #   装配编码集合  /extensions add-group coding
+  #   卸载全部      /extensions clean                 (带确认; -y 跳过)
+  #   查看清单      /extensions list                  (含组标注; 组名 Tab 补全)
+  # 装配后扩展自动 reload 生效, 无需重启 pi。
+  # 注: 写操作要求项目已被信任 (会话内用 /trust 授予), 未信任时 /extensions 会
+  # 弹确认, 或加 -y 直接写入 (不保存信任决定); list 始终可用。
   # ---------------------------------------------------------------------------
 
   # 全局扩展集合: 被 nix 声明式管理, 只放与项目无关的横切能力;
-  # 其余扩展都按项目装配, 见下方 local*Extensions
+  # 其余扩展都按项目装配, 见下方 home.file 的 extension-groups.json
   # 声明后 pi 首次启动时会自动通过 npm 安装到 ~/.pi/agent/npm/ 并加载
   # (需要网络; 若国内拉取失败, 请配置 npm 镜像或临时注释对应条目)
   globalExtensions = [
@@ -30,52 +40,6 @@ let
     # 策略文件: ~/.pi/agent/extensions/pi-permission-system/config.json (见下方 home.file)
     "npm:@gotgenes/pi-permission-system"
   ];
-
-  # 基础集合 (pi-init): 通用能力, 任何项目都可能想要
-  localBaseExtensions = [
-    # 待办清单 (MIT, juicesharp): todo 工具 + /todos 命令 + 编辑器上方实时面板
-    # 面板折叠键在 ~/.config/rpiv-todo/config.json 绑定为 ctrl+shift+f
-    # 注意 (2026-10-04 核实): 该键被 kitty 的 toggle_fullscreen 拦截
-    # (home/desktop/kitty.nix 的 "ctrl+shift+f"), pi 收不到 —— 折叠功能实际不可用;
-    # 换到 alt+t 之类 kitty 层空闲的键即可恢复。pi 侧已把同键的
-    # tui.altScreen.search 置空, 因此这里不产生扩展抢键告警。
-    "npm:@juicesharp/rpiv-todo"
-    # 子代理: 把任务委托给专注的子会话
-    "npm:pi-subagents"
-    # 网页访问: 搜索 / 抓取 / GitHub 克隆 / PDF / 视频理解
-    # 配置见下方 home.file 的 ~/.pi/agent/web-search.json
-    "npm:pi-web-access"
-  ];
-
-  # 记忆集合 (pi-memory): 与基础/编码集合正交, 只含记忆相关 (持久记忆 / 会话搜索)。
-  # 从基础集合拆出成独立一组, 便于按项目单独装配与增减。
-  localMemoryExtensions = [
-    # 持久记忆 + 会话搜索 + 密钥扫描
-    "npm:pi-hermes-memory"
-  ];
-
-  # 编码集合 (pi-coding): 与基础/记忆集合正交, 只含编码相关
-  # 装配是幂等追加, 各组叠加即得并集: 日常项目跑 pi-init 即可,
-  # 编码项目再叠加 pi-coding, 需要持久记忆的项目再叠加 pi-memory,
-  # 主动用启动耗时换功能。
-  # 需要继续细化时可再加一组 (如 localAuditExtensions → pi-audit)。
-  localCodingExtensions = [
-    # 实时代码反馈 (LSP 诊断 / linter / autofix)
-    "npm:pi-lens"
-  ];
-
-  # ---------------------------------------------------------------------------
-  # 项目级扩展集合的装配与清理逻辑见 ./pi/pi-local-exts.sh
-  # (由本文件 home.file 部署到 ~/.local/bin), 包列表由下面的别名传入。
-  #
-  # 语义是"幂等追加": 各别名只往当前项目追加自己那组包, 不卸载任何东西。
-  # 所以依次运行多个别名得到的是它们的并集 —— 日常项目只跑 pi-init 保持轻量,
-  # 复杂项目再叠加 pi-coding / pi-memory, 主动用启动耗时换功能。要回退用 pi-clean。
-  # 注: --local 装配要求项目已被信任 (pi 的 trust 机制), 否则 pi install 会拒绝。
-  #
-  # 用 `sh <固定路径>` 调用, 既不依赖执行位, 也不会把会随内容变化的 store 路径写进别名。
-  # ---------------------------------------------------------------------------
-  piLocalExts = "sh ${config.home.homeDirectory}/.local/bin/pi-local-exts";
 
   # ---------------------------------------------------------------------------
   # git push 拦截规则 (值带拒绝理由, 会附加到给 agent 的报错信息里)
@@ -564,9 +528,55 @@ in
       };
     };
 
-    # pi 项目级扩展集合管理脚本: 部署到 ~/.local/bin, 供 pi-init / pi-memory /
-    # pi-coding / pi-clean 别名以 `sh <固定路径>` 调用 (别名定义见下方 home.shellAliases)
-    ".local/bin/pi-local-exts".source = ./pi/pi-local-exts.sh;
+    # pi 用户级扩展 extensions-manager.ts: 注册 /extensions 命令, 在会话内对当前
+    # 项目装配/卸载/清点 extension-groups.json 里定义的插件组 (见本文件头部注释)。
+    # 部署为只读软链即可: pi 经 jiti 直接运行 TS 源码, 无需编译
+    # (文档: pi docs/extensions.md 的 "Add it to Pi")
+    ".pi/agent/extensions/extensions-manager.ts".source = ./pi/extensions-manager.ts;
+
+    # 插件组定义 (声明式只读: 改组请改本文件后 rebuild); 某个项目想用不同的
+    # 组内容时, 可在该项目 .pi/extension-groups.json 定义同名组整体覆盖。
+    ".pi/agent/extension-groups.json".text = builtins.toJSON {
+      # 基础集合: 通用能力, 任何项目都可能想要
+      init = {
+        description = "基础集合: 通用能力, 任何项目都可能想要 (待办 / 子代理 / 网页访问)";
+        packages = [
+          # 待办清单 (MIT, juicesharp): todo 工具 + /todos 命令 + 编辑器上方实时面板
+          # 面板折叠键在 ~/.config/rpiv-todo/config.json 绑定为 ctrl+shift+f
+          # 注意 (2026-10-04 核实): 该键被 kitty 的 toggle_fullscreen 拦截
+          # (home/desktop/kitty.nix 的 "ctrl+shift+f"), pi 收不到 —— 折叠功能实际不可用;
+          # 换到 alt+t 之类 kitty 层空闲的键即可恢复。pi 侧已把同键的
+          # tui.altScreen.search 置空, 因此这里不产生扩展抢键告警。
+          "npm:@juicesharp/rpiv-todo"
+          # 子代理: 把任务委托给专注的子会话
+          "npm:pi-subagents"
+          # 网页访问: 搜索 / 抓取 / GitHub 克隆 / PDF / 视频理解
+          # 配置见上方 home.file 的 ~/.pi/agent/web-search.json
+          "npm:pi-web-access"
+        ];
+      };
+      # 记忆集合: 与基础/编码集合正交, 只含记忆相关 (持久记忆 / 会话搜索)。
+      # 从基础集合拆出成独立一组, 便于按项目单独装配与增减。
+      memory = {
+        description = "记忆集合: 持久记忆 / 会话搜索 (与基础/编码集合正交)";
+        packages = [
+          # 持久记忆 + 会话搜索 + 密钥扫描
+          "npm:pi-hermes-memory"
+        ];
+      };
+      # 编码集合: 与基础/记忆集合正交, 只含编码相关。
+      # add-group 是幂等追加, 各组叠加即得并集: 日常项目只装 init 保持轻量,
+      # 编码项目再叠加 coding, 需要持久记忆的项目再叠加 memory,
+      # 主动用启动耗时换功能。
+      # 需要继续细化时可再加一组 (如 audit → 审计集合)。
+      coding = {
+        description = "编码集合: 实时代码反馈 LSP 诊断 / linter / autofix (与基础/记忆正交)";
+        packages = [
+          # 实时代码反馈 (LSP 诊断 / linter / autofix)
+          "npm:pi-lens"
+        ];
+      };
+    };
   };
 
   # ---------------------------------------------------------------------------
@@ -574,17 +584,9 @@ in
   # ---------------------------------------------------------------------------
   home.shellAliases = {
     ag = "pi";
-
-    # pi-init: 把"基础扩展集合"追加到当前项目 (.pi/settings.json)
-    "pi-init" = "${piLocalExts} install ${lib.concatStringsSep " " localBaseExtensions}";
-
-    # pi-memory: 把"记忆扩展集合"追加到当前项目 (与 pi-init 叠加, 幂等)
-    "pi-memory" = "${piLocalExts} install ${lib.concatStringsSep " " localMemoryExtensions}";
-
-    # pi-coding: 把"编码扩展集合"追加到当前项目 (与 pi-init 叠加, 幂等)
-    "pi-coding" = "${piLocalExts} install ${lib.concatStringsSep " " localCodingExtensions}";
-
-    # pi-clean: 卸载当前项目全部 --local 扩展, 并清理 ~/.pi/agent/npm 的全局残留
-    "pi-clean" = "${piLocalExts} clean";
+    # 原 pi-init / pi-memory / pi-coding / pi-clean 别名已由 extensions-manager.ts 的
+    # /extensions 命令取代 (装配在会话内完成后自动 reload, 无需 shell 入口);
+    # 不做 `pi -p "/extensions … -y"` 薄别名: print 模式下若扩展加载失败, 该串会
+    # 被当作普通 prompt 发给模型。
   };
 }
