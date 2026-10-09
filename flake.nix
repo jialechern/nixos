@@ -19,9 +19,10 @@
     };
 
     # 引入 pi 上游官方 flake
-    # 上游只提供 packages / apps / overlay, 没有 home-manager 模块;
-    # 所以接入方式是"加 input + 在 home/shell/pi.nix 里覆盖 package",
-    # 而不是用它的 overlay (那只产生 pkgs.pi, 不会替换 pkgs.pi-coding-agent)。
+    # 上游只提供 packages / apps / overlay, 没有 home-manager 模块; 仓库能写
+    # programs.pi-coding-agent.* 是因为 home-manager 上游自带该模块, 这里只是
+    # "加 input + 用它提供的 package 覆盖点", 不走上游 overlay (那只产生
+    # pkgs.pi, 不会替换 pkgs.pi-coding-agent)。
     # stable 分支由上游发版 workflow 快进到最新正式 tag, 因此它的 tip 即最新正式版。
     pi = {
       url = "github:earendil-works/pi/stable";
