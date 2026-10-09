@@ -136,7 +136,8 @@ let
     else
       ''
         // local-override.kdl
-        // 本机 (${hostName}) 暂无覆盖项; 保留占位是为了让 include optional=true 命中
+        // 本机 (${hostName}) 暂无覆盖项; 保留这份空文件只是为了有固定的落笔位置
+        // (config.kdl 用 include optional=true, 缺文件同样能加载)
       '';
 
   # 构建期校验 niri 配置: 语法/选项写错时 rebuild 直接失败
