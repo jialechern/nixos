@@ -95,6 +95,9 @@
     Service = {
       # 使用 lib.getExe 自动获取 mako 的绝对路径
       ExecStart = "${lib.getExe pkgs.mako}";
+      # 与上游 unit 对齐: 自建 unit 之前漏了 ExecReload, 补回后
+      # `systemctl --user reload mako` 与 makoctl reload 才可用
+      ExecReload = "${lib.getExe' pkgs.mako "makoctl"} reload";
       Restart = "on-failure";
       RestartSec = 1;
     };
