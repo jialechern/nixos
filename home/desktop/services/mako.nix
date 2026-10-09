@@ -95,8 +95,10 @@
     Service = {
       # 使用 lib.getExe 自动获取 mako 的绝对路径
       ExecStart = "${lib.getExe pkgs.mako}";
-      # 与上游 unit 对齐: 自建 unit 之前漏了 ExecReload, 补回后
-      # `systemctl --user reload mako` 与 makoctl reload 才可用
+      # 自建 unit 相对上游缺 ExecReload, 这里补回, 使 `systemctl --user reload mako` 可用。
+      # (makoctl reload 是直接与守护进程通信的子命令, 不依赖该字段; 上游另有
+      #  Type=dbus / BusName / ExecCondition 三项, 本仓库有意不采用 ——
+      #  After=graphical-session.target 已保证 WAYLAND_DISPLAY 就绪, 且仓库内不调用 makoctl)
       ExecReload = "${lib.getExe' pkgs.mako "makoctl"} reload";
       Restart = "on-failure";
       RestartSec = 1;
