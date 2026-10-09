@@ -58,6 +58,13 @@
   #   pulse.enable = true;
   # };
 
+  # --- 存储设备 ---
+  # udisks2: 让普通用户经 polkit 授权挂载/卸载可移动介质。yazi 的 M 键 (见
+  # home/shell/yazi.nix 的 mount 插件) 与 thunar 都走它的 D-Bus 接口;
+  # 客户端 udisksctl 在 home/shell/yazi.nix 声明, 这里提供守护进程端。
+  # mountOnMedia 保持默认 false: 挂载点仍是 /run/media/$USER (ACL 控制)。
+  services.udisks2.enable = true;
+
   # libinput: 本机 services.xserver.enable = false, 该模块在这里只装 libinput 的
   # udev 规则 (触摸板/鼠标的实际行为由 niri 的 input {} 决定, 见
   # home/desktop/niri/conf.d/input.kdl); 保留它只是为了那批 udev 规则

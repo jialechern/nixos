@@ -10,7 +10,8 @@
   home.packages = with pkgs; [
     # file: 让 yazi 稳定地获取 mime 信息
     file
-    # udisks2: 提供 udisksctl, mount 插件 (M 键) 的挂载/卸载/power-off 全走它
+    # udisks2: 提供客户端 udisksctl, mount 插件 (M 键) 的挂载/卸载/power-off 全走它;
+    # 守护进程端由 modules/peripherals.nix 的 services.udisks2.enable 提供
     udisks2
   ];
 
