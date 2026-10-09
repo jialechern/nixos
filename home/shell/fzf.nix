@@ -24,7 +24,8 @@ let
 
     # --- 预览窗口 ---
     "--preview-window='right,60%,border-sharp,wrap'" # 右侧 60%、直角边框、自动换行
-    "--preview='${myPreviewer}/bin/fzf-previewer {}'"
+    # `--` 分隔符: 让以 - 开头的文件名 (含恰为 -h/--help 的名字) 当位置参数, 不被 argparse 当选项
+    "--preview='${myPreviewer}/bin/fzf-previewer -- {}'"
     "--bind='ctrl-/:change-preview-window(right,60%|hidden|right,80%)'" # 切换预览: 60%/隐藏/80%
 
     # --- 交互行为 ---
