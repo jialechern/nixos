@@ -46,47 +46,47 @@
       # 这里使用 neovim-remote (nvr), 需要确保已安装 neovim-remote 包
       synctex-editor-command = "nvr --remote-silent %f -c %l";
 
-      # ==================== Dracula 主题 (Dark Mode) ====================
+      # ==================== Catppuccin Mocha 主题 (Dark Mode) ====================
       # 默认启动时开启反色模式 (即开启暗色主题)
       recolor = true;
 
-      notification-error-bg = "rgba(255,85,85,1)"; # Red
-      notification-error-fg = "rgba(248,248,242,1)"; # Foreground
-      notification-warning-bg = "rgba(255,184,108,1)"; # Orange
-      notification-warning-fg = "rgba(68,71,90,1)"; # Selection
-      notification-bg = "rgba(40,42,54,1)"; # Background
-      notification-fg = "rgba(248,248,242,1)"; # Foreground
+      notification-error-bg = "rgba(243,139,168,1)"; # red
+      notification-error-fg = "rgba(205,214,244,1)"; # text
+      notification-warning-bg = "rgba(250,179,135,1)"; # peach
+      notification-warning-fg = "rgba(69,71,90,1)"; # surface1
+      notification-bg = "rgba(30,30,46,1)"; # base
+      notification-fg = "rgba(205,214,244,1)"; # text
 
-      completion-bg = "rgba(40,42,54,1)"; # Background
-      completion-fg = "rgba(98,114,164,1)"; # Comment
-      completion-group-bg = "rgba(40,42,54,1)"; # Background
-      completion-group-fg = "rgba(98,114,164,1)"; # Comment
-      completion-highlight-bg = "rgba(68,71,90,1)"; # Selection
-      completion-highlight-fg = "rgba(248,248,242,1)"; # Foreground
+      completion-bg = "rgba(30,30,46,1)"; # base
+      completion-fg = "rgba(127,132,156,1)"; # overlay1
+      completion-group-bg = "rgba(30,30,46,1)"; # base
+      completion-group-fg = "rgba(127,132,156,1)"; # overlay1
+      completion-highlight-bg = "rgba(69,71,90,1)"; # surface1
+      completion-highlight-fg = "rgba(205,214,244,1)"; # text
 
-      index-bg = "rgba(40,42,54,1)"; # Background
-      index-fg = "rgba(248,248,242,1)"; # Foreground
-      index-active-bg = "rgba(68,71,90,1)"; # Current Line
-      index-active-fg = "rgba(248,248,242,1)"; # Foreground
+      index-bg = "rgba(30,30,46,1)"; # base
+      index-fg = "rgba(205,214,244,1)"; # text
+      index-active-bg = "rgba(69,71,90,1)"; # surface1
+      index-active-fg = "rgba(205,214,244,1)"; # text
 
-      inputbar-bg = "rgba(40,42,54,1)"; # Background
-      inputbar-fg = "rgba(248,248,242,1)"; # Foreground
-      statusbar-bg = "rgba(40,42,54,1)"; # Background
-      statusbar-fg = "rgba(248,248,242,1)"; # Foreground
+      inputbar-bg = "rgba(30,30,46,1)"; # base
+      inputbar-fg = "rgba(205,214,244,1)"; # text
+      statusbar-bg = "rgba(30,30,46,1)"; # base
+      statusbar-fg = "rgba(205,214,244,1)"; # text
 
-      highlight-color = "rgba(255,184,108,0.5)"; # Orange
-      highlight-active-color = "rgba(255,121,198,0.5)"; # Pink
+      highlight-color = "rgba(250,179,135,0.5)"; # peach
+      highlight-active-color = "rgba(245,194,231,0.5)"; # pink
 
-      default-bg = "rgba(40,42,54,1)"; # Background
-      default-fg = "rgba(248,248,242,1)"; # Foreground
+      default-bg = "rgba(30,30,46,1)"; # base
+      default-fg = "rgba(205,214,244,1)"; # text
 
       render-loading = true;
-      render-loading-bg = "rgba(40,42,54,1)";
-      render-loading-fg = "rgba(248,248,242,1)";
+      render-loading-bg = "rgba(30,30,46,1)";
+      render-loading-fg = "rgba(205,214,244,1)";
 
       # --- 反色模式下的背景和前景颜色 ---
-      recolor-lightcolor = "rgba(40,42,54,1)"; # Background
-      recolor-darkcolor = "rgba(248,248,242,1)"; # Foreground
+      recolor-lightcolor = "rgba(30,30,46,1)"; # base
+      recolor-darkcolor = "rgba(205,214,244,1)"; # text
     };
 
     # --- --- --- 多模式键位映射 (extraConfig) --- --- ---
