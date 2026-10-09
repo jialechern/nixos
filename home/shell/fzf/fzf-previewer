@@ -174,7 +174,9 @@ def main() -> None:
         ]
     else:
         file_info = get_file_info(content_path)
-        print(f"无法预览该文件，文件信息:\n{file_info}")
+        # flush: 下面直接 execve 换进程, 不 flush 的话这行会随 Python 的块缓冲
+        # 一起丢掉 (fzf 的预览窗是管道, 实测默认缓冲下这行永远不显示)
+        print(f"无法预览该文件，文件信息:\n{file_info}", flush=True)
         cmd = shutil.which('eza') or shutil.which('ls')
         args = [
             '--long',
