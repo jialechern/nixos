@@ -14,9 +14,8 @@ import order and the order lands in the generated fstab (and the drv hash).
 
 - Rebuild system **and** home manager in one step (HM is embedded as a NixOS
   module — there is no standalone `home-manager switch`): the **user** runs
-  `sudo nixos-rebuild switch --flake /etc/nixos#omen` (or `#hp`). Agents cannot
-  run `sudo` (denied by the local permission policy), so make the change and ask
-  the user to rebuild.
+  `sudo nixos-rebuild switch --flake /etc/nixos#omen` (or `#hp`). Agents must not
+  run `sudo`; make the change and ask the user to rebuild.
 - Fresh install: `sudo ./nixos-install.sh -n <host>` (wraps `nixos-install` with
   TUNA substituters)
 - Fast eval check: `nix flake check` (evaluates every nixosConfiguration). Bare

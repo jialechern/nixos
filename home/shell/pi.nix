@@ -29,24 +29,6 @@ let
   # 弹确认, 或加 -y 直接写入 (不保存信任决定); list 始终可用。
   # ---------------------------------------------------------------------------
 
-  # 全局扩展集合: 被 nix 声明式管理, 只放与项目无关的横切能力;
-  # 其余扩展都按项目装配, 见下方 home.file 的 extension-groups.json
-  # 声明后 pi 首次启动时会自动通过 npm 安装到 ~/.pi/agent/npm/ 并加载
-  # (需要网络; 若国内拉取失败, 请配置 npm 镜像或临时注释对应条目)
-  globalExtensions = [
-    # 权限控制 (MIT, gotgenes): 对工具 / bash / 路径 / MCP 实施 allow / ask / deny 三级策略
-    # 策略文件: ~/.pi/agent/extensions/pi-permission-system/config.json (见下方 home.file)
-    "npm:@gotgenes/pi-permission-system"
-  ];
-
-  # ---------------------------------------------------------------------------
-  # git push 拦截规则 (值带拒绝理由, 会附加到给 agent 的报错信息里)
-  # 覆盖形态与已知残余见下方 bash 规则处的注释块。
-  # ---------------------------------------------------------------------------
-  pushDeny = {
-    action = "deny";
-    reason = "本机策略: 不允许 agent 执行 git push (含 git -C/-c 变体与 timeout/env/bash -c/bash -lc 等包装形态)。需要推送时请让用户在自己的终端手动执行, 不要尝试绕过";
-  };
 in
 {
   programs.pi-coding-agent = {
@@ -270,15 +252,12 @@ in
       defaultTools = [ "+codemode" ];
 
       # --- npm 镜像 ---
-      # pi 安装 packages 里的 npm 扩展 (本文件上方 globalExtensions) 时使用;
-      # 写进配置就不依赖 ~/.npmrc —— 对应上面注释里"若国内拉取失败, 请配置 npm 镜像"
+      # pi 查找/安装 npm 扩展时使用 —— 含 /exts add-group 经 pi install 装到项目的
+      # 扩展 (源见下方 extension-groups.json); 写进配置就不依赖 ~/.npmrc
       npmCommand = [
         "npm"
         "--registry=https://registry.npmmirror.com"
       ];
-
-      # --- 全局扩展包 ---
-      packages = globalExtensions;
     };
 
     # -------------------------------------------------------------------------
@@ -422,118 +401,6 @@ in
     # 文档: https://github.com/juicesharp/rpiv-mono/tree/main/packages/rpiv-todo
     ".config/rpiv-todo/config.json".text = builtins.toJSON {
       collapseKey = "ctrl+shift+f";
-    };
-
-    # pi-permission-system 权限策略
-    # 需求基线 (2026-10-09): 目录外皆可读 (敏感文件除外); /tmp 随意读写;
-    # 目录外修改一律过问; 目录内除 git push 语义外都可执行;
-    # 超高危命令 (mkfs*) 一律禁止; 特权命令 (sudo/doas) 需要许可。
-    ".pi/agent/extensions/pi-permission-system/config.json".text = builtins.toJSON {
-      # yoloMode true → false (2026-10-09): "目录外修改过问"与"特权命令要许可"依赖
-      # ask 真正弹窗, 而 yoloMode 会静默批准一切 ask (含 wrapper floor 产生的合成
-      # ask)。代价: bash -c/eval/xargs/nohup/find -exec 等 wrapper 与方向不可证明的
-      # 目录外访问会逐次弹窗, 同模式按 s 可本会话记住; deny 仍是最后一道防线, 不受
-      # 影响 (原复评 BUG-10/SEC-01 的"整串覆盖 wrapper 形态"结论随之放宽, 见 bash 注释)。
-      yoloMode = false;
-      # ask 弹窗时向终端发 BEL: ask 现在会真正等按键, 后台标签页里跑 pi 时响铃提醒
-      # (kitty/tmux 都路由 bell; osc9/osc777 桌面通知对 kitty 支持没把握, 不加)
-      promptNotifications = [ "bell" ];
-      permission = {
-        "*" = "allow";
-        path = {
-          "*" = "allow";
-          "~/.ssh/*" = "deny";
-          "~/.config/sops/age/*" = "deny";
-          "~/.config/sops-nix/*" = "deny";
-          "~/.gnupg/*" = "deny";
-          "~/.config/gh/*" = "deny";
-          "~/.aws/*" = "deny";
-          "~/.docker/*" = "deny";
-          "~/.kube/*" = "deny";
-          "~/.pi/agent/auth.json" = "deny"; # pi 的 API 令牌 (provider 凭据)
-          "*.npmrc" = "deny";
-          "*.netrc" = "deny";
-          "*.git-credentials" = "deny";
-        };
-        path_read = {
-          "*.env" = "deny";
-          "*.env.*" = "deny";
-          "*.env.example" = "allow";
-        };
-        path_write = {
-          "*.git" = "deny";
-          "*.git/*" = "deny";
-        };
-        # 项目目录之外的访问按"方向是否可静态证明"分流 (上游 docs/configuration.md
-        # 的 Directional Path Surfaces 一节; 纯读核心名单为 40.1.1 的 PURE_READER_CORE):
-        #   ① 可证明是读 → 走 external_directory_read 的 allow, 静默。证明途径:
-        #      内置 read/grep/find/ls 工具 (工具身份即方向); bash 输入重定向 <;
-        #      纯读核心命令的参数: awk basename cat cd diff dirname echo egrep fd
-        #      fgrep find grep head ls pwd realpath rg sed sort stat tail wc which
-        #      (find -exec/-delete、fd -x、sort -o、sed -i、awk 程序内重定向等撤销证明)
-        #   ② 可证明是写 (write/edit 工具; bash 输出重定向 > >> >| &>)
-        #      → 走 external_directory_write: /tmp/* 放行, 其余 ask 过问
-        #   ③ 方向不可证明 (循环体 / 命令替换 / 子 shell / 非核心命令如 readlink、jq、
-        #      python3 -c / wrapper 如 xargs / 以及链式命令里含以上任一项) → 同时查
-        #      读、写两面取最严: 读面 allow、写面 ask ⇒ ask。这是新基线的刻意取舍:
-        #      分不清读写就可能是在改目录外, 按需求一律过问 (上游原文: An access
-        #      whose direction cannot be established consults both surfaces and
-        #      takes the more restrictive answer; 原 deny 姿态的实测记录见 2026-10-04
-        #      复评与审计日志 ~/.pi/agent/extensions/pi-permission-system/logs/)
-        # 想少弹窗的正解是"换写法"把 ③ 变 ①, 而不是放宽策略:
-        #   readlink -f X → realpath X; jq 读文件 → 内置 read 工具;
-        #   需要解释器处理的, 先用 ① 里的命令把内容取出再处理。
-        # 也不要用 piInfrastructureReadPaths 兜底: 那个 bypass 只对"读工具身份"生效
-        # (源码 isPiInfrastructureRead 先查 READ_ONLY_PATH_BEARING_TOOLS), 对 bash 无效,
-        # 且 external_directory_read 全 allow 后它已无增益。
-        external_directory_read = {
-          "*" = "allow";
-        };
-        external_directory_write = {
-          "*" = "ask"; # 目录外修改过问; ③ 类折叠取最严时也命中这里
-          "/tmp/*" = "allow"; # /tmp 随意读写; builtins.toJSON 字母序 "*" 在前, 后写者胜
-        };
-        # bash 匹配语义 (pi-permission-system 40.1.1; npm 条目不 pin 版本, 上游升级后
-        # 下面这些结论需要重新复核 —— 原 2026-10-04 复评 P2-C4 基于 39.0.3, 已部分过时);
-        # 文档: docs/configuration.md#bash-surface
-        #   * 链式命令拆分后逐条匹配整串文本, 前缀 env 赋值剥离; 命令替换/子 shell
-        #     内层命令也参与匹配; 路径参数同时按原样与绝对路径两种拼写匹配;
-        #   * 40.x wrapper transparency: time/timeout/nice/stdbuf/setsid 只改执行方式,
-        #     不再 floor, 内层命令按其自身规则判定 (如 timeout 30 git push 命中
-        #     "git * push*"); 纯读命令过 wrapper (xargs grep) 同理不再 floor;
-        #   * 其余 wrapper (sudo/env/nohup/xargs 非读/find -exec/...) 与不透明包装
-        #     (bash|sh|dash|zsh|ksh -c, eval) 仍不解析内层, 整串 floor 到 ask;
-        #     yoloMode 已关, ask 会真正弹窗; 显式 deny 仍优先于 floor 的 ask, 所以
-        #     覆盖 wrapper 形态的整串 deny 模式仍有必要;
-        #   * 同 surface 内最后命中者胜, 而 builtins.toJSON 按属性名字母序输出,
-        #     所以规则顺序由字母序决定 ("*" 恒在最前); 新增 allow 时注意: 键的字母序
-        #     若排在同命中的 ask/deny 之后会静默覆盖 (例: 将来加 "sudo -n *" allow
-        #     会废掉 "sudo *" ask —— 字母序上 '*' 早于 '-')。
-        # 覆盖形态: git push [args] / git <选项> push / <wrapper> git push /
-        #           <wrapper> git <选项> push / <不透明包装> …git…push… (含组合短标志
-        #           -lc/-ec 与路径前缀 /bin/bash, 由下方 "*sh *c*git*push*" 宽模式覆盖)。
-        # 已知残余 (文本规则无法覆盖的自由): 混淆写法 (git pu'sh)、git 别名、脚本内推送、
-        #   非 shell 解释器 (node -e / python3 -c)、远端 (ssh host "git push") ——
-        #   想彻底拦需 git 侧 hook, 目前不引入。
-        # 已知误伤 (刻意接受): ① 散文形式含 " git push " 的命令 (如 echo 提示语);
-        #   ② 含 "…sh …c…git…push…" 序列的文本 (宽模式所及, 如提到 bash -c git push
-        #   的提交信息); 引号包裹的 grep/rg 'git push' 检索仍不受影响。
-        bash = {
-          "*" = "allow";
-          "git push *" = pushDeny; # 直接形式 (尾部 " *" 可省参数, 裸 git push 也命中)
-          "git * push *" = pushDeny; # git 选项在 push 前: git -C dir push / 双空格
-          "* git push*" = pushDeny; # 前缀/包装 + 直接形式 (尾部自由, 兼顾末尾带引号)
-          "* git * push*" = pushDeny; # 前缀/包装 + 选项形式: timeout 30 git -C x push
-          # 宽模式: "sh " 覆盖 bash/sh/dash/zsh/ksh/fish 及其路径/包装前缀, 中间的
-          # "*c*" 覆盖组合短标志 (-lc/-ec/-xc…) 与长标志 (--login -c), 引号载荷由 "*"
-          # 跨越 (2026-09-29: 组合标志/路径前缀/引号载荷曾整体漏过, 见复评 NEW-R3-B1)
-          "*sh *c*git*push*" = pushDeny;
-          "*eval *git*push*" = pushDeny;
-          "mkfs*" = "deny"; # 超高危命令一律禁止
-          "sudo *" = "ask"; # 特权命令需要用户许可
-          "doas *" = "ask"; # 与 sudo 同待遇 (本机未装 doas 时惰性)
-        };
-      };
     };
 
     # pi 用户级扩展 extensions-manager.ts: 注册 /exts 命令, 在会话内对当前
