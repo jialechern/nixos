@@ -16,8 +16,9 @@ MAX_JOBS=$(nproc 2>/dev/null || echo 4)
 CORES="0"
 TARGET_ROOT="/mnt"
 
-# 默认的 Substituters 和 Keys (使用清华源加速)
-DEFAULT_SUBSTITUTERS="https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store https://cache.nixos.org"
+# 默认的 Substituters 和 Keys (使用清华源加速, USTC 作备用源;
+# 顺序与 modules/nix-config.nix 的运行期设置保持一致)
+DEFAULT_SUBSTITUTERS="https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store https://mirrors.ustc.edu.cn/nix-channels/store https://cache.nixos.org"
 DEFAULT_KEYS="cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
 
 # 附加状态标志
