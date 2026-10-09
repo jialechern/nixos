@@ -426,12 +426,19 @@ in
     };
 
     # pi-permission-system 权限策略
+    # 需求基线 (2026-10-09): 目录外皆可读 (敏感文件除外); /tmp 随意读写;
+    # 目录外修改一律过问; 目录内除 git push 语义外都可执行;
+    # 超高危命令 (mkfs*) 一律禁止; 特权命令 (sudo/doas) 需要许可。
     ".pi/agent/extensions/pi-permission-system/config.json".text = builtins.toJSON {
-      # 有意取舍 (复评 BUG-10/SEC-01 登记): yoloMode 自动批准所有 ask ——
-      # 代价是放弃"不可解析命令 / wrapper 一律 floor 到 ask"的人工兜底,
-      # 只剩 deny 规则一道防线。所以所有真正的底线必须写成 deny,
-      # 并整串覆盖 wrapper 形态 (wrapper 内层不参与规则匹配, 见下方 bash 注释)。
-      yoloMode = true;
+      # yoloMode true → false (2026-10-09): "目录外修改过问"与"特权命令要许可"依赖
+      # ask 真正弹窗, 而 yoloMode 会静默批准一切 ask (含 wrapper floor 产生的合成
+      # ask)。代价: bash -c/eval/xargs/nohup/find -exec 等 wrapper 与方向不可证明的
+      # 目录外访问会逐次弹窗, 同模式按 s 可本会话记住; deny 仍是最后一道防线, 不受
+      # 影响 (原复评 BUG-10/SEC-01 的"整串覆盖 wrapper 形态"结论随之放宽, 见 bash 注释)。
+      yoloMode = false;
+      # ask 弹窗时向终端发 BEL: ask 现在会真正等按键, 后台标签页里跑 pi 时响铃提醒
+      # (kitty/tmux 都路由 bell; osc9/osc777 桌面通知对 kitty 支持没把握, 不加)
+      promptNotifications = [ "bell" ];
       permission = {
         "*" = "allow";
         path = {
@@ -444,6 +451,7 @@ in
           "~/.aws/*" = "deny";
           "~/.docker/*" = "deny";
           "~/.kube/*" = "deny";
+          "~/.pi/agent/auth.json" = "deny"; # pi 的 API 令牌 (provider 凭据)
           "*.npmrc" = "deny";
           "*.netrc" = "deny";
           "*.git-credentials" = "deny";
@@ -457,50 +465,51 @@ in
           "*.git" = "deny";
           "*.git/*" = "deny";
         };
-        # 项目目录之外的访问按"方向是否可静态证明"分流 (pi-permission-system 39.0.3,
-        # 上游 docs/configuration.md 的 Access effect 一节):
-        #   ① 可证明是读 → 走下面这个 allow。只有扩展冻结的"纯读核心"算证明, 名单:
-        #      awk basename cat cd diff dirname echo egrep fd fgrep find grep head ls
-        #      pwd realpath rg sed sort stat tail wc which
-        #      (内置 read 工具也算证明: 工具身份即证明方向, 实测可读项目外文件)
-        #   ② 可证明是写 (如重定向到项目外) → 命中 external_directory_write 的
-        #      "*" = "deny", 只有 /tmp/* 例外
+        # 项目目录之外的访问按"方向是否可静态证明"分流 (上游 docs/configuration.md
+        # 的 Directional Path Surfaces 一节; 纯读核心名单为 40.1.1 的 PURE_READER_CORE):
+        #   ① 可证明是读 → 走 external_directory_read 的 allow, 静默。证明途径:
+        #      内置 read/grep/find/ls 工具 (工具身份即方向); bash 输入重定向 <;
+        #      纯读核心命令的参数: awk basename cat cd diff dirname echo egrep fd
+        #      fgrep find grep head ls pwd realpath rg sed sort stat tail wc which
+        #      (find -exec/-delete、fd -x、sort -o、sed -i、awk 程序内重定向等撤销证明)
+        #   ② 可证明是写 (write/edit 工具; bash 输出重定向 > >> >| &>)
+        #      → 走 external_directory_write: /tmp/* 放行, 其余 ask 过问
         #   ③ 方向不可证明 (循环体 / 命令替换 / 子 shell / 非核心命令如 readlink、jq、
-        #      python3 -c / wrapper 如 xargs / 以及链式命令里含以上任一项) → 归到裸家族
-        #      external_directory, 由解析器折叠读、写两个成员并取最严者, 于是命中 ② 的
-        #      deny。这不是"未声明 gate 的默认值", 而是本配置写侧 deny 的直接后果
-        #      (上游原文: An access whose direction cannot be established consults
-        #      both surfaces and takes the more restrictive answer)
-        # 实测 (2026-10-04 复评, 审计日志在 ~/.pi/agent/extensions/pi-permission-system/
-        # logs/): for 循环被拒 (2026-09-29 同样判过); `ls -l <项目外软链>` 与
-        # `realpath <项目外软链>` 放行; `ls …; readlink -f …` 与 `jq <项目外 json>` 被拒
-        # (日志: surface=external_directory, effect=unproven, matchedPattern="*")
-        # 需要读项目外时的正解是"换写法", 而不是放宽策略:
+        #      python3 -c / wrapper 如 xargs / 以及链式命令里含以上任一项) → 同时查
+        #      读、写两面取最严: 读面 allow、写面 ask ⇒ ask。这是新基线的刻意取舍:
+        #      分不清读写就可能是在改目录外, 按需求一律过问 (上游原文: An access
+        #      whose direction cannot be established consults both surfaces and
+        #      takes the more restrictive answer; 原 deny 姿态的实测记录见 2026-10-04
+        #      复评与审计日志 ~/.pi/agent/extensions/pi-permission-system/logs/)
+        # 想少弹窗的正解是"换写法"把 ③ 变 ①, 而不是放宽策略:
         #   readlink -f X → realpath X; jq 读文件 → 内置 read 工具;
-        #   需要解释器处理的, 先用 ① 里的命令把内容取出再处理
-        # 有意不放开 ③: yoloMode 已经把 ask 全部自动批准 (见上), deny 是最后一道防线,
-        # 而 ③ 恰是"分不清读写"的形态 —— 放开它等于允许方向不明的命令写项目外。
+        #   需要解释器处理的, 先用 ① 里的命令把内容取出再处理。
         # 也不要用 piInfrastructureReadPaths 兜底: 那个 bypass 只对"读工具身份"生效
-        # (源码 isPiInfrastructureRead 先查 READ_ONLY_PATH_BEARING_TOOLS), 对 bash 无效。
+        # (源码 isPiInfrastructureRead 先查 READ_ONLY_PATH_BEARING_TOOLS), 对 bash 无效,
+        # 且 external_directory_read 全 allow 后它已无增益。
         external_directory_read = {
           "*" = "allow";
         };
         external_directory_write = {
-          "*" = "deny"; # ③ 被拒的根因: 折叠到最严时命中这一行
-          "/tmp/*" = "allow";
+          "*" = "ask"; # 目录外修改过问; ③ 类折叠取最严时也命中这里
+          "/tmp/*" = "allow"; # /tmp 随意读写; builtins.toJSON 字母序 "*" 在前, 后写者胜
         };
-        # bash 匹配语义 (截至 pi-permission-system 39.0.3 复核; npm 条目不 pin 版本,
-        # 上游升级后下面这些结论需要重新复核 —— 2026-10-04 复评 P2-C4);
+        # bash 匹配语义 (pi-permission-system 40.1.1; npm 条目不 pin 版本, 上游升级后
+        # 下面这些结论需要重新复核 —— 原 2026-10-04 复评 P2-C4 基于 39.0.3, 已部分过时);
         # 文档: docs/configuration.md#bash-surface
-        #   * 链式命令拆分后逐条匹配整串文本, 前缀 env 赋值剥离;
-        #   * wrapper (sudo/env/xargs/timeout/nohup/nice/find -exec/...) 与不透明包装
-        #     (bash|sh|dash|zsh|ksh -c, eval) 不解析内层, 只按整串文本匹配, 且 allow
-        #     会被 floor 成 ask —— 而 yoloMode 会把 ask 静默放行, 所以 deny 必须
-        #     整串覆盖这些形态, 否则包装一下就能绕过;
+        #   * 链式命令拆分后逐条匹配整串文本, 前缀 env 赋值剥离; 命令替换/子 shell
+        #     内层命令也参与匹配; 路径参数同时按原样与绝对路径两种拼写匹配;
+        #   * 40.x wrapper transparency: time/timeout/nice/stdbuf/setsid 只改执行方式,
+        #     不再 floor, 内层命令按其自身规则判定 (如 timeout 30 git push 命中
+        #     "git * push*"); 纯读命令过 wrapper (xargs grep) 同理不再 floor;
+        #   * 其余 wrapper (sudo/env/nohup/xargs 非读/find -exec/...) 与不透明包装
+        #     (bash|sh|dash|zsh|ksh -c, eval) 仍不解析内层, 整串 floor 到 ask;
+        #     yoloMode 已关, ask 会真正弹窗; 显式 deny 仍优先于 floor 的 ask, 所以
+        #     覆盖 wrapper 形态的整串 deny 模式仍有必要;
         #   * 同 surface 内最后命中者胜, 而 builtins.toJSON 按属性名字母序输出,
         #     所以规则顺序由字母序决定 ("*" 恒在最前); 新增 allow 时注意: 键的字母序
-        #     若排在同命中的 deny 之后会静默覆盖 deny (例: 将来加 "sudo -n *" allow
-        #     会废掉 "sudo *" deny —— 字母序上 '*' 早于 '-')。
+        #     若排在同命中的 ask/deny 之后会静默覆盖 (例: 将来加 "sudo -n *" allow
+        #     会废掉 "sudo *" ask —— 字母序上 '*' 早于 '-')。
         # 覆盖形态: git push [args] / git <选项> push / <wrapper> git push /
         #           <wrapper> git <选项> push / <不透明包装> …git…push… (含组合短标志
         #           -lc/-ec 与路径前缀 /bin/bash, 由下方 "*sh *c*git*push*" 宽模式覆盖)。
@@ -521,8 +530,9 @@ in
           # 跨越 (2026-09-29: 组合标志/路径前缀/引号载荷曾整体漏过, 见复评 NEW-R3-B1)
           "*sh *c*git*push*" = pushDeny;
           "*eval *git*push*" = pushDeny;
-          "sudo *" = "deny";
-          "mkfs*" = "deny";
+          "mkfs*" = "deny"; # 超高危命令一律禁止
+          "sudo *" = "ask"; # 特权命令需要用户许可
+          "doas *" = "ask"; # 与 sudo 同待遇 (本机未装 doas 时惰性)
         };
       };
     };
