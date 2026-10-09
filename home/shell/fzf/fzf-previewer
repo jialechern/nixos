@@ -4,12 +4,18 @@ from typing import Optional
 from pathlib import Path
 import argparse
 import os
+import sys
 
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="用于 fzf 预览功能的预览脚本.")
     parser.add_argument('content', help="传入需要预览的内容", type=str)
-    return parser.parse_args()
+    # fzf 传进来的路径可能以 - 开头 (仓库的 fzf 用 fd --strip-cwd-prefix, 会产出裸
+    # 相对路径), argparse 会把它当选项; 单参数时前置 -- 强制按位置参数解析
+    argv = sys.argv[1:]
+    if len(argv) == 1 and argv[0] not in ('-h', '--help'):
+        argv = ['--'] + argv
+    return parser.parse_args(argv)
 
 
 def get_file_mime_type(path: Path) -> str:
@@ -133,6 +139,11 @@ def main() -> None:
         return
 
     content_path = Path(content)
+
+    # 以 - 开头的相对路径会被子命令 (bat/eza/chafa/ls) 当成选项 —— 仓库的 fzf 用
+    # fd --strip-cwd-prefix, 会产出这种裸相对路径。只在传给子命令时补 ./ 前缀规避
+    # (chafa 不认 -- 分隔符, 所以不能统一靠 -- 解决)
+    arg_path = f'./{content}' if content.startswith('-') and not content.startswith('/') else content
     
     if content_path.is_dir():
         cmd = shutil.which('eza')
@@ -143,7 +154,7 @@ def main() -> None:
             '--color=always',
             '--git',
             '--git-ignore',
-            content,
+            arg_path,
         ]
     elif is_text_file(content_path):
         cmd = shutil.which('bat')
@@ -151,12 +162,12 @@ def main() -> None:
                 '--style=numbers',
                 '--color=always',
                 '--line-range=:500',
-                content,
+                arg_path,
         ]
     elif is_valid_image(content_path, deep_check=True):
         cmd = shutil.which('chafa')
         args = [
-            content,
+            arg_path,
             '--fill=block',
             '--symbols=block',
             '--size=60x50',
@@ -170,8 +181,8 @@ def main() -> None:
             '--color=always',
             '--git',
             '--git-ignore',
-            content,
-        ] if cmd and cmd.endswith('eza') else ['-l', '--color=auto', content]
+            arg_path,
+        ] if cmd and cmd.endswith('eza') else ['-l', '--color=auto', arg_path]
 
     if cmd is None:
         print("未找到合适的预览工具, 请确认 bat / eza / chafa 已安装在 PATH 中.")
