@@ -1,6 +1,17 @@
 // extensions-manager.ts — pi 个人扩展:项目级(本地)插件与插件组管理
 //
-// 契约锚点:pi 行为断言与 dist 行号按 1.1.0 核对;升级 pi 后需复核 §2 的路径/身份假设与 §3 的 TUI 暂停与输出假设。
+// 契约锚点(按本机 pi 1.1.0 逐条核对;升级 pi 后按下列名称复核,不要只对照 dist 行号):
+//   A 级——官方 prose/示例明确背书:pi.registerCommand/getArgumentCompletions(docs/extensions.md、
+//     examples/extensions/commands.ts);ctx.cwd/mode/hasUI/reload(docs/extensions.md、
+//     docs/rpc-extension-ui.md,类型为包根导出的 ExtensionCommandContext);
+//     ctx.ui.notify/confirm/custom/setStatus(docs/tui.md、examples/extensions/*);
+//     CONFIG_DIR_NAME/getAgentDir/PI_CODING_AGENT_DIR、pi install 的源语法与身份语义
+//     (docs/configuration.md、docs/environment-variables.md、docs/packages.md);
+//     jiti 直跑 TS 与用户扩展目录(docs/extensions.md);--approve(docs/cli.md)。
+//   B 级——仅包根导出面(含类型注释),无 prose 文档:DefaultPackageManager/PackageManager/
+//     ProgressEvent/SettingsManager、SettingsManagerCreateOptions.projectTrusted、
+//     RegisteredCommand/AutocompleteItem、ctx.isProjectTrusted()。
+//   C 级——依赖 dist 内部行为或本文件近似实现,风险集中在 §2 的身份/路径近似与 §3 的子进程 stdio/TUI 暂停。
 //
 // 范围:仅管理声明于 <项目>/<CONFIG_DIR_NAME>(默认 .pi)/settings.json 的本地插件;用户级插件请用 pi 原生
 // `pi install <source>`(不带 -l)与 pi update。扩展自身不直接启动子进程,安装/卸载
@@ -207,24 +218,37 @@ export function parseInvocation(tokens: string[]): {
   return { subcommand, targets, yes };
 }
 
-/** npm 源取包名(与 pi parseNpmSpec 正则一致):npm:name@ver → name,@scope/name@ver → @scope/name。 */
+/**
+ * npm 源取包名(与 pi 私有方法 DefaultPackageManager.parseNpmSpec 的正则逐字一致,
+ * 见 dist/core/package-manager.d.ts;B 级:无常量/文档背书,已用探针逐条比对)
+ * npm:name@ver → name,@scope/name@ver → @scope/name。
+ */
 export function parseNpmName(spec: string): string {
   const match = spec.match(/^(@?[^@]+(?:\/[^@]+)?)(?:@(.+))?$/);
   return match?.[1] ?? spec;
 }
 
 /**
- * git 源归一化(与 pi getPackageIdentity 的 `git:host/path` 对齐的近似实现):
- * 去协议/前缀(git:、github:、https://、ssh://、git@)、scp 冒号转斜杠、去 @ref、去 #ref、去 .git 后缀。
- * #ref 对应 pi 侧 hostedGitInfo 的 committish(dist/utils/git.js);极端 URL 形态可能与 pi
- * 略有出入;组内去重场景下偏差的后果仅是多装/多卸一次,可接受。
+ * git 源归一化(C 级:pi 用 hosted-git-info 取 host/path,本文件不复刻该第三方库):
+ * 只处理 pi 认可的两种写法(见 nonLocalIdentity)——带 `git:` 前缀的简写,或无前缀的协议 URL。
+ * 协议 URL 分支对齐 pi 的 new URL() 解析:身份只取 hostname + pathname(丢端口与凭据);
+ * scp 风格(git:git@host:path)按首个冒号转斜杠;两者都要再去 @ref、#ref(.git 后缀)。
+ * 已用探针逐条比对 1.1.0:docs/packages.md 列出的形态(npm: / git:host/path@ref / https:// / 本地路径)
+ * 全部与 pi 一致;残留偏差只出现在 hosted-git-info 与 URL 都不认识的极端形态,后果仅是多装/多卸一次。
+ * 升级复核:dist/utils/git.js 的 parseGitUrl/splitRef、dist/core/package-manager.js 的 getPackageIdentity。
  */
 export function normalizeGitSource(source: string): string {
-  let s = source.trim();
-  s = s.replace(/^(git|github):/, "");
-  s = s.replace(/^(https?|ssh):\/\//, "");
-  s = s.replace(/^git@/, "");
-  s = s.replace(/:/, "/"); // scp 风格 git@host:path(若尚有冒号)
+  let s = source.trim().replace(/^git:/, "");
+  if (/^(https?|ssh|git):\/\//i.test(s)) {
+    // 协议 URL:对齐 pi 的 new URL(url) 分支 —— host 取 hostname(去 scheme、凭据、端口)
+    s = s
+      .replace(/^[a-z][a-z0-9+.-]*:\/\//i, "")
+      .replace(/^[^/@]*@/, "")
+      .replace(/^([^/:]+):\d+/, "$1");
+  } else {
+    // scp 风格 git@host:path(或 git:host/path):首个冒号即 host/path 分隔符
+    s = s.replace(/^git@/, "").replace(/:/, "/");
+  }
   const slash = s.lastIndexOf("/");
   const at = s.lastIndexOf("@");
   if (at > slash) s = s.slice(0, at); // 去 @ref
@@ -253,8 +277,8 @@ function expandShorthandPath(input: string): string | undefined {
 
 /**
  * 本地路径解析(输入语义):相对路径基于项目根 cwd,对齐 pi install 对用户输入的解析
- * (dist/core/package-manager.js 的 resolvePath() 基于 this.cwd;packageSourcesMatch 输入侧同)。
- * ~ 展开;file:// 转本地路径。
+ * (C 级:DefaultPackageManager.resolvePath() 基于 this.cwd,getSourceMatchKeyForInput 同;
+ * ~ 展开与 file:// 展开在 dist/utils/paths.js 的 normalizePath())。
  */
 export function resolveLocalPath(input: string, projectCwd: string): string {
   const expanded = expandShorthandPath(input);
@@ -267,7 +291,9 @@ export function resolveLocalPath(input: string, projectCwd: string): string {
  * 本地路径解析(声明语义):相对路径基于该作用域的配置目录 —— project 为
  * <cwd>/<CONFIG_DIR_NAME>(默认 .pi),user 为 pi agent 目录(getAgentDir(),默认
  * ~/.pi/agent、可被 PI_CODING_AGENT_DIR 覆盖),对齐 pi getBaseDirForScope() 对已存储声明的解析。
- * 与输入语义不同:pi 写回配置时会以该目录为基准。
+ * 该"声明以 settings 文件所在目录为基准"的行为有官方 prose 背书
+ * (docs/packages.md:"Relative local paths resolve from the settings file that contains them");
+ * 与输入语义不同(项目根),所以同一相对路径两侧解析结果不同。
  */
 export function resolveStoredLocalPath(
   input: string,
@@ -282,24 +308,31 @@ export function resolveStoredLocalPath(
   return resolve(baseDir, p);
 }
 
-/** 非本地源(npm/git/builtin)的身份;本地源返回 undefined,由调用方按语义解析路径。 */
+/**
+ * 非本地源的包身份;本地源返回 undefined,由调用方按语义解析路径。
+ * 分类对齐 pi 的 parseSource/isLocalPath(dist/utils/paths.js、dist/utils/git.js):
+ * 只有 `npm:`(按原文前缀判断,pi 不 trim)与 `git:`/协议 URL 是非本地,
+ * 其余形式(裸名、builtin:、github:user/repo、裸 git@host:path)pi 都回退成本地路径,这里同样返回 undefined
+ * —— 否则会出现与 pi 不同的身份,进而错误跳过或重复安装。
+ * 残留(C 级):`git:` 前缀之后 hosted-git-info 与 URL 都解析不了的形态(如 git:github:user/repo),
+ * pi 仍会回退成本地路径,这里仍按 git 处理。
+ */
 function nonLocalIdentity(source: string): string | undefined {
-  const s = source.trim();
-  if (s.startsWith("npm:")) return `npm:${parseNpmName(s.slice(4).trim())}`;
-  if (/^(git|github):/.test(s) || /^(https?|ssh):\/\//.test(s) || /^git@/.test(s)) {
-    return `git:${normalizeGitSource(s)}`;
+  if (source.startsWith("npm:")) return `npm:${parseNpmName(source.slice(4).trim())}`;
+  if (source.startsWith("git:") || /^(https?|ssh|git):\/\//i.test(source)) {
+    return `git:${normalizeGitSource(source)}`;
   }
-  if (s.startsWith("builtin:")) return s;
   return undefined;
 }
 
 /**
  * 包身份(对齐 pi getPackageIdentity 的简化版):
- * npm 按包名(去版本)、git 按 host/path(去 ref)、builtin 原样、local 按解析后的绝对路径。
+ * npm 按包名(去版本)、git 按 host/path(去 ref)、local 按解析后的绝对路径。
+ * 身份语义有官方 prose 背书(docs/packages.md:"Pi identifies npm packages by package name,
+ * git packages by repository URL without the ref, and local packages by resolved absolute path");
+ * 具体算法只在 dist 内部(B/C 级),升级复核 dist/core/package-manager.js 的 getPackageIdentity。
  * 这是"输入语义":local 相对路径基于项目根 cwd,用于用户键入的源与组定义。
  * 已存储声明的 local 身份请用 storedPackageIdentity()(基目录随作用域不同)。
- * 来源:dist/core/package-manager.js;isLocalPath() 把裸名也视为本地路径,
- * 因此此处除已列前缀外一律按 local 处理。
  */
 export function packageIdentity(source: string, projectCwd: string): string {
   return nonLocalIdentity(source) ?? `local:${resolveLocalPath(source, projectCwd)}`;
@@ -322,7 +355,7 @@ export function storedPackageIdentity(
  * pi 对 local 源有两套解析基准:声明按 scope 基目录(getSourceMatchKeyForSettings),
  * 输入按项目根(getSourceMatchKeyForInput);同一相对路径在两侧结果不同,所以把声明
  * 原文当输入回传(如 removeAndPersist)会匹配失败。绝对路径在两侧同值,故 local 声明
- * 统一转绝对路径;npm/git/builtin 的身份与基目录无关,原样返回。
+ * 统一转绝对路径;npm/git 的身份与基目录无关,原样返回。
  */
 export function storedSourceAsInput(
   source: string,
@@ -450,11 +483,15 @@ function errorMessage(error: unknown): string {
 // ─────────────────────── §3 包管理器与写权限门 ───────────────────────
 
 /**
- * 创建包管理器。projectTrusted 恒为 true:未信任项目也要能 list 已声明的包
- * (真实 pi 的 listConfiguredPackages 会对 project 包断言信任),而 SettingsManager 的
- * 该选项只影响 assertProjectTrustedForScope 断言与写放行,为内存态、不持久化信任决定。
- * 写安全完全由 resolveWriteGate 独立把关(所有写方法仅在该门通过后才被调用);
- * 经确认/-y 授权后注入等价 CLI --approve 的 projectTrusted:true,时机不变。
+ * 创建包管理器。projectTrusted 恒为 true:
+ * - 读声明需要它:list/clean 走 listConfiguredPackages(),后者对 project 包经 getInstalledPath()
+ *   → getBaseDirForScope("project") → assertProjectTrustedForScope() 断言信任;
+ * - 该选项是内存态(B 级导出类型 SettingsManagerCreateOptions.projectTrusted,
+ *   dist/core/settings-manager.d.ts):它还决定是否加载项目 settings 与是否放行项目写
+ *   (assertProjectTrustedForWrite),但"不"写入任何信任记录、不改变 pi 会话自身的信任状态,
+ *   语义等价于 CLI 的 --approve(docs/cli.md;dist/main.js 就是把它传给这个选项)。
+ *   升级复核:settings-manager.js 的 fromStorageWithPaths/assertProjectTrustedForWrite。
+ * 写安全完全由 resolveWriteGate 独立把关(所有写方法仅在该门通过后才被调用)。
  */
 function createPackageManager(ctx: ExtensionCommandContext): DefaultPackageManager {
   const agentDir = getAgentDir();
@@ -462,9 +499,12 @@ function createPackageManager(ctx: ExtensionCommandContext): DefaultPackageManag
     projectTrusted: true,
   });
   const pm = new DefaultPackageManager({ cwd: ctx.cwd, agentDir, settingsManager });
-  // 子进程输出:pi 仅对非交互模式 takeOverStdout(dist/main.js),TUI 模式下
-  // DefaultPackageManager.spawnCommand 仍以 stdio:"inherit" 启动 npm/git 子进程
-  // (pi dist/core/package-manager.js:2145),输出会直写终端、打穿输入框。
+  // 子进程输出(C 级:B 级导出面未定义此项行为,以下均按 1.1.0 dist 实现):
+  // pi 只在非交互模式调 takeOverStdout(dist/main.js + dist/core/output-guard.js;
+  // 语义见 docs/json.md:"Stdout is reserved for JSONL"),而 DefaultPackageManager.spawnCommand 的
+  // stdio 选择是 isStdoutTakenOver() ? ["ignore", 2, 2] : "inherit"
+  // (dist/core/package-manager.js;1.1.0 为第 2145 行)。因此 TUI 模式下 npm/git 子进程
+  // 继承终端、输出会直写终端打穿输入框。
   // 处理方式:写操作统一包在 withSuspendedTui 里,先把界面让给子进程(见该函数说明);
   // 这里不覆写任何私有方法,也不再捕获子进程输出 —— npm/git 日志直落暂停后的终端。
   if (ctx.mode === "tui") {
@@ -496,15 +536,20 @@ function createPackageManager(ctx: ExtensionCommandContext): DefaultPackageManag
 /**
  * 在 TUI 模式下暂停界面执行 run,把终端让给 npm/git 子进程;其余模式直接执行。
  *
- * 依据(全部是公开接口/官方示例):
- * - 取 TUI 引用走 ctx.ui.custom() 的工厂参数,这是 docs/tui.md 定义的公开入口;
+ * 依据(公开接口/官方示例;括号内为 1.1.0 实现细节,升级复核):
+ * - 取 TUI 引用走 ctx.ui.custom() 的工厂参数:docs/tui.md 定义的公开入口,
  *   官方示例 examples/extensions/interactive-shell.ts 就用它在扩展里跑交互式命令。
- * - tui.stop()/start()/requestRender() 是 @earendil-works/pi-tui 导出的 TUI 接口上的公开方法;
- *   pi 自身的挂起、外部编辑器与全屏切换走的是同一套 API(dist/modes/interactive/interactive-mode.js)。
- *   preserveScreen 的写法照抄 pi 自己的 stopInteractiveTui(:603 传 mode === "fullscreen");
+ *   工厂必须返回一个组件(render/invalidate 即可),并通过 done() 结束交互;
+ *   done() 幂等,这里放在 finally 里,保证 ctx.ui.custom() 的 promise 一定会 resolve。
+ * - tui.stop()/start()/requestRender() 是 @earendil-works/pi-tui 导出的 TUI 接口方法
+ *   (TuiStopOptions.preserveScreen 同在该包类型里);pi 自身的挂起、外部编辑器与全屏切换走同一套 API:
+ *   外部编辑器是 stop() → start() + requestRender(true)(interactive-mode.js handleOpenExternalEditor),
+ *   preserveScreen 照抄 pi 的 stopInteractiveTui()(1.1.0 第 603 行:mode === "fullscreen"),
  *   handleCtrlZ 与外部编辑器只调 stop() 不传参,不要引用它们作为 preserveScreen 的依据。
+ * - 判 ctx.mode === "tui" 而非 ctx.hasUI:custom() 需要真实终端
+ *   (docs/rpc-extension-ui.md;rpc 模式 hasUI 也为 true)。
  * - 非 TUI(print/json/rpc)不需要暂停:这些模式已 takeOverStdout,子进程 stdout 被忽略、
- *   stderr 走 fd 2,不会污染 JSON/RPC 协议流。
+ *   stderr 走 fd 2,不会污染 JSON/RPC 协议流(docs/json.md)。
  *
  * 行为:start() 自带一次非强制重绘(pi-tui tui.js:570),暂停后仍需 requestRender(true) 强制
  * 全量重绘,清掉残留的帧状态(与 pi 自身 handleCtrlZ 的恢复写法一致)。暂停窗口内子进程以
@@ -988,8 +1033,13 @@ function localRelativeKeys(stored: string, input: string, projectCwd: string): s
 }
 
 /**
- * 参数补全。projectCwd 仅用于读取项目级配置(补全发生在按键时刻,拿不到 ctx);
- * 真实 pi 会话中 process.cwd() 即项目目录,测试可注入夹具路径。
+ * 参数补全。锚点(dist 导出的 RegisteredCommand.getArgumentCompletions 类型 + pi-tui 的
+ * AutocompleteProvider):prefix 只是 /exts 之后的参数串,返回项的 value 会整段替换这些参数,
+ * 所以每项的 value 都拼回完整的"子命令 + 已键入目标"前缀。
+ * projectCwd 仅用于读取项目级配置(补全在按键时刻拿不到 ctx);默认 process.cwd(),
+ * 而会话 cwd 与进程 cwd 可能不同(会话目录丢失后选择回退目录时 pi 不 chdir),
+ * 这种情形下补全会读错项目——命令执行路径始终用 ctx.cwd。测试可注入夹具路径。
+ * 已知限制:这里按空白切词,不识别引号,含空格的引号路径在补全时会被重新拼接。
  */
 export function getCompletions(
   prefix: string,
