@@ -46,13 +46,33 @@ let
   # 需要链式转发的 hook 名 (githooks(5)); pre-push 不在此列, 它是拦截本体。
   # 服务端名字也得给: 本地路径作远端时 receive-pack 会继承 pi 环境, 不转发它们会消失
   piGitHookNames = [
-    "applypatch-msg" "pre-applypatch" "post-applypatch"
-    "pre-commit" "pre-merge-commit" "prepare-commit-msg" "commit-msg" "post-commit"
-    "pre-rebase" "post-checkout" "post-merge" "pre-auto-gc" "post-rewrite"
-    "sendemail-validate" "fsmonitor-watchman"
-    "p4-changelist" "p4-prepare-changelist" "p4-post-changelist" "p4-pre-submit"
-    "post-index-change" "reference-transaction"
-    "pre-receive" "update" "proc-receive" "post-receive" "post-update" "push-to-checkout"
+    "applypatch-msg"
+    "pre-applypatch"
+    "post-applypatch"
+    "pre-commit"
+    "pre-merge-commit"
+    "prepare-commit-msg"
+    "commit-msg"
+    "post-commit"
+    "pre-rebase"
+    "post-checkout"
+    "post-merge"
+    "pre-auto-gc"
+    "post-rewrite"
+    "sendemail-validate"
+    "fsmonitor-watchman"
+    "p4-changelist"
+    "p4-prepare-changelist"
+    "p4-post-changelist"
+    "p4-pre-submit"
+    "post-index-change"
+    "reference-transaction"
+    "pre-receive"
+    "update"
+    "proc-receive"
+    "post-receive"
+    "post-update"
+    "push-to-checkout"
   ];
 
   piGitHookDir = pkgs.runCommandLocal "pi-git-hooks" { } ''
@@ -500,6 +520,8 @@ in
         packages = [
           # 实时代码反馈 (LSP 诊断 / linter / autofix)
           "npm:pi-lens"
+          # 简单代码审查
+          "npm:pi-simplify"
         ];
       };
     };
