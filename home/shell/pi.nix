@@ -14,6 +14,59 @@ let
   piConfigDir = "${config.home.homeDirectory}/.pi/agent";
 
   # ---------------------------------------------------------------------------
+  # git push 红线: 只作用于 pi 进程树 (用户自己终端的 git 完全不受影响)
+  #
+  # 做法: pi 包装脚本注入 GIT_CONFIG_COUNT/KEY_0/VALUE_0, 把 pi 环境内的
+  # core.hooksPath 指向下面这份 store hooks; 于是 pi 内任何 git 命令 (bash 工具 /
+  # 子代理 / 扩展子进程) 都走这里的 pre-push, 而用户终端的 git 不读这些变量。
+  #   * pre-push: 直接 exit 1, 拦截 pi 会话内发起的 git push
+  #   * 其余 hook: 软链到转发脚本, 仍执行仓库自身生效的 hook —— GIT_CONFIG_* 是
+  #     命令行级配置, 会盖掉仓库本地的 core.hooksPath (husky 等), 不转发的话
+  #     pi 内的 git commit 会静默跳过仓库 hook
+  # 已知绕过面 (hook 层覆盖不到, 只靠 AGENTS.md 红线约束, 不在这里加文本匹配):
+  #   --no-verify、显式 -c core.hooksPath=…、清空 GIT_CONFIG_*、send-pack 等
+  #   不经 push 路径的推送 (实测不触发 pre-push)、非 git 工具直连远端、sudo 清环境后执行。
+  # ---------------------------------------------------------------------------
+  piGitHookChain = pkgs.writeShellScript "pi-git-hook-chain" ''
+    # 转发到仓库自身生效的 hook: 先看仓库/全局配置里的 core.hooksPath, 没有则用 $GIT_DIR/hooks
+    hook=''${0##*/}
+    repo_hooks=$(env -u GIT_CONFIG_COUNT -u GIT_CONFIG_KEY_0 -u GIT_CONFIG_VALUE_0 \
+      git config --get core.hooksPath 2>/dev/null || true)
+    if [ -n "$repo_hooks" ]; then
+      target="$repo_hooks/$hook"
+    else
+      common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null) \
+        || common=$(git rev-parse --git-common-dir 2>/dev/null) || exit 0
+      target="$common/hooks/$hook"
+    fi
+    [ -x "$target" ] || exit 0
+    exec "$target" "$@"
+  '';
+
+  # 需要链式转发的 hook 名 (githooks(5)); pre-push 不在此列, 它是拦截本体。
+  # 服务端名字也得给: 本地路径作远端时 receive-pack 会继承 pi 环境, 不转发它们会消失
+  piGitHookNames = [
+    "applypatch-msg" "pre-applypatch" "post-applypatch"
+    "pre-commit" "pre-merge-commit" "prepare-commit-msg" "commit-msg" "post-commit"
+    "pre-rebase" "post-checkout" "post-merge" "pre-auto-gc" "post-rewrite"
+    "sendemail-validate" "fsmonitor-watchman"
+    "p4-changelist" "p4-prepare-changelist" "p4-post-changelist" "p4-pre-submit"
+    "post-index-change" "reference-transaction"
+    "pre-receive" "update" "proc-receive" "post-receive" "post-update" "push-to-checkout"
+  ];
+
+  piGitHookDir = pkgs.runCommandLocal "pi-git-hooks" { } ''
+    mkdir -p $out
+    ln -s ${pkgs.writeShellScript "pi-pre-push-deny" ''
+      echo "本机红线: pi 会话内禁止 git push。需要推送时请让用户在自己的终端手动执行, 不要尝试绕过。" >&2
+      exit 1
+    ''} $out/pre-push
+    for hook in ${pkgs.lib.concatStringsSep " " piGitHookNames}; do
+      ln -s ${piGitHookChain} $out/$hook
+    done
+  '';
+
+  # ---------------------------------------------------------------------------
   # pi 项目级扩展集合 (extension groups)
   #
   # 这些包不进全局 settings.packages, 因此未装配它们的项目是零启动成本;
@@ -39,45 +92,53 @@ in
     # 不再是 nixpkgs 的 pi-coding-agent。上游包 pname = "pi"、bin/pi 与 meta.mainProgram
     # 不变, 所以下面的 wrapProgram 与 extraPackages 全部无需改动。
     #
-    # 使用包装过后的软件包: 启动时把 sops-nix 生成的密钥注入 pi 进程环境
-    # 直接读 sops-nix 的密钥文件 (由 sops.nix 的 secrets 声明生成, 权限 0400/0600),
-    # 不再额外落一份明文 env 文件 —— 旧的 ~/.config/pi/secrets.env 可以手动删掉
+    # 包装注入两样东西:
+    #   (1) sops-nix 生成的密钥到 pi 进程环境: 直接读密钥文件 (由 sops.nix 的 secrets
+    #       声明生成, 权限 0400/0600), 不再额外落一份明文 env 文件 —— 旧的
+    #       ~/.config/pi/secrets.env 可以手动删掉;
+    #   (2) GIT_CONFIG_* 把 pi 环境的 core.hooksPath 指向 git push 拦截 hooks
+    #       (见本文件 let 块的 piGitHookDir 注释), 只约束 pi 进程树。
     #
     # sops.nix 是 pathExists 可选开关 (home.nix:45-53), 它缺席时 config.sops 这棵
-    # 选项树整个不存在, 所以包装与否必须在求值期分支 (if 两支惰性求值):
-    # 用 config ? sops 判断 "sops-nix 的 HM 模块是否被导入", 与 home.nix 的开关同构。
-    # 否则按 README 的无代理首装流程移走 sops.nix 后, 这里会抛
-    # "attribute 'sops' missing", 失败面是全部 HM 配置 (2026-10-04 复评 P1-1)。
-    # 没有 sops 时退回上游原包: pi 照常可用, 只是拿不到这几个 API key
-    # (扩展按缺 key 降级), 运行期的密钥缺失守卫 (下方 load_secret) 仍然生效。
+    # 选项树整个不存在, 所以密钥注入必须在求值期分支: 用 config ? sops 判断
+    # "sops-nix 的 HM 模块是否被导入", 与 home.nix 的开关同构。否则按 README 的
+    # 无代理首装流程移走 sops.nix 后, 这里会抛 "attribute 'sops' missing", 失败面是
+    # 全部 HM 配置 (2026-10-04 复评 P1-1)。没有 sops 时包装照做 (git hooks 拦截不依赖
+    # sops), 只是拿不到这几个 API key (扩展按缺 key 降级), 运行期的密钥缺失守卫
+    # (下方 load_secret) 仍然生效。
     #
-    # 有意取舍: 这些变量会随 pi 进程进入它派生的所有子进程环境 (包括 bash 工具),
+    # 有意取舍: 密钥变量会随 pi 进程进入它派生的所有子进程环境 (包括 bash 工具),
     # 因为 pi 的联网搜索/文档查询/GitHub 能力都从进程环境里读 key。
     # 若以后要收紧, 可改成只给需要的扩展单独传 env, 而不是在启动时全量导出。
     package =
-      if config ? sops then
-        pkgs.symlinkJoin {
-          name = "pi-coding-agent-wrapped";
-          paths = [ inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.default ];
-          buildInputs = [ pkgs.makeWrapper ];
-          postBuild = ''
-            wrapProgram $out/bin/pi \
-              --run '
-                # 只在密钥文件存在且非空时导出: 直接 export 空串会覆盖用户已有环境变量,
-                # 并让 pi 的扩展抛 environment-empty 而不是回退 (2026-09-29 复评 NEW-10);
-                # 注意 wrapper 由 makeWrapper 以 bash -e 运行, 守卫必须 errexit 安全
-                # (不能用 "&&" 结尾 —— 缺失文件时会因返回非零而中止整个 pi 启动)
-                load_secret() { local k; k="$(cat "$2" 2>/dev/null || true)"; [ -z "$k" ] || export "$1=$k"; }
-                load_secret DEEPSEEK_API_KEY "${config.sops.secrets.deepseek_api_key.path}"
-                load_secret TAVILY_API_KEY "${config.sops.secrets.tavily.path}"
-                load_secret FIRECRAWL_API_KEY "${config.sops.secrets.firecrawl.path}"
-                load_secret CONTEXT7_API_KEY "${config.sops.secrets.context7.path}"
-                load_secret GH_TOKEN "${config.sops.secrets.github_pull_only_token.path}"
-              '
-          '';
-        }
-      else
-        inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.default;
+      let
+        secretsRun = pkgs.lib.optionalString (config ? sops) ''
+          --run '
+            # 只在密钥文件存在且非空时导出: 直接 export 空串会覆盖用户已有环境变量,
+            # 并让 pi 的扩展抛 environment-empty 而不是回退 (2026-09-29 复评 NEW-10);
+            # 注意 wrapper 由 makeWrapper 以 bash -e 运行, 守卫必须 errexit 安全
+            # (不能用 "&&" 结尾 —— 缺失文件时会因返回非零而中止整个 pi 启动)
+            load_secret() { local k; k="$(cat "$2" 2>/dev/null || true)"; [ -z "$k" ] || export "$1=$k"; }
+            load_secret DEEPSEEK_API_KEY "${config.sops.secrets.deepseek_api_key.path}"
+            load_secret TAVILY_API_KEY "${config.sops.secrets.tavily.path}"
+            load_secret FIRECRAWL_API_KEY "${config.sops.secrets.firecrawl.path}"
+            load_secret CONTEXT7_API_KEY "${config.sops.secrets.context7.path}"
+            load_secret GH_TOKEN "${config.sops.secrets.github_pull_only_token.path}"
+          '
+        '';
+      in
+      pkgs.symlinkJoin {
+        name = "pi-coding-agent-wrapped";
+        paths = [ inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.default ];
+        buildInputs = [ pkgs.makeWrapper ];
+        postBuild = ''
+          wrapProgram $out/bin/pi \
+            --set GIT_CONFIG_COUNT 1 \
+            --set GIT_CONFIG_KEY_0 core.hooksPath \
+            --set GIT_CONFIG_VALUE_0 ${piGitHookDir} \
+            ${secretsRun}
+        '';
+      };
 
     # 扩展包运行时依赖: pi install npm:... 安装扩展 (如 @termdraw/pi) 需要 npm 与 bun
     # gh: pi-web-access 的 GitHub 能力 (PR/Issue 富字段视图、私有库、超大仓库 API 路径)
