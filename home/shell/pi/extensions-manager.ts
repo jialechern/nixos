@@ -236,9 +236,9 @@ export function parseNpmName(spec: string): string {
 
 /**
  * git 源归一化(C 级:pi 用 hosted-git-info 取 host/path,本文件不复刻该第三方库):
- * pi 的 parseGitUrl 先剥可选 `git:` 前缀(`git://` 本身是协议 URL,不剥),再交给
- * hosted-git-info / parseGenericGitUrl。这里近似:协议 URL 取 hostname + pathname
- * (丢端口与凭据),其余按 scp 形态(首个冒号转斜杠),最后统一去 @ref、#ref、.git 后缀。
+ * pi 的 parseGitUrl 对 `git:` 前缀一律先剥 4 字符(`git://…` 也剥成 `//…`,再由 hosted-git-info
+ * 的 `https://` 回退命中),其余交给 hosted-git-info / parseGenericGitUrl。这里近似:协议 URL 取
+ * hostname + pathname(丢端口与凭据),其余按 scp 形态(首个冒号转斜杠),最后统一去 @ref、#ref、.git 后缀。
  * 与 pi 的已知差异(残留,C 级;后果是 add 可能多跑一次 install/reconcile,pi 的
  * addSourceToSettings 会按 identity 改写声明,不会丢配置、不会误删):
  * - 单斜杠 shorthand(`git:owner/repo`、`git:github.com/repo`)在 pi 侧走 hosted-git-info 的
@@ -250,7 +250,8 @@ export function parseNpmName(spec: string): string {
  *   (`git://github.com/u/r` 已对齐),否则回退 local(`git://host/u/r`、`git://localhost/u/r`);
  *   本文件一律按协议 URL 处理;
  * - IPv6 带端口(如 `ssh://git@[::1]:2222/u/r`)的端口剥离不完整。
- * docs/packages.md 列出的形态(npm: / `git:host/path@ref` / 裸协议 URL / 本地路径)已逐条对齐 1.1.0。
+ * docs/packages.md 列出的形态(npm: / `git:github.com/example/pi-tools@v1` 这类点号 host / 裸协议 URL /
+ * 本地路径)已逐条对齐 1.1.0。
  * 复核:dist/utils/git.js 的 parseGitUrl/splitRef、dist/core/package-manager.js 的 getPackageIdentity。
  */
 export function normalizeGitSource(source: string): string {
@@ -334,7 +335,7 @@ export function resolveStoredLocalPath(
  * (pi 不认 `GIT://`、`HTTPS://`,它们回退本地路径,这里也返回 undefined)。
  * 其余形式(裸名、builtin:、github:user/repo、裸 git@host:path)pi 都回退成本地路径,这里同样返回
  * undefined——否则会出现与 pi 不同的身份,进而错误跳过或重复安装。
- * 残留(C 级):身份字符串本身的近似偏差见 normalizeGitSource 注释列出的 hosted-git-info 形态。
+ * 残留(C 级:身份字符串或 local/git 分类的近似偏差)见 normalizeGitSource 注释列出的 hosted-git-info 形态。
  */
 function nonLocalIdentity(source: string): string | undefined {
   if (source.startsWith("npm:")) return `npm:${parseNpmName(source.slice(4).trim())}`;
