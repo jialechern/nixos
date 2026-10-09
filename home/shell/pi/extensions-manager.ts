@@ -1,12 +1,15 @@
 // extensions-manager.ts — pi 个人扩展:项目级(本地)插件与插件组管理
 //
-// 范围:仅管理声明于 <项目>/.pi/settings.json 的本地插件;用户级插件请用 pi 原生
+// 契约锚点:pi 行为断言与 dist 行号按 1.1.0 核对;升级 pi 后需复核 §2 的路径/身份假设与 §3 的 TUI 暂停与输出假设。
+//
+// 范围:仅管理声明于 <项目>/<CONFIG_DIR_NAME>(默认 .pi)/settings.json 的本地插件;用户级插件请用 pi 原生
 // `pi install <source>`(不带 -l)与 pi update。扩展自身不直接启动子进程,安装/卸载
 // 由 pi 的 DefaultPackageManager(程序化 API)完成。
 //
 // ── 使用方法 ──
 //
-// 1. 安装(单文件个人扩展):把本文件拷贝或软链到 ~/.pi/agent/extensions/ 即可,
+// 1. 安装(单文件个人扩展):把本文件拷贝或软链到 pi agent 目录下的 extensions/(默认
+//    ~/.pi/agent/extensions/,agent 目录可用 PI_CODING_AGENT_DIR 覆盖)即可,
 //    pi 启动时自动经 jiti 直接运行 TS 源码,无需编译;对所有项目生效。
 //    开发期可单次加载:pi --extension /path/to/extensions-manager.ts
 //
@@ -22,8 +25,8 @@
 //    选项 -y / --yes:免交互确认(项目未受信任时直接写入本地配置,不保存信任决定)。
 //
 // 3. 插件组定义(JSON;两个位置均可选,同名组项目级整体覆盖全局级):
-//      全局 ~/.pi/agent/extension-groups.json
-//      项目 <项目>/.pi/extension-groups.json
+//      全局 pi agent 目录下的 extension-groups.json(默认 ~/.pi/agent/extension-groups.json)
+//      项目 <项目>/<CONFIG_DIR_NAME>(默认 .pi)/extension-groups.json
 //    {
 //      "coding": {
 //        "description": "编码集合",
@@ -31,7 +34,7 @@
 //      }
 //    }
 //    packages 内的相对本地路径按项目根解析(与 pi install 输入语义一致;settings.json
-//    里 pi 写回的相对路径则以 .pi 为基准)。
+//    里 pi 写回的相对路径则以项目的 <CONFIG_DIR_NAME>(默认 .pi)为基准)。
 //
 // 4. 信任与确认:项目未受信任时,写操作先弹确认(或 -y 跳过;无 UI 模式必须 -y),
 //    list 始终可用;用内置 /trust 命令可持久授予项目信任。
@@ -42,6 +45,7 @@ import { isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  CONFIG_DIR_NAME,
   DefaultPackageManager,
   SettingsManager,
   getAgentDir,
@@ -49,6 +53,7 @@ import {
 import type {
   ExtensionAPI,
   ExtensionCommandContext,
+  PackageManager,
   ProgressEvent,
 } from "@earendil-works/pi-coding-agent";
 
@@ -56,7 +61,8 @@ import type {
 
 const COMMAND_NAME = "exts";
 const GROUPS_FILE = "extension-groups.json";
-const PI_SETTINGS_DIR = ".pi";
+/** 项目配置目录名,跟随 pi 的 piConfig.configDir(默认 .pi)。 */
+const PI_SETTINGS_DIR = CONFIG_DIR_NAME;
 const STATUS_KEY = "extensions";
 const YES_FLAGS = new Set(["-y", "--yes"]);
 
@@ -91,7 +97,8 @@ const HELP_TEXT = [
   "  未声明则不改配置(pi 仍会尝试卸载实体);remove-group 只卸载插件,不删除组定义;",
   "  clean 卸载本项目全部插件(默认确认,-y 跳过)。",
   "选项: -y / --yes  免交互确认(项目未受信任时直接写入本地配置)",
-  `组配置: ~/.pi/agent/${GROUPS_FILE} 与 <项目>/.pi/${GROUPS_FILE},同名组项目级覆盖全局级`,
+  `组配置: pi agent 目录(默认 ~/${CONFIG_DIR_NAME}/agent,可被 PI_CODING_AGENT_DIR 覆盖)下的`,
+  `  ${GROUPS_FILE} 与 <项目>/${CONFIG_DIR_NAME}/${GROUPS_FILE},同名组项目级覆盖全局级`,
   "注意: 仅管理项目级插件;用户级插件请使用 pi install(不带 -l)与 pi update。",
 ].join("\n");
 
@@ -257,8 +264,9 @@ export function resolveLocalPath(input: string, projectCwd: string): string {
 }
 
 /**
- * 本地路径解析(声明语义):相对路径基于该作用域的配置目录 —— project 为 <cwd>/.pi,
- * user 为 ~/.pi/agent(getAgentDir()),对齐 pi getBaseDirForScope() 对已存储声明的解析。
+ * 本地路径解析(声明语义):相对路径基于该作用域的配置目录 —— project 为
+ * <cwd>/<CONFIG_DIR_NAME>(默认 .pi),user 为 pi agent 目录(getAgentDir(),默认
+ * ~/.pi/agent、可被 PI_CODING_AGENT_DIR 覆盖),对齐 pi getBaseDirForScope() 对已存储声明的解析。
  * 与输入语义不同:pi 写回配置时会以该目录为基准。
  */
 export function resolveStoredLocalPath(
@@ -429,7 +437,7 @@ export function reportLevel(results: OpResult[]): "info" | "warning" | "error" {
   return "info";
 }
 
-/** 明细长度上限:pi 的 runCommandCapture 失败文案会带上整个子进程 stderr,直接进通知会刷屏。 */
+/** 明细长度上限:子进程失败文案可能带 stderr 尾部,直接进通知会刷屏。 */
 const MAX_DETAIL_CHARS = 2000;
 
 function errorMessage(error: unknown): string {
@@ -454,43 +462,21 @@ function createPackageManager(ctx: ExtensionCommandContext): DefaultPackageManag
     projectTrusted: true,
   });
   const pm = new DefaultPackageManager({ cwd: ctx.cwd, agentDir, settingsManager });
-  // TUI 模式下 pi 不接管 stdout(pi dist/main.js 仅对非交互模式 takeOverStdout),而
-  // DefaultPackageManager.spawnCommand 以 stdio:"inherit" 启动 npm/git 子进程
-  // (pi 1.1.0 dist/core/package-manager.js:2141-2147),输出会直写终端、打穿输入框。
-  // 覆写 runCommand 改走其内置的 runCommandCapture(全管道捕获):失败信息因此携带
-  // 子进程 stderr,代价是成功输出被丢弃、安装期间只剩状态行(有意取舍)。
-  // SAFETY: runCommand/runCommandCapture 在 pi 的 .d.ts 中虽为 private,但 1.1.0 的
-  // 编译产物里是 DefaultPackageManager 原型上的普通方法(行号以 1.1.0 为准,上游升级后
-  // 需复核);npm/git 路径仅经 this.runCommand 调用 spawnCommand。此处只在实例上覆盖为
-  // 实例属性(不改原型、不影响 core 自建的包管理器),签名按二者实际实现书写。
-  // 已知取舍:捕获后子进程 stdin 为 "ignore",私有 git 仓库需预先配置凭据
-  // (credential helper / SSH agent);覆写不设超时,极端情况挂起只能 Ctrl+C 整个 pi。
-  const spawnPatchable = pm as unknown as {
-    runCommand: (
-      command: string,
-      args: string[],
-      options?: { cwd?: string; timeoutMs?: number },
-    ) => Promise<void>;
-    runCommandCapture: (
-      command: string,
-      args: string[],
-      options?: { cwd?: string; timeoutMs?: number },
-    ) => Promise<string>;
-  };
-  if (
-    typeof spawnPatchable.runCommand === "function" &&
-    typeof spawnPatchable.runCommandCapture === "function"
-  ) {
-    spawnPatchable.runCommand = (command, args, options) =>
-      spawnPatchable.runCommandCapture(command, args, options).then(() => undefined);
+  // 子进程输出:pi 仅对非交互模式 takeOverStdout(dist/main.js),TUI 模式下
+  // DefaultPackageManager.spawnCommand 仍以 stdio:"inherit" 启动 npm/git 子进程
+  // (pi dist/core/package-manager.js:2145),输出会直写终端、打穿输入框。
+  // 处理方式:写操作统一包在 withSuspendedTui 里,先把界面让给子进程(见该函数说明);
+  // 这里不覆写任何私有方法,也不再捕获子进程输出 —— npm/git 日志直落暂停后的终端。
+  if (ctx.mode === "tui") {
+    // 暂停期间 TUI 不渲染,状态行(setStatus)看不到;直接打印到终端,与 pi CLI 一致
+    pm.setProgressCallback((event: ProgressEvent) => {
+      if (event.type === "start") {
+        process.stdout.write(`  ${event.action} ${event.source}…\n`);
+      } else if (event.type === "progress" && event.message) {
+        process.stdout.write(`  ${event.action} ${event.source}: ${event.message}\n`);
+      }
+    });
   } else if (ctx.hasUI) {
-    // 上游改名/移除私有 API 时退回原 runCommand(输出可能打穿界面),但要让用户知道根因
-    ctx.ui.notify(
-      "extensions-manager: pi 私有 API 已变更, /exts 输出捕获不可用(安装日志可能打穿界面)",
-      "warning",
-    );
-  }
-  if (ctx.hasUI) {
     pm.setProgressCallback((event: ProgressEvent) => {
       if (event.type === "start") {
         ctx.ui.setStatus(STATUS_KEY, `${event.action} ${event.source}…`);
@@ -505,6 +491,66 @@ function createPackageManager(ctx: ExtensionCommandContext): DefaultPackageManag
     });
   }
   return pm;
+}
+
+/**
+ * 在 TUI 模式下暂停界面执行 run,把终端让给 npm/git 子进程;其余模式直接执行。
+ *
+ * 依据(全部是公开接口/官方示例):
+ * - 取 TUI 引用走 ctx.ui.custom() 的工厂参数,这是 docs/tui.md 定义的公开入口;
+ *   官方示例 examples/extensions/interactive-shell.ts 就用它在扩展里跑交互式命令。
+ * - tui.stop()/start()/requestRender() 是 @earendil-works/pi-tui 导出的 TUI 接口上的公开方法;
+ *   pi 自身的挂起、外部编辑器与全屏切换走的是同一套 API(dist/modes/interactive/interactive-mode.js)。
+ *   preserveScreen 的写法照抄 pi 自己的 stopInteractiveTui(:603 传 mode === "fullscreen");
+ *   handleCtrlZ 与外部编辑器只调 stop() 不传参,不要引用它们作为 preserveScreen 的依据。
+ * - 非 TUI(print/json/rpc)不需要暂停:这些模式已 takeOverStdout,子进程 stdout 被忽略、
+ *   stderr 走 fd 2,不会污染 JSON/RPC 协议流。
+ *
+ * 行为:start() 自带一次非强制重绘(pi-tui tui.js:570),暂停后仍需 requestRender(true) 强制
+ * 全量重绘,清掉残留的帧状态(与 pi 自身 handleCtrlZ 的恢复写法一致)。暂停窗口内子进程以
+ * stdio:"inherit" 继承终端,故 npm/git 日志直接可见(不再被捕获,失败通知里也就没有 stderr
+ * 明细),私有 git 仓库可以现场输入凭据。暂停期间界面不渲染、对话不响应,不要调用 ctx.ui;
+ * 需要给用户提示就直接写 stdout。
+ *
+ * run 抛错时先恢复界面再重新抛出;恢复失败不覆盖 run 的原始错误。
+ */
+async function withSuspendedTui<T>(
+  ctx: ExtensionCommandContext,
+  run: () => Promise<T>,
+): Promise<T> {
+  if (ctx.mode !== "tui") return run();
+  // 成功写 value、失败写 error;每条路径都会赋值,末尾兜底"工厂结束但流程未走完"(理论上不可达)。
+  let outcome: { value: T } | { error: unknown } | undefined;
+  await ctx.ui.custom<void>(async (tui, _theme, _keybindings, done) => {
+    tui.stop({ preserveScreen: tui.mode === "fullscreen" });
+    // 暂停窗口内屏蔽 SIGINT:raw 模式已退出,Ctrl+C 会变成发给整个前台进程组的信号,
+    // 默认动作会连 pi 一起杀掉(pi 在 handleCtrlZ 里对同一窗口做了同样处理)。屏蔽后
+    // npm/git 仍会收到信号自行中止,pi 存活并恢复界面。
+    const ignoreSigint = () => {};
+    process.on("SIGINT", ignoreSigint);
+    try {
+      process.stdout.write("extensions-manager: 正在执行 npm/git,界面已暂停,完成后自动恢复…\n");
+      outcome = { value: await run() };
+    } catch (error) {
+      outcome = { error };
+    } finally {
+      process.removeListener("SIGINT", ignoreSigint);
+      // 恢复界面:即使 start() 失败也必须调用 done(),否则 ctx.ui.custom() 的 promise 不 resolve,
+      // 命令会永久挂起;恢复失败本身不覆盖 run() 的原始错误。
+      try {
+        tui.start();
+        tui.requestRender(true);
+      } catch (restoreError) {
+        if (outcome === undefined || "value" in outcome) outcome = { error: restoreError };
+      } finally {
+        done();
+      }
+    }
+    return { render: () => [], invalidate: () => {} };
+  });
+  if (outcome === undefined) throw new Error("extensions-manager: 界面暂停流程未完成");
+  if ("error" in outcome) throw outcome.error;
+  return outcome.value;
 }
 
 /**
@@ -557,13 +603,11 @@ function loadGroupTables(cwd: string): GroupTables {
 
 // ────────────────────────── §4 子命令处理器 ──────────────────────────
 
-/** 与 pi ConfiguredPackage 结构一致(pi 未从包根导出该类型,此处本地声明)。 */
-interface ConfiguredPackageRef {
-  source: string;
-  scope: "user" | "project";
-  filtered: boolean;
-  installedPath?: string;
-}
+/**
+ * 与 pi ConfiguredPackage 结构一致。该类型未从包根导出,但可从导出的 PackageManager 接口
+ * 推导:pi 改动其形状时这里会直接编译失败,而不是静默失配。
+ */
+type ConfiguredPackageRef = ReturnType<PackageManager["listConfiguredPackages"]>[number];
 
 /**
  * 提取某个作用域下已存储声明的身份 → 源串(单次遍历)。
@@ -693,16 +737,19 @@ async function cmdGroups(
   return { results, notes };
 }
 
-/** clean:卸载全部项目级插件(永不触碰用户级)。 */
-async function cmdClean(
+/**
+ * clean 第一阶段:取项目级插件列表并(必要时)向用户确认。
+ * 确认对话必须在暂停界面之前完成,故与卸载动作拆开。
+ */
+async function planClean(
   ctx: ExtensionCommandContext,
   pm: DefaultPackageManager,
   yes: boolean,
-): Promise<{ results: OpResult[]; aborted: boolean }> {
+): Promise<{ aborted: true } | { aborted: false; packages: ConfiguredPackageRef[] }> {
   const projectPkgs = pm.listConfiguredPackages().filter((p) => p.scope === "project");
   if (projectPkgs.length === 0) {
     output(ctx, "项目未配置任何插件,无事发生。", "info");
-    return { results: [], aborted: true };
+    return { aborted: true };
   }
   if (!yes) {
     if (!ctx.hasUI) {
@@ -711,7 +758,7 @@ async function cmdClean(
         `检测到 ${projectPkgs.length} 个项目级插件。非交互模式执行 clean 需要加 -y 跳过确认,本次已中止。`,
         "warning",
       );
-      return { results: [], aborted: true };
+      return { aborted: true };
     }
     const listText = projectPkgs.map((p) => `  - ${p.source}`).join("\n");
     const confirmed = await ctx.ui.confirm(
@@ -720,13 +767,22 @@ async function cmdClean(
     );
     if (!confirmed) {
       output(ctx, "已取消。", "warning");
-      return { results: [], aborted: true };
+      return { aborted: true };
     }
   }
+  return { aborted: false, packages: projectPkgs };
+}
+
+/** clean 第二阶段:卸载全部给定声明(永不触碰用户级);调用方负责暂停界面。 */
+async function cmdClean(
+  ctx: ExtensionCommandContext,
+  pm: DefaultPackageManager,
+  packages: ConfiguredPackageRef[],
+): Promise<OpResult[]> {
   const results: OpResult[] = [];
-  for (const pkg of projectPkgs) {
+  for (const pkg of packages) {
     try {
-      // 声明原文的相对本地路径按 .pi 解析,pi 的输入侧按项目根解析;转绝对路径才能匹配
+      // 声明原文的相对本地路径按 <CONFIG_DIR_NAME> 解析,pi 的输入侧按项目根解析;转绝对路径才能匹配
       const input = storedSourceAsInput(pkg.source, pkg.scope, ctx.cwd);
       const removed = await pm.removeAndPersist(input, { local: true });
       results.push(
@@ -738,7 +794,7 @@ async function cmdClean(
       results.push({ target: pkg.source, status: "failed", detail: errorMessage(error) });
     }
   }
-  return { results, aborted: false };
+  return results;
 }
 
 /** list:项目级插件(标注所属组)+ 用户级计数 + 组定义分区展示。 */
@@ -856,24 +912,29 @@ async function runCommand(rawArgs: string, ctx: ExtensionCommandContext): Promis
   if (isWrite && !(await resolveWriteGate(ctx, yes))) return;
   const pm = createPackageManager(ctx);
 
+  // 写操作(可能启动 npm/git 子进程)统一在暂停界面后执行;确认、通知与 reload 留在
+  // 暂停之外:暂停期间界面不渲染、对话不响应(见 withSuspendedTui)。
   switch (subcommand) {
     case "add": {
-      await finish(ctx, await cmdAdd(ctx, pm, targets));
+      await finish(ctx, await withSuspendedTui(ctx, () => cmdAdd(ctx, pm, targets)));
       return;
     }
     case "remove": {
-      await finish(ctx, await cmdRemove(pm, targets));
+      await finish(ctx, await withSuspendedTui(ctx, () => cmdRemove(pm, targets)));
       return;
     }
     case "add-group":
     case "remove-group": {
-      const { results, notes, notesLevel } = await cmdGroups(ctx, pm, subcommand, targets);
+      const { results, notes, notesLevel } = await withSuspendedTui(ctx, () =>
+        cmdGroups(ctx, pm, subcommand, targets),
+      );
       await finish(ctx, results, notes, notesLevel);
       return;
     }
     case "clean": {
-      const { results, aborted } = await cmdClean(ctx, pm, yes);
-      if (!aborted) await finish(ctx, results);
+      const plan = await planClean(ctx, pm, yes);
+      if (plan.aborted) return;
+      await finish(ctx, await withSuspendedTui(ctx, () => cmdClean(ctx, pm, plan.packages)));
       return;
     }
     case "list": {
@@ -916,7 +977,7 @@ function extractPackageSources(raw: string | undefined): string[] {
 
 /**
  * 本地声明的"项目内相对写法"(如 ./pkg),用于补全前缀过滤。
- * pi 写回的声明以 .pi 为基准(如 ../pkg),与用户按项目根键入的习惯写法不同,
+ * pi 写回的声明以 <CONFIG_DIR_NAME>(默认 .pi)为基准(如 ../pkg),与用户按项目根键入的习惯写法不同,
  * 多给一种写法便于 Tab 命中;非本地声明或已是绝对路径时无额外写法。
  */
 function localRelativeKeys(stored: string, input: string, projectCwd: string): string[] {
@@ -980,7 +1041,7 @@ export function getCompletions(
       return null;
     }
     const typedSources = new Set(beforeCurrent.map((t) => t.toLowerCase()));
-    // 声明原文的相对本地路径按 .pi 解析,回填给命令时会按项目根解析而失配,故 value 用
+    // 声明原文的相对本地路径按 <CONFIG_DIR_NAME> 解析,回填给命令时会按项目根解析而失配,故 value 用
     // 绝对路径(两侧同值);过滤另接受声明原文与项目相对写法,便于按习惯键入。
     const candidates = extractPackageSources(raw)
       .map((stored) => {
