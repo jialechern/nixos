@@ -13,14 +13,14 @@
 //    pi 启动时自动经 jiti 直接运行 TS 源码,无需编译;对所有项目生效。
 //    开发期可单次加载:pi --extension /path/to/extensions-manager.ts
 //
-// 2. 命令:/extensions <子命令> [目标...] [-y](目标支持 Tab 补全:组名/已配置源)
-//      /extensions list                       查看项目插件与插件组
-//      /extensions add npm:pi-lens npm:x@1.2  安装(源语法同 pi install;幂等,已装跳过)
-//      /extensions remove npm:x               卸载(未安装则跳过)
-//      /extensions add-group web-dev          安装一个/多个插件组
-//      /extensions remove-group web-dev       卸载插件组(不删除组定义)
-//      /extensions clean                      卸载本项目全部插件(默认确认,-y 跳过)
-//      /extensions help                       完整帮助
+// 2. 命令:/exts <子命令> [目标...] [-y](目标支持 Tab 补全:组名/已配置源)
+//      /exts list                       查看项目插件与插件组
+//      /exts add npm:pi-lens npm:x@1.2  安装(源语法同 pi install;幂等,已装跳过)
+//      /exts remove npm:x               卸载(未安装则跳过)
+//      /exts add-group web-dev          安装一个/多个插件组
+//      /exts remove-group web-dev       卸载插件组(不删除组定义)
+//      /exts clean                      卸载本项目全部插件(默认确认,-y 跳过)
+//      /exts help                       完整帮助
 //    选项 -y / --yes:免交互确认(项目未受信任时直接写入本地配置,不保存信任决定)。
 //
 // 3. 插件组定义(JSON;两个位置均可选,同名组项目级整体覆盖全局级):
@@ -54,7 +54,7 @@ import type {
 
 // ────────────────────────────── §0 常量 ──────────────────────────────
 
-const COMMAND_NAME = "extensions";
+const COMMAND_NAME = "exts";
 const GROUPS_FILE = "extension-groups.json";
 const PI_SETTINGS_DIR = ".pi";
 const STATUS_KEY = "extensions";
@@ -63,21 +63,24 @@ const YES_FLAGS = new Set(["-y", "--yes"]);
 const SUBCOMMANDS = ["add", "add-group", "remove", "remove-group", "clean", "list", "help"] as const;
 type Subcommand = (typeof SUBCOMMANDS)[number];
 
+// 短描述只留动宾短语(补全菜单与 help 列表用);边界语义收进 HELP_TEXT 说明行
 const SUBCOMMAND_DESC = {
-  add: "安装插件(源语法同 pi install)",
-  "add-group": "安装一个或多个插件组",
-  remove: "卸载插件(未安装则跳过)",
-  "remove-group": "卸载插件组(不删除组定义)",
-  clean: "卸载本项目全部插件",
-  list: "查看项目插件与插件组",
-  help: "显示帮助",
+  add: "安装插件",
+  "add-group": "安装插件组",
+  remove: "卸载插件",
+  "remove-group": "卸载插件组",
+  clean: "卸载全部插件",
+  list: "查看插件",
+  help: "帮助",
 } satisfies Record<Subcommand, string>;
 
 const HELP_TEXT = [
-  "/extensions — 项目级(本地)插件管理",
-  "用法: /extensions <子命令> [目标...] [-y]",
+  "/exts — 管理项目插件与插件组",
+  "用法: /exts <子命令> [目标...] [-y]",
   "子命令:",
   ...SUBCOMMANDS.map((s) => `  ${s.padEnd(14)} ${SUBCOMMAND_DESC[s]}`),
+  "说明: add 的源语法同 pi install(npm:x / git:... / 本地路径);remove 未安装则跳过;",
+  "  remove-group 只卸载插件,不删除组定义;clean 卸载本项目全部插件(默认确认,-y 跳过)。",
   "选项: -y / --yes  免交互确认(项目未受信任时直接写入本地配置)",
   `组配置: ~/.pi/agent/${GROUPS_FILE} 与 <项目>/.pi/${GROUPS_FILE},同名组项目级覆盖全局级`,
   "注意: 仅管理项目级插件;用户级插件请使用 pi install(不带 -l)与 pi update。",
@@ -363,6 +366,29 @@ function createPackageManager(ctx: ExtensionCommandContext): DefaultPackageManag
     projectTrusted: true,
   });
   const pm = new DefaultPackageManager({ cwd: ctx.cwd, agentDir, settingsManager });
+  // TUI 模式下 pi 不接管 stdout(pi dist/main.js 仅对非交互模式 takeOverStdout),而
+  // DefaultPackageManager.spawnCommand 以 stdio:"inherit" 启动 npm/git 子进程
+  // (pi 1.1.0 dist/core/package-manager.js:2141-2147),输出会直写终端、打穿输入框。
+  // 覆写 runCommand 改走其内置的 runCommandCapture(全管道捕获),顺带让失败信息
+  // 携带子进程的 stderr;上游若修复交互模式的子进程 stdio,可直接删除本覆写。
+  // SAFETY: runCommand/runCommandCapture 在 pi 的 .d.ts 中虽为 private,但编译产物里
+  // 二者是 DefaultPackageManager 原型上的普通方法,运行时必然存在;npm/git 路径
+  // 仅经 this.runCommand 调用 spawnCommand。此处只在实例上覆盖为实例属性
+  // (不改原型、不影响 core 自建的包管理器),签名按二者实际实现书写。
+  const spawnPatchable = pm as unknown as {
+    runCommand: (
+      command: string,
+      args: string[],
+      options?: { cwd?: string; timeoutMs?: number },
+    ) => Promise<void>;
+    runCommandCapture: (
+      command: string,
+      args: string[],
+      options?: { cwd?: string; timeoutMs?: number },
+    ) => Promise<string>;
+  };
+  spawnPatchable.runCommand = (command, args, options) =>
+    spawnPatchable.runCommandCapture(command, args, options).then(() => undefined);
   if (ctx.hasUI) {
     pm.setProgressCallback((event: ProgressEvent) => {
       if (event.type === "start") {
@@ -464,7 +490,7 @@ async function cmdAdd(
   for (const source of sources) {
     const id = packageIdentity(source, ctx.cwd);
     if (projectIds.has(id)) {
-      results.push({ target: source, status: "skipped", detail: "项目已安装(如需升级请用 pi update)" });
+      results.push({ target: source, status: "skipped", detail: "已安装(升级: pi update)" });
       continue;
     }
     try {
@@ -474,7 +500,7 @@ async function cmdAdd(
       results.push({
         target: source,
         status: "ok",
-        detail: inUser ? "已同时配置于用户级,项目级声明将覆盖之" : undefined,
+        detail: inUser ? "用户级已配置,项目级优先" : undefined,
       });
     } catch (error) {
       results.push({ target: source, status: "failed", detail: errorMessage(error) });
@@ -824,7 +850,7 @@ export function getCompletions(
 
 export default function (pi: ExtensionAPI): void {
   pi.registerCommand(COMMAND_NAME, {
-    description: "项目级(本地)插件与插件组管理:批量安装/卸载、清理、清单",
+    description: "管理项目插件与插件组",
     getArgumentCompletions: (prefix) => getCompletions(prefix),
     handler: async (args, ctx) => {
       try {
@@ -834,7 +860,7 @@ export default function (pi: ExtensionAPI): void {
           output(ctx, `${error.message}\n\n${HELP_TEXT}`, "warning");
           return;
         }
-        output(ctx, `/extensions 发生意外错误:${errorMessage(error)}`, "error");
+        output(ctx, `/exts 发生意外错误:${errorMessage(error)}`, "error");
       }
     },
   });

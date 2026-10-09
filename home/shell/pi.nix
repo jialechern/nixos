@@ -18,15 +18,14 @@ let
   #
   # 这些包不进全局 settings.packages, 因此未装配它们的项目是零启动成本;
   # 包列表内联在下方 home.file 的 ~/.pi/agent/extension-groups.json, 定义了
-  # init / memory / coding 三个组, 由用户级扩展 extensions-manager.ts (同样经
-  # home.file 部署) 的 /extensions 命令在 pi 会话内装配到当前项目的 .pi/settings.json:
-  #   装配基础集合  /extensions add-group init     (幂等, 已装的跳过)
-  #   装配记忆集合  /extensions add-group memory   (与基础/编码正交, 按需叠加)
-  #   装配编码集合  /extensions add-group coding
-  #   卸载全部      /extensions clean                 (带确认; -y 跳过)
-  #   查看清单      /extensions list                  (含组标注; 组名 Tab 补全)
+  # init / coding 两个组, 由用户级扩展 extensions-manager.ts (同样经
+  # home.file 部署) 的 /exts 命令在 pi 会话内装配到当前项目的 .pi/settings.json:
+  #   装配基础集合  /exts add-group init     (幂等, 已装的跳过)
+  #   装配编码集合  /exts add-group coding
+  #   卸载全部      /exts clean             (带确认; -y 跳过)
+  #   查看清单      /exts list              (含组标注; 组名 Tab 补全)
   # 装配后扩展自动 reload 生效, 无需重启 pi。
-  # 注: 写操作要求项目已被信任 (会话内用 /trust 授予), 未信任时 /extensions 会
+  # 注: 写操作要求项目已被信任 (会话内用 /trust 授予), 未信任时 /exts 会
   # 弹确认, 或加 -y 直接写入 (不保存信任决定); list 始终可用。
   # ---------------------------------------------------------------------------
 
@@ -537,7 +536,7 @@ in
       };
     };
 
-    # pi 用户级扩展 extensions-manager.ts: 注册 /extensions 命令, 在会话内对当前
+    # pi 用户级扩展 extensions-manager.ts: 注册 /exts 命令, 在会话内对当前
     # 项目装配/卸载/清点 extension-groups.json 里定义的插件组 (见本文件头部注释)。
     # 部署为只读软链即可: pi 经 jiti 直接运行 TS 源码, 无需编译
     # (文档: pi docs/extensions.md 的 "Add it to Pi")
@@ -564,13 +563,12 @@ in
           "npm:pi-web-access"
         ];
       };
-      # 编码集合: 与基础/记忆集合正交, 只含编码相关。
+      # 编码集合: 与基础集合正交, 只含编码相关。
       # add-group 是幂等追加, 各组叠加即得并集: 日常项目只装 init 保持轻量,
-      # 编码项目再叠加 coding, 需要持久记忆的项目再叠加 memory,
-      # 主动用启动耗时换功能。
+      # 编码项目再叠加 coding, 主动用启动耗时换功能。
       # 需要继续细化时可再加一组 (如 audit → 审计集合)。
       coding = {
-        description = "编码集合: 实时代码反馈 LSP 诊断 / linter / autofix (与基础/记忆正交)";
+        description = "编码集合: 实时代码反馈 LSP 诊断 / linter / autofix (与基础正交)";
         packages = [
           # 实时代码反馈 (LSP 诊断 / linter / autofix)
           "npm:pi-lens"
@@ -585,8 +583,8 @@ in
   home.shellAliases = {
     ag = "pi";
     # 原 pi-init / pi-memory / pi-coding / pi-clean 别名已由 extensions-manager.ts 的
-    # /extensions 命令取代 (装配在会话内完成后自动 reload, 无需 shell 入口);
-    # 不做 `pi -p "/extensions … -y"` 薄别名: print 模式下若扩展加载失败, 该串会
+    # /exts 命令取代 (装配在会话内完成后自动 reload, 无需 shell 入口);
+    # 不做 `pi -p "/exts … -y"` 薄别名: print 模式下若扩展加载失败, 该串会
     # 被当作普通 prompt 发给模型。
   };
 }
