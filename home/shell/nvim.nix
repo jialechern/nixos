@@ -26,6 +26,7 @@ let
     basedpyright
     guile-lsp-server
     rust-analyzer
+    rustfmt
     typescript-language-server
     prettierd
     ruff
