@@ -77,8 +77,11 @@
 6. 挂载子卷(如有多块磁盘, 可以跨磁盘挂载)并开启"透明压缩"
     ```bash,zsh
     # 通用挂载选项: zstd 压缩 + 自动碎片整理 + 异步 discard
-    # (与 hosts/common.nix 追加上去的挂载选项一致; 设备/子卷声明在 hw-cfg,
-    #  /swap 子卷另加 noatime, 见下文)
+    # 注意: 这只用于安装期的临时挂载. 生成的 hw-cfg 只记录 subvol=, 系统起来后
+    # 生效的选项 = hw-cfg + hosts/common.nix 追加的列表, 而 common.nix 目前只给
+    # / 与 /home 追加压缩三件套 (/nix 与 /var/log 没有), 所以重启后这两个子卷
+    # 不会再透明压缩/整理; 想让它们也压缩就在 common.nix 里为对应挂载点补 options.
+    # /swap 子卷另加 noatime, 见下文.
     BTRFS_OPTS="compress=zstd,autodefrag,discard=async"
 
     # 挂载根目录子卷
