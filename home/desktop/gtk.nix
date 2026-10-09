@@ -46,8 +46,6 @@
       gtk-toolbar-style = 3;
       # 窗口按钮布局
       gtk-decoration-layout = "icon:minimize,maximize,close";
-      # 声音主题
-      gtk-sound-theme-name = "ocean";
       # 不设 gtk-modules: 本机没有提供 colorreload / window-decorations 模块的包
       # 强制设置 XFT DPI (120 DPI)
       gtk-xft-dpi = 122880;
@@ -66,8 +64,6 @@
       gtk-primary-button-warps-slider = 1;
       # 窗口按钮布局
       gtk-decoration-layout = "icon:minimize,maximize,close";
-      # 声音主题
-      gtk-sound-theme-name = "ocean";
       # 强制设置 XFT DPI (120 DPI)
       gtk-xft-dpi = 122880;
     };
