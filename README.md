@@ -124,7 +124,7 @@
     **网络问题:**
         - 初次构建系统可以使用 `nixos-install.sh` 进行安装, 其中已经包含了初次运行时的国内源设置
         - 部分软件包会固执地从境外站点下载 (`modules/system-dependencies-require-proxy.nix`、`home/desktop/applications-require-proxy.nix` 等带 `*-require-proxy.nix` 字样的文件) —— 这些都不影响系统主功能, 第一次 安装/构建 时可以把它们一并移走, 等代理可用后再放回并重新构建.
-        - `pi` 同样依赖外网: 它的 flake input 来自 GitHub (`flake.nix` 里的 `pi`), 构建期还要从 `pi.dev` 拉取固定输出的 model catalog 与 npm tarball. 无代理首装时把 `home/shell.nix` 里的 `./shell/pi.nix` 注释掉, 并按下面 `sops-nix` 的同样做法注释 `flake.nix` 中 `pi` 的 input 与 outputs 参数 —— 这样只是不安装 pi, 系统其余部分照常.
+        - `pi` 同样依赖外网: 它的 flake input 来自 GitHub (`flake.nix` 里的 `pi`), 构建期还要从 `pi.dev` 拉取固定输出的 model catalog (npm 依赖来自 npm registry, 由上游 `importNpmLock` 按 lock 里的 integrity 取回), 无代理首装时把 `home/shell.nix` 里的 `./shell/pi.nix` 注释掉, 并按下面 `sops-nix` 的同样做法注释 `flake.nix` 中 `pi` 的 input 与 outputs 参数 —— 这样只是不安装 pi, 系统其余部分照常.
         - 私密数据管理模块 `sops-nix` 必须使用透明代理才能够正常构建并使用, 故第一次构建时(如果没有代理)需要将 `sops.nix` 移走. 并且将 `flake.nix` 中的 `inputs` 属性集以及 `outputs` 参数集的 `sops-nix` 相关配置注释, 如下:
         ```nix
         # ...

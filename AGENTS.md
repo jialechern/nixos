@@ -37,8 +37,9 @@ import order and the order lands in the generated fstab (and the drv hash).
 - Flake inputs: `nixpkgs` (TUNA mirror), `home-manager`, `sops-nix` and `pi`
   (GitHub: `earendil-works/pi/stable`, `follows` this repo's nixpkgs). All three
   of `home-manager`, `sops-nix` and `pi` are fetched from GitHub, and `pi`
-  additionally pulls a fixed-output model catalog and npm tarball from `pi.dev`
-  at build time, so it belongs on the "needs a proxy on a first install" list
+  additionally pulls a fixed-output model catalog from `pi.dev` at build time
+  (its npm dependencies come from the npm registry, pinned by `importNpmLock`),
+  so it belongs on the "needs a proxy on a first install" list
   too (README's 网络问题 section). Unlike `sops.nix`, `home/shell/pi.nix` has no
   `pathExists` switch: it is imported unconditionally by `home/shell.nix`, so
   disabling it means commenting that import out. No
