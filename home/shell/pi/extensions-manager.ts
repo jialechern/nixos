@@ -5,13 +5,18 @@
 //     examples/extensions/commands.ts);ctx.cwd/mode/hasUI/reload(docs/extensions.md、
 //     docs/rpc-extension-ui.md,类型为包根导出的 ExtensionCommandContext);
 //     ctx.ui.notify/confirm/custom/setStatus(docs/tui.md、examples/extensions/*);
-//     CONFIG_DIR_NAME/getAgentDir/PI_CODING_AGENT_DIR、pi install 的源语法与身份语义
-//     (docs/configuration.md、docs/environment-variables.md、docs/packages.md);
+//     CONFIG_DIR_NAME/getAgentDir(examples/extensions/provider-payload.ts、preset.ts、
+//     subagent/agents.ts,以及 CHANGELOG 里公共 API 导出条目;agent 目录默认 ~/.pi/agent、可被
+//     PI_CODING_AGENT_DIR 覆盖的语义见 docs/configuration.md、docs/environment-variables.md);
+//     pi install 的源语法与身份语义(docs/packages.md);
 //     jiti 直跑 TS 与用户扩展目录(docs/extensions.md);--approve(docs/cli.md)。
 //   B 级——仅包根导出面(含类型注释),无 prose 文档:DefaultPackageManager/PackageManager/
 //     ProgressEvent/SettingsManager、SettingsManagerCreateOptions.projectTrusted、
-//     RegisteredCommand/AutocompleteItem、ctx.isProjectTrusted()。
-//   C 级——依赖 dist 内部行为或本文件近似实现,风险集中在 §2 的身份/路径近似与 §3 的子进程 stdio/TUI 暂停。
+//     RegisteredCommand、ctx.isProjectTrusted()。
+//   C 级——依赖 dist 内部行为或本文件近似实现:§2 的身份/路径近似与本地 CompletionItem 对
+//     @earendil-works/pi-tui AutocompleteItem 的结构近似、§3 的子进程 stdio/TUI 暂停、
+//     §4 依赖 removeAndPersist 先卸载实体再匹配声明的顺序与 ConfiguredPackageRef 的结构推导。
+// 注意:本文件由 pi 经 jiti 直跑,仓库无 typecheck/CI;类型层面的保护只有手动跑 tsc 时才生效。
 //
 // 范围:仅管理声明于 <项目>/<CONFIG_DIR_NAME>(默认 .pi)/settings.json 的本地插件;用户级插件请用 pi 原生
 // `pi install <source>`(不带 -l)与 pi update。扩展自身不直接启动子进程,安装/卸载
@@ -220,7 +225,8 @@ export function parseInvocation(tokens: string[]): {
 
 /**
  * npm 源取包名(与 pi 私有方法 DefaultPackageManager.parseNpmSpec 的正则逐字一致,
- * 见 dist/core/package-manager.d.ts;B 级:无常量/文档背书,已用探针逐条比对)
+ * 见 dist/core/package-manager.js——其 .d.ts 只声明 private parseNpmSpec;
+ * B 级:无常量/文档背书,曾用一次性探针比对,探针未入库)
  * npm:name@ver → name,@scope/name@ver → @scope/name。
  */
 export function parseNpmName(spec: string): string {
@@ -230,23 +236,35 @@ export function parseNpmName(spec: string): string {
 
 /**
  * git 源归一化(C 级:pi 用 hosted-git-info 取 host/path,本文件不复刻该第三方库):
- * 只处理 pi 认可的两种写法(见 nonLocalIdentity)——带 `git:` 前缀的简写,或无前缀的协议 URL。
- * 协议 URL 分支对齐 pi 的 new URL() 解析:身份只取 hostname + pathname(丢端口与凭据);
- * scp 风格(git:git@host:path)按首个冒号转斜杠;两者都要再去 @ref、#ref(.git 后缀)。
- * 已用探针逐条比对 1.1.0:docs/packages.md 列出的形态(npm: / git:host/path@ref / https:// / 本地路径)
- * 全部与 pi 一致;残留偏差只出现在 hosted-git-info 与 URL 都不认识的极端形态,后果仅是多装/多卸一次。
- * 升级复核:dist/utils/git.js 的 parseGitUrl/splitRef、dist/core/package-manager.js 的 getPackageIdentity。
+ * pi 的 parseGitUrl 先剥可选 `git:` 前缀(`git://` 本身是协议 URL,不剥),再交给
+ * hosted-git-info / parseGenericGitUrl。这里近似:协议 URL 取 hostname + pathname
+ * (丢端口与凭据),其余按 scp 形态(首个冒号转斜杠),最后统一去 @ref、#ref、.git 后缀。
+ * 与 pi 的已知差异(残留,C 级;后果是 add 可能多跑一次 install/reconcile,pi 的
+ * addSourceToSettings 会按 identity 改写声明,不会丢配置、不会误删):
+ * - 单斜杠 shorthand(`git:owner/repo`、`git:github.com/repo`)在 pi 侧走 hosted-git-info 的
+ *   github 简写(host 变 github.com、path 变 owner/repo),本文件保留字面 host;
+ * - `git:github:user/repo` 等 shortcut(github:/gitlab:/bitbucket:/gist:)host/path 同理不同;
+ * - URL 的 /tree、/commit 等**路径段** pi 会按 hosted-git-info 剥离,本文件保留;
+ * - 路径段少于两段的 URL(`https://host/repo`)pi 回退 local,本文件仍按 git;
+ * - `git://` 形式:pi 先剥 `git:` 得 `//host/…`,仅当 host 能被 hosted-git-info 识别时才按 git
+ *   (`git://github.com/u/r` 已对齐),否则回退 local(`git://host/u/r`、`git://localhost/u/r`);
+ *   本文件一律按协议 URL 处理;
+ * - IPv6 带端口(如 `ssh://git@[::1]:2222/u/r`)的端口剥离不完整。
+ * docs/packages.md 列出的形态(npm: / `git:host/path@ref` / 裸协议 URL / 本地路径)已逐条对齐 1.1.0。
+ * 复核:dist/utils/git.js 的 parseGitUrl/splitRef、dist/core/package-manager.js 的 getPackageIdentity。
  */
 export function normalizeGitSource(source: string): string {
-  let s = source.trim().replace(/^git:/, "");
-  if (/^(https?|ssh|git):\/\//i.test(s)) {
+  let s = source.trim();
+  // `git://` 是协议 URL,不当作简写前缀剥;其余 `git:` 前缀先剥掉再分流
+  if (s.startsWith("git:") && !s.startsWith("git://")) s = s.slice(4).trim();
+  if (/^(https?|ssh|git):\/\//.test(s)) {
     // 协议 URL:对齐 pi 的 new URL(url) 分支 —— host 取 hostname(去 scheme、凭据、端口)
     s = s
-      .replace(/^[a-z][a-z0-9+.-]*:\/\//i, "")
+      .replace(/^[a-z][a-z0-9+.-]*:\/\//, "")
       .replace(/^[^/@]*@/, "")
       .replace(/^([^/:]+):\d+/, "$1");
   } else {
-    // scp 风格 git@host:path(或 git:host/path):首个冒号即 host/path 分隔符
+    // scp 风格 git@host:path(或 host/path):首个冒号即 host/path 分隔符
     s = s.replace(/^git@/, "").replace(/:/, "/");
   }
   const slash = s.lastIndexOf("/");
@@ -311,16 +329,18 @@ export function resolveStoredLocalPath(
 /**
  * 非本地源的包身份;本地源返回 undefined,由调用方按语义解析路径。
  * 分类对齐 pi 的 parseSource/isLocalPath(dist/utils/paths.js、dist/utils/git.js):
- * 只有 `npm:`(按原文前缀判断,pi 不 trim)与 `git:`/协议 URL 是非本地,
- * 其余形式(裸名、builtin:、github:user/repo、裸 git@host:path)pi 都回退成本地路径,这里同样返回 undefined
- * —— 否则会出现与 pi 不同的身份,进而错误跳过或重复安装。
- * 残留(C 级):`git:` 前缀之后 hosted-git-info 与 URL 都解析不了的形态(如 git:github:user/repo),
- * pi 仍会回退成本地路径,这里仍按 git 处理。
+ * `npm:` 只按原文前缀判断(pi 的 parseSource 不 trim);`git:` 前缀与协议 URL 则都会被 pi
+ * trim 后再判(isLocalPath/parseGitUrl 都先 trim),这里同样用 trim 后的串。前缀判定大小写敏感
+ * (pi 不认 `GIT://`、`HTTPS://`,它们回退本地路径,这里也返回 undefined)。
+ * 其余形式(裸名、builtin:、github:user/repo、裸 git@host:path)pi 都回退成本地路径,这里同样返回
+ * undefined——否则会出现与 pi 不同的身份,进而错误跳过或重复安装。
+ * 残留(C 级):身份字符串本身的近似偏差见 normalizeGitSource 注释列出的 hosted-git-info 形态。
  */
 function nonLocalIdentity(source: string): string | undefined {
   if (source.startsWith("npm:")) return `npm:${parseNpmName(source.slice(4).trim())}`;
-  if (source.startsWith("git:") || /^(https?|ssh|git):\/\//i.test(source)) {
-    return `git:${normalizeGitSource(source)}`;
+  const trimmed = source.trim();
+  if (trimmed.startsWith("git:") || /^(https?|ssh|git):\/\//.test(trimmed)) {
+    return `git:${normalizeGitSource(trimmed)}`;
   }
   return undefined;
 }
@@ -650,7 +670,8 @@ function loadGroupTables(cwd: string): GroupTables {
 
 /**
  * 与 pi ConfiguredPackage 结构一致。该类型未从包根导出,但可从导出的 PackageManager 接口
- * 推导:pi 改动其形状时这里会直接编译失败,而不是静默失配。
+ * 推导:pi 改动其形状时,手动跑一次 tsc(需能解析 @earendil-works/pi-coding-agent 的类型)
+ * 会报错,而不是静默失配——本仓库无 CI/typecheck 集成、pi 经 jiti 直跑 TS,不跑 tsc 时不检查。
  */
 type ConfiguredPackageRef = ReturnType<PackageManager["listConfiguredPackages"]>[number];
 
