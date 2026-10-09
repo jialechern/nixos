@@ -51,8 +51,8 @@
 
       # 需要填入你机器真实的 PCI 总线 ID
       # 在命令行输入 `lspci | grep -E "VGA|3D"` 查看
-      intelBusId = "PCI:0:2:0"; # 示例 ID, 请替换为自己的
-      nvidiaBusId = "PCI:1:0:0"; # 示例 ID, 请替换为自己的
+      intelBusId = "PCI:0:2:0";
+      nvidiaBusId = "PCI:1:0:0";
     };
   };
 
