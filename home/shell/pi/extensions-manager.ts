@@ -1,11 +1,8 @@
 // extensions-manager.ts — pi 个人扩展:项目级(本地)插件与插件组管理
 //
-// 设计文档:docs/design/02-module-design.md
-// 机制调研:docs/research/pi-package-management.md、docs/research/pi-extension-api.md
-//
 // 范围:仅管理声明于 <项目>/.pi/settings.json 的本地插件;用户级插件请用 pi 原生
-// `pi install <source>`(不带 -l)与 `pi update`。所有安装/卸载通过 pi 公开的程序化
-// API(DefaultPackageManager)完成,不使用子进程。
+// `pi install <source>`(不带 -l)与 pi update。扩展自身不直接启动子进程,安装/卸载
+// 由 pi 的 DefaultPackageManager(程序化 API)完成。
 //
 // ── 使用方法 ──
 //
@@ -13,12 +10,13 @@
 //    pi 启动时自动经 jiti 直接运行 TS 源码,无需编译;对所有项目生效。
 //    开发期可单次加载:pi --extension /path/to/extensions-manager.ts
 //
-// 2. 命令:/exts <子命令> [目标...] [-y](目标支持 Tab 补全:组名/已配置源)
+// 2. 命令:/exts <子命令> [目标...] [-y](目标支持 Tab 补全:组名/已配置源;
+//    clean/list/help 不接受目标)
 //      /exts list                       查看项目插件与插件组
-//      /exts add npm:pi-lens npm:x@1.2  安装(源语法同 pi install;幂等,已装跳过)
-//      /exts remove npm:x               卸载(未安装则跳过)
-//      /exts add-group web-dev          安装一个/多个插件组
-//      /exts remove-group web-dev       卸载插件组(不删除组定义)
+//      /exts add npm:pi-lens npm:x@1.2  安装(源语法同 pi install;按身份跳过,不改版本)
+//      /exts remove npm:x               卸载(未声明则不改配置)
+//      /exts add-group init             安装一个/多个插件组
+//      /exts remove-group init          卸载插件组(不删除组定义)
 //      /exts clean                      卸载本项目全部插件(默认确认,-y 跳过)
 //      /exts help                       完整帮助
 //    选项 -y / --yes:免交互确认(项目未受信任时直接写入本地配置,不保存信任决定)。
@@ -27,18 +25,20 @@
 //      全局 ~/.pi/agent/extension-groups.json
 //      项目 <项目>/.pi/extension-groups.json
 //    {
-//      "web-dev": {
-//        "description": "Web 开发套件",
-//        "packages": ["npm:pi-lens", "npm:pi-web-access"]
+//      "coding": {
+//        "description": "编码集合",
+//        "packages": ["npm:pi-lens"]
 //      }
 //    }
+//    packages 内的相对本地路径按项目根解析(与 pi install 输入语义一致;settings.json
+//    里 pi 写回的相对路径则以 .pi 为基准)。
 //
 // 4. 信任与确认:项目未受信任时,写操作先弹确认(或 -y 跳过;无 UI 模式必须 -y),
 //    list 始终可用;用内置 /trust 命令可持久授予项目信任。
 
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { isAbsolute, join, resolve } from "node:path";
+import { isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -62,6 +62,13 @@ const YES_FLAGS = new Set(["-y", "--yes"]);
 
 const SUBCOMMANDS = ["add", "add-group", "remove", "remove-group", "clean", "list", "help"] as const;
 type Subcommand = (typeof SUBCOMMANDS)[number];
+/** 接受目标参数的子命令;其余(clean/list/help)只接受 -y。 */
+const TARGET_SUBCOMMANDS = [
+  "add",
+  "remove",
+  "add-group",
+  "remove-group",
+] as const satisfies readonly Subcommand[];
 
 // 短描述只留动宾短语(补全菜单与 help 列表用);边界语义收进 HELP_TEXT 说明行
 const SUBCOMMAND_DESC = {
@@ -76,11 +83,13 @@ const SUBCOMMAND_DESC = {
 
 const HELP_TEXT = [
   "/exts — 管理项目插件与插件组",
-  "用法: /exts <子命令> [目标...] [-y]",
+  "用法: /exts <子命令> [目标...] [-y](clean/list/help 不接受目标)",
   "子命令:",
   ...SUBCOMMANDS.map((s) => `  ${s.padEnd(14)} ${SUBCOMMAND_DESC[s]}`),
-  "说明: add 的源语法同 pi install(npm:x / git:... / 本地路径);remove 未安装则跳过;",
-  "  remove-group 只卸载插件,不删除组定义;clean 卸载本项目全部插件(默认确认,-y 跳过)。",
+  "说明: add 的源语法同 pi install(npm:x / git:... / 本地路径);已按身份配置的包跳过、",
+  "  不改已声明版本(变更请先 remove);remove 已声明即卸载实体并移除声明,",
+  "  未声明则不改配置(pi 仍会尝试卸载实体);remove-group 只卸载插件,不删除组定义;",
+  "  clean 卸载本项目全部插件(默认确认,-y 跳过)。",
   "选项: -y / --yes  免交互确认(项目未受信任时直接写入本地配置)",
   `组配置: ~/.pi/agent/${GROUPS_FILE} 与 <项目>/.pi/${GROUPS_FILE},同名组项目级覆盖全局级`,
   "注意: 仅管理项目级插件;用户级插件请使用 pi install(不带 -l)与 pi update。",
@@ -123,7 +132,7 @@ interface CompletionItem {
 }
 
 // ──────────────────────────── §2 纯函数 ────────────────────────────
-// 本节不触碰 ctx / 包管理器 / 文件系统,可独立测试(见 tests 计划)。
+// 本节不触碰 ctx / 包管理器 / 文件系统,可独立测试。
 
 /** 参数串切词:空白分隔,支持成对单/双引号(用于含空格的本地路径)。引号未闭合抛错。 */
 export function tokenizeArgs(input: string): string[] {
@@ -176,14 +185,16 @@ export function parseInvocation(tokens: string[]): {
   let yes = false;
   for (const token of rest) {
     if (YES_FLAGS.has(token)) yes = true;
+    else if (token.trim() === "") throw new CommandUsageError("目标不能为空");
     else targets.push(token);
   }
-  const needsTargets =
-    subcommand === "add" ||
-    subcommand === "remove" ||
-    subcommand === "add-group" ||
-    subcommand === "remove-group";
-  if (needsTargets && targets.length === 0) {
+  const acceptsTargets = (TARGET_SUBCOMMANDS as readonly string[]).includes(subcommand);
+  if (!acceptsTargets) {
+    // clean/list/help 带目标时报错,避免静默忽略目标却执行全量操作
+    if (targets.length > 0) throw new CommandUsageError(`"${subcommand}" 不接受目标参数`);
+    return { subcommand, targets, yes };
+  }
+  if (targets.length === 0) {
     throw new CommandUsageError(`"${subcommand}" 需要至少一个目标`);
   }
   return { subcommand, targets, yes };
@@ -215,11 +226,14 @@ export function normalizeGitSource(source: string): string {
   return s;
 }
 
-/** 本地路径解析:~ 展开;相对路径基于项目 .pi 目录(与 pi getBaseDirForScope("project") 一致)。 */
-export function resolveLocalPath(input: string, projectCwd: string): string {
-  let p = input.trim();
+/**
+ * ~ 与 file:// 的展开;不属这两种形态时返回 undefined(调用方再按基准拼相对路径)。
+ * 非法 file:// URL 回退为按普通路径处理。
+ */
+function expandShorthandPath(input: string): string | undefined {
+  const p = input.trim();
   if (p === "~") return homedir();
-  if (p.startsWith("~/")) p = join(homedir(), p.slice(2));
+  if (p.startsWith("~/")) return join(homedir(), p.slice(2));
   if (/^file:\/\//.test(p)) {
     try {
       return fileURLToPath(p);
@@ -227,23 +241,88 @@ export function resolveLocalPath(input: string, projectCwd: string): string {
       // 非法 file:// URL,按普通路径处理
     }
   }
-  return isAbsolute(p) ? resolve(p) : resolve(projectCwd, PI_SETTINGS_DIR, p);
+  return undefined;
 }
 
 /**
- * 包身份(与 pi getPackageIdentity 对齐的简化版):
- * npm 按包名(去版本)、git 按 host/path(去 ref)、local 按解析后的绝对路径。
- * 来源:dist/core/package-manager.js getPackageIdentity();isLocalPath() 把裸名也视为本地路径,
- * 因此此处除已列前缀外一律按 local 处理。
+ * 本地路径解析(输入语义):相对路径基于项目根 cwd,对齐 pi install 对用户输入的解析
+ * (dist/core/package-manager.js 的 resolvePath() 基于 this.cwd;packageSourcesMatch 输入侧同)。
+ * ~ 展开;file:// 转本地路径。
  */
-export function packageIdentity(source: string, projectCwd: string): string {
+export function resolveLocalPath(input: string, projectCwd: string): string {
+  const expanded = expandShorthandPath(input);
+  if (expanded !== undefined) return expanded;
+  const p = input.trim();
+  return isAbsolute(p) ? resolve(p) : resolve(projectCwd, p);
+}
+
+/**
+ * 本地路径解析(声明语义):相对路径基于该作用域的配置目录 —— project 为 <cwd>/.pi,
+ * user 为 ~/.pi/agent(getAgentDir()),对齐 pi getBaseDirForScope() 对已存储声明的解析。
+ * 与输入语义不同:pi 写回配置时会以该目录为基准。
+ */
+export function resolveStoredLocalPath(
+  input: string,
+  scope: "user" | "project",
+  projectCwd: string,
+): string {
+  const expanded = expandShorthandPath(input);
+  if (expanded !== undefined) return expanded;
+  const p = input.trim();
+  if (isAbsolute(p)) return resolve(p);
+  const baseDir = scope === "user" ? getAgentDir() : join(projectCwd, PI_SETTINGS_DIR);
+  return resolve(baseDir, p);
+}
+
+/** 非本地源(npm/git/builtin)的身份;本地源返回 undefined,由调用方按语义解析路径。 */
+function nonLocalIdentity(source: string): string | undefined {
   const s = source.trim();
   if (s.startsWith("npm:")) return `npm:${parseNpmName(s.slice(4).trim())}`;
   if (/^(git|github):/.test(s) || /^(https?|ssh):\/\//.test(s) || /^git@/.test(s)) {
     return `git:${normalizeGitSource(s)}`;
   }
   if (s.startsWith("builtin:")) return s;
-  return `local:${resolveLocalPath(s, projectCwd)}`;
+  return undefined;
+}
+
+/**
+ * 包身份(对齐 pi getPackageIdentity 的简化版):
+ * npm 按包名(去版本)、git 按 host/path(去 ref)、builtin 原样、local 按解析后的绝对路径。
+ * 这是"输入语义":local 相对路径基于项目根 cwd,用于用户键入的源与组定义。
+ * 已存储声明的 local 身份请用 storedPackageIdentity()(基目录随作用域不同)。
+ * 来源:dist/core/package-manager.js;isLocalPath() 把裸名也视为本地路径,
+ * 因此此处除已列前缀外一律按 local 处理。
+ */
+export function packageIdentity(source: string, projectCwd: string): string {
+  return nonLocalIdentity(source) ?? `local:${resolveLocalPath(source, projectCwd)}`;
+}
+
+/**
+ * 已存储声明的包身份(对齐 pi getPackageIdentity(source, scope) 的 local 分支):
+ * local 相对路径按作用域基目录解析(见 resolveStoredLocalPath),其余与 packageIdentity 相同。
+ */
+export function storedPackageIdentity(
+  source: string,
+  scope: "user" | "project",
+  projectCwd: string,
+): string {
+  return nonLocalIdentity(source) ?? `local:${resolveStoredLocalPath(source, scope, projectCwd)}`;
+}
+
+/**
+ * 把已存储的声明源转换为 pi 输入侧等价的写法。
+ * pi 对 local 源有两套解析基准:声明按 scope 基目录(getSourceMatchKeyForSettings),
+ * 输入按项目根(getSourceMatchKeyForInput);同一相对路径在两侧结果不同,所以把声明
+ * 原文当输入回传(如 removeAndPersist)会匹配失败。绝对路径在两侧同值,故 local 声明
+ * 统一转绝对路径;npm/git/builtin 的身份与基目录无关,原样返回。
+ */
+export function storedSourceAsInput(
+  source: string,
+  scope: "user" | "project",
+  projectCwd: string,
+): string {
+  if (nonLocalIdentity(source) !== undefined) return source;
+  return resolveStoredLocalPath(source, scope, projectCwd);
 }
 
 /** 解析组配置文件内容;结构问题逐条记入 errors,不抛异常(文件缺失视为空表)。 */
@@ -251,7 +330,8 @@ export function parseGroupFileContent(
   raw: string | undefined,
   filePath: string,
 ): { table: GroupTable; errors: string[] } {
-  const table: GroupTable = {};
+  // null 原型:组名与 Object.prototype 成员同名(如 "toString")时不命中原型属性
+  const table: GroupTable = Object.create(null) as GroupTable;
   const errors: string[] = [];
   if (raw === undefined) return { table, errors };
   let data: unknown;
@@ -287,7 +367,8 @@ export function parseGroupFileContent(
 
 /** 合并全局与项目组表;同名组项目级整体覆盖(不深度合并 packages)。 */
 export function mergeGroupTables(globalTable: GroupTable, projectTable: GroupTable): GroupTable {
-  return { ...globalTable, ...projectTable };
+  // null 原型:避免组名与 Object.prototype 成员同名时命中原型属性
+  return Object.assign(Object.create(null) as GroupTable, globalTable, projectTable);
 }
 
 /**
@@ -304,11 +385,12 @@ export function expandGroups(
   const unknown: string[] = [];
   const conflicts: string[] = [];
   for (const name of names) {
-    const def = table[name];
-    if (!def) {
+    // 用自有属性判定:否则 "constructor"/"toString" 等会被当成存在的组而崩溃
+    if (!Object.hasOwn(table, name)) {
       unknown.push(name);
       continue;
     }
+    const def = table[name];
     for (const source of def.packages) {
       const id = packageIdentity(source, projectCwd);
       const existingIndex = seen.get(id);
@@ -347,8 +429,14 @@ export function reportLevel(results: OpResult[]): "info" | "warning" | "error" {
   return "info";
 }
 
+/** 明细长度上限:pi 的 runCommandCapture 失败文案会带上整个子进程 stderr,直接进通知会刷屏。 */
+const MAX_DETAIL_CHARS = 2000;
+
 function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+  const text = error instanceof Error ? error.message : String(error);
+  if (text.length <= MAX_DETAIL_CHARS) return text;
+  // 保留尾部:关键错误行通常在子进程输出末尾
+  return `…(已截断 ${text.length - MAX_DETAIL_CHARS} 字符)\n${text.slice(-MAX_DETAIL_CHARS)}`;
 }
 
 // ─────────────────────── §3 包管理器与写权限门 ───────────────────────
@@ -369,12 +457,14 @@ function createPackageManager(ctx: ExtensionCommandContext): DefaultPackageManag
   // TUI 模式下 pi 不接管 stdout(pi dist/main.js 仅对非交互模式 takeOverStdout),而
   // DefaultPackageManager.spawnCommand 以 stdio:"inherit" 启动 npm/git 子进程
   // (pi 1.1.0 dist/core/package-manager.js:2141-2147),输出会直写终端、打穿输入框。
-  // 覆写 runCommand 改走其内置的 runCommandCapture(全管道捕获),顺带让失败信息
-  // 携带子进程的 stderr;上游若修复交互模式的子进程 stdio,可直接删除本覆写。
-  // SAFETY: runCommand/runCommandCapture 在 pi 的 .d.ts 中虽为 private,但编译产物里
-  // 二者是 DefaultPackageManager 原型上的普通方法,运行时必然存在;npm/git 路径
-  // 仅经 this.runCommand 调用 spawnCommand。此处只在实例上覆盖为实例属性
-  // (不改原型、不影响 core 自建的包管理器),签名按二者实际实现书写。
+  // 覆写 runCommand 改走其内置的 runCommandCapture(全管道捕获):失败信息因此携带
+  // 子进程 stderr,代价是成功输出被丢弃、安装期间只剩状态行(有意取舍)。
+  // SAFETY: runCommand/runCommandCapture 在 pi 的 .d.ts 中虽为 private,但 1.1.0 的
+  // 编译产物里是 DefaultPackageManager 原型上的普通方法(行号以 1.1.0 为准,上游升级后
+  // 需复核);npm/git 路径仅经 this.runCommand 调用 spawnCommand。此处只在实例上覆盖为
+  // 实例属性(不改原型、不影响 core 自建的包管理器),签名按二者实际实现书写。
+  // 已知取舍:捕获后子进程 stdin 为 "ignore",私有 git 仓库需预先配置凭据
+  // (credential helper / SSH agent);覆写不设超时,极端情况挂起只能 Ctrl+C 整个 pi。
   const spawnPatchable = pm as unknown as {
     runCommand: (
       command: string,
@@ -387,8 +477,19 @@ function createPackageManager(ctx: ExtensionCommandContext): DefaultPackageManag
       options?: { cwd?: string; timeoutMs?: number },
     ) => Promise<string>;
   };
-  spawnPatchable.runCommand = (command, args, options) =>
-    spawnPatchable.runCommandCapture(command, args, options).then(() => undefined);
+  if (
+    typeof spawnPatchable.runCommand === "function" &&
+    typeof spawnPatchable.runCommandCapture === "function"
+  ) {
+    spawnPatchable.runCommand = (command, args, options) =>
+      spawnPatchable.runCommandCapture(command, args, options).then(() => undefined);
+  } else if (ctx.hasUI) {
+    // 上游改名/移除私有 API 时退回原 runCommand(输出可能打穿界面),但要让用户知道根因
+    ctx.ui.notify(
+      "extensions-manager: pi 私有 API 已变更, /exts 输出捕获不可用(安装日志可能打穿界面)",
+      "warning",
+    );
+  }
   if (ctx.hasUI) {
     pm.setProgressCallback((event: ProgressEvent) => {
       if (event.type === "start") {
@@ -464,38 +565,55 @@ interface ConfiguredPackageRef {
   installedPath?: string;
 }
 
-/** 提取某个作用域的包身份集合(单次遍历)。 */
-function identitySet(
+/**
+ * 提取某个作用域下已存储声明的身份 → 源串(单次遍历)。
+ * 用 storedPackageIdentity:声明里的相对路径以该作用域的配置目录为基准。
+ */
+function identitySourceMap(
   configured: ConfiguredPackageRef[],
   scope: "user" | "project",
   projectCwd: string,
-): Set<string> {
-  const ids = new Set<string>();
+): Map<string, string> {
+  const map = new Map<string, string>();
   for (const pkg of configured) {
-    if (pkg.scope === scope) ids.add(packageIdentity(pkg.source, projectCwd));
+    if (pkg.scope === scope) {
+      map.set(storedPackageIdentity(pkg.source, scope, projectCwd), pkg.source);
+    }
   }
-  return ids;
+  return map;
 }
 
-/** add:已配置(项目级,任意版本)→ 跳过;否则安装。单个失败不中断。 */
+/**
+ * add 已配置时跳过的明细。
+ * local 源由 pi 规范化写回(如 ./pkg → ../pkg),文本比较无意义,统一说明已声明;
+ * 非 local 源文本不同(版本/ref 不同)时,pi update 只会重装已声明版本,不能宣称可升级。
+ */
+function addSkipDetail(source: string, declared: string): string {
+  if (nonLocalIdentity(source) === undefined) return `已安装(已声明为 ${declared})`;
+  if (declared.trim() === source.trim()) return "已安装(升级: pi update)";
+  return `已配置为 ${declared}(变更请先 remove)`;
+}
+
+/** add:已按身份配置(项目级)→ 跳过;否则安装。单个失败不中断。 */
 async function cmdAdd(
   ctx: ExtensionCommandContext,
   pm: DefaultPackageManager,
   sources: string[],
 ): Promise<OpResult[]> {
   const configured = pm.listConfiguredPackages();
-  const projectIds = identitySet(configured, "project", ctx.cwd);
-  const userIds = identitySet(configured, "user", ctx.cwd);
+  const projectIds = identitySourceMap(configured, "project", ctx.cwd);
+  const userIds = identitySourceMap(configured, "user", ctx.cwd);
   const results: OpResult[] = [];
   for (const source of sources) {
     const id = packageIdentity(source, ctx.cwd);
-    if (projectIds.has(id)) {
-      results.push({ target: source, status: "skipped", detail: "已安装(升级: pi update)" });
+    const declared = projectIds.get(id);
+    if (declared !== undefined) {
+      results.push({ target: source, status: "skipped", detail: addSkipDetail(source, declared) });
       continue;
     }
     try {
       await pm.installAndPersist(source, { local: true });
-      projectIds.add(id); // 防同批重复
+      projectIds.set(id, source); // 防同批重复
       const inUser = userIds.has(id);
       results.push({
         target: source,
@@ -509,7 +627,13 @@ async function cmdAdd(
   return results;
 }
 
-/** remove:removeAndPersist 返回 false = 无匹配声明 → 视为"未安装,跳过"(幂等)。 */
+/** remove/clean 未匹配到声明时的明细:pi 的 remove() 已先跑过卸载,故不只报"未声明"。 */
+const REMOVE_SKIPPED_DETAIL = "未声明(实体卸载仍已尝试)";
+
+/**
+ * remove:removeAndPersist 返回 false = 无匹配声明 → 视为"未声明,跳过"(幂等)。
+ * 注意 pi 先执行 remove() 再看声明是否匹配,声明缺失时实体仍可能已被卸载。
+ */
 async function cmdRemove(
   pm: DefaultPackageManager,
   sources: string[],
@@ -521,7 +645,7 @@ async function cmdRemove(
       results.push(
         removed
           ? { target: source, status: "ok" }
-          : { target: source, status: "skipped", detail: "未安装" },
+          : { target: source, status: "skipped", detail: REMOVE_SKIPPED_DETAIL },
       );
     } catch (error) {
       results.push({ target: source, status: "failed", detail: errorMessage(error) });
@@ -562,6 +686,9 @@ async function cmdGroups(
         ? await cmdAdd(ctx, pm, expanded.sources)
         : await cmdRemove(pm, expanded.sources);
     results.push(...batchResults);
+  } else if (results.length === 0 && notes.length === 0) {
+    // 组存在但 packages 为空:补说明,避免 finish 输出空通知
+    notes.push("目标组未定义任何插件,无事发生。");
   }
   return { results, notes };
 }
@@ -599,11 +726,13 @@ async function cmdClean(
   const results: OpResult[] = [];
   for (const pkg of projectPkgs) {
     try {
-      const removed = await pm.removeAndPersist(pkg.source, { local: true });
+      // 声明原文的相对本地路径按 .pi 解析,pi 的输入侧按项目根解析;转绝对路径才能匹配
+      const input = storedSourceAsInput(pkg.source, pkg.scope, ctx.cwd);
+      const removed = await pm.removeAndPersist(input, { local: true });
       results.push(
         removed
           ? { target: pkg.source, status: "ok" }
-          : { target: pkg.source, status: "skipped", detail: "未安装" },
+          : { target: pkg.source, status: "skipped", detail: REMOVE_SKIPPED_DETAIL },
       );
     } catch (error) {
       results.push({ target: pkg.source, status: "failed", detail: errorMessage(error) });
@@ -636,7 +765,9 @@ function cmdList(ctx: ExtensionCommandContext, pm: DefaultPackageManager): strin
   for (const pkg of project) {
     // 组配置损坏时不做组名标注:不渲染部分解析出的组(与下方组区中止的意图一致)
     const groups =
-      tables.errors.length > 0 ? undefined : groupOf.get(packageIdentity(pkg.source, ctx.cwd));
+      tables.errors.length > 0
+        ? undefined
+        : groupOf.get(storedPackageIdentity(pkg.source, pkg.scope, ctx.cwd));
     const groupNote = groups && groups.length > 0 ? ` — 组: ${groups.join(", ")}` : "";
     const pathNote = pkg.installedPath ? ` — ${pkg.installedPath}` : " — 未安装实体";
     lines.push(`  ${pkg.source}${groupNote}${pathNote}`);
@@ -672,7 +803,12 @@ function cmdList(ctx: ExtensionCommandContext, pm: DefaultPackageManager): strin
 
 // ─────────────────────────── §5 输出辅助 ───────────────────────────
 
-/** 输出:TUI/RPC 用 notify,print/json 等无 UI 模式回退 console.log。 */
+/**
+ * 输出:TUI/RPC 用 notify;print/json 等无 UI 模式回退 console.log。
+ * 注意 pi 在非交互模式会 takeOverStdout,把 stdout 重定向到 stderr
+ * (docs/json.md: "Stdout is reserved for JSONL"),所以 console.log 仍可达用户,
+ * 且不会污染 JSON 协议流。
+ */
 function output(
   ctx: ExtensionCommandContext,
   message: string,
@@ -681,7 +817,7 @@ function output(
   if (ctx.hasUI) {
     ctx.ui.notify(message, level);
   } else {
-    // print/json 模式无 ctx.ui,stdout 是唯一输出通道(设计文档 §5)。
+    // 无 ctx.ui(print/json):stdout 已被 pi 重定向到 stderr。
     // ast-grep-ignore: no-console-except-error
     console.log(message);
   }
@@ -779,6 +915,18 @@ function extractPackageSources(raw: string | undefined): string[] {
 }
 
 /**
+ * 本地声明的"项目内相对写法"(如 ./pkg),用于补全前缀过滤。
+ * pi 写回的声明以 .pi 为基准(如 ../pkg),与用户按项目根键入的习惯写法不同,
+ * 多给一种写法便于 Tab 命中;非本地声明或已是绝对路径时无额外写法。
+ */
+function localRelativeKeys(stored: string, input: string, projectCwd: string): string[] {
+  if (input === stored) return [];
+  const rel = relative(projectCwd, input);
+  if (rel === "" || rel.startsWith("..")) return [];
+  return [`./${rel}`];
+}
+
+/**
  * 参数补全。projectCwd 仅用于读取项目级配置(补全发生在按键时刻,拿不到 ctx);
  * 真实 pi 会话中 process.cwd() 即项目目录,测试可注入夹具路径。
  */
@@ -832,13 +980,22 @@ export function getCompletions(
       return null;
     }
     const typedSources = new Set(beforeCurrent.map((t) => t.toLowerCase()));
-    const candidates = extractPackageSources(raw).filter(
-      (s) => !typedSources.has(s.toLowerCase()) && s.toLowerCase().startsWith(lowerCurrent),
-    );
+    // 声明原文的相对本地路径按 .pi 解析,回填给命令时会按项目根解析而失配,故 value 用
+    // 绝对路径(两侧同值);过滤另接受声明原文与项目相对写法,便于按习惯键入。
+    const candidates = extractPackageSources(raw)
+      .map((stored) => {
+        const input = storedSourceAsInput(stored, "project", projectCwd);
+        return { input, keys: [stored, ...localRelativeKeys(stored, input, projectCwd)] };
+      })
+      .filter(({ input, keys }) => {
+        const lowers = [input.toLowerCase(), ...keys.map((k) => k.toLowerCase())];
+        if (lowers.some((k) => typedSources.has(k))) return false;
+        return lowers.some((k) => k.startsWith(lowerCurrent));
+      });
     if (candidates.length === 0) return null;
-    return candidates.map((s) => ({
-      value: `${base} ${s} `,
-      label: s,
+    return candidates.map(({ input }) => ({
+      value: `${base} ${input} `,
+      label: input,
       description: sub === "add" ? "项目已配置" : "项目已配置(可移除)",
     }));
   }
