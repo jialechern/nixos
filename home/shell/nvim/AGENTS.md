@@ -101,7 +101,7 @@ stylua --check $(git ls-files --cached --others --exclude-standard '*.lua')
 
 ## 外部依赖(不在本仓库)
 
-可执行文件由 `/etc/nixos/home/shell/nvim.nix` 的 home-manager 声明: clangd、lua-language-server、nixd、marksman、ruff、basedpyright、guile-lsp-server、rust-analyzer、typescript-language-server、haskell-language-server、ormolu、nixfmt、prettierd、taplo、texlab、tinymist, 格式化工具 stylua、clang-format、rustfmt、latexindent(见 `lua/plugins/conform.lua`), 以及 telescope 用的 ripgrep/fd 等。旧独立仓库(gitee `nvim-dotfiles`)的 README/LICENSE 未并入本仓库, 历史说明去那边查; 缺工具时报告用户, 不要 `sudo` 安装(系统缺的临时工具用 `nix shell`)。
+可执行文件由 `/etc/nixos/home/shell/nvim.nix` 的 home-manager 声明: clangd、lua-language-server、nixd、marksman、ruff、basedpyright、guile-lsp-server、rust-analyzer、typescript-language-server、haskell-language-server、ormolu、nixfmt、prettierd、taplo、texlab、tinymist, 格式化工具 stylua、clang-format、rustfmt(见 `lua/plugins/conform.lua`; latexindent 不在此处 —— 它来自可选的 `home/desktop/applications.nix` 的 texliveFull, 移走该模块后 tex 格式化会静默降级), 以及 telescope 用的 ripgrep/fd 等。旧独立仓库(gitee `nvim-dotfiles`)的 README/LICENSE 未并入本仓库, 历史说明去那边查; 缺工具时报告用户, 不要 `sudo` 安装(系统缺的临时工具用 `nix shell`)。
 
 其它环境耦合: `guicursor` 只发闪烁序列, 动画由终端控制(kitty `cursor_blink_interval`); 未设置 `unnamedplus`, 系统剪贴板依赖终端/wl-clipboard; `j/k` 已与 `gj/gk` 对调, 新增移动类映射时注意。
 
