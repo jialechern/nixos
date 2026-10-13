@@ -1,6 +1,16 @@
 // extensions-manager.ts — pi 个人扩展:项目级(本地)插件与插件组管理
 //
-// 契约锚点(按本机 pi 1.1.0 逐条核对;升级 pi 后按下列名称复核,不要只对照 dist 行号):
+// 契约锚点(按本机 pi 1.2.0 逐条核对;升级 pi 后按下列名称复核,不要只对照 dist 行号):
+//   1.1.0 → 1.2.0 复核: 用到的符号与锚点均未变, 变更点与本文件无关。
+//     * 类型面: 包根新增 BeforeAgentStartUserEvent/BeforeAgentStartCustomEvent (BeforeAgentStartEvent
+//       变联合类型)、ToolDefinition.reachesTools、ToolNamespace.aliases; Settings 等类型挪到
+//       settings-schema.ts。本文件用的 DefaultPackageManager、SettingsManager (类体逐字节相同)、
+//       ExtensionAPI、ExtensionCommandContext、registerCommand、getArgumentCompletions、
+//       ctx.isProjectTrusted 均未变。
+//     * 行为面 (C 级锚点): dist/utils/git.js 与 package-manager.d.ts 逐字节相同; package-manager.js
+//       只多 3 处 normalizePath, 引用的 stdio 选择仍在第 2145 行, getPackageIdentity 与
+//       removeAndPersist 未动; interactive-mode.js 第 603 行 (preserveScreen) 未动; pi-tui 的
+//       TuiStopOptions.preserveScreen、AutocompleteItem 与 PackageSource 结构未变。
 //   A 级——官方 prose/示例明确背书:pi.registerCommand/getArgumentCompletions(docs/extensions.md、
 //     examples/extensions/commands.ts);ctx.cwd/mode/hasUI/reload(docs/extensions.md、
 //     docs/rpc-extension-ui.md,类型为包根导出的 ExtensionCommandContext);

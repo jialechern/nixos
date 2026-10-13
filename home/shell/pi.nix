@@ -108,16 +108,22 @@ in
     # 必须启用才会安装软件包并生成配置
     enable = true;
 
-    # 包来源: 上游官方 flake (flake.nix 的 pi input, 跟踪 stable 分支 ⇒ 最新正式版),
+    # 包来源: 上游官方 flake (flake.nix 的 pi input; 正常跟踪 stable 分支 ⇒ 最新
+    # 正式版, 2026-10-12 起因 v1.2.0 的 Nix 构建失败而临时钉在 main 的修复 rev 上),
     # 不再是 nixpkgs 的 pi-coding-agent。上游包 pname = "pi"、bin/pi 与 meta.mainProgram
     # 不变, 所以下面的 wrapProgram 与 extraPackages 全部无需改动。
     #
-    # 包装注入两样东西:
+    # 包装注入三样东西:
     #   (1) sops-nix 生成的密钥到 pi 进程环境: 直接读密钥文件 (由 sops.nix 的 secrets
     #       声明生成, 权限 0400/0600), 不再额外落一份明文 env 文件 —— 旧的
     #       ~/.config/pi/secrets.env 可以手动删掉;
     #   (2) GIT_CONFIG_* 把 pi 环境的 core.hooksPath 指向 git push 拦截 hooks
-    #       (见本文件 let 块的 piGitHookDir 注释), 只约束 pi 进程树。
+    #       (见本文件 let 块的 piGitHookDir 注释), 只约束 pi 进程树;
+    #   (3) PI_CLIPBOARD_OSC52=1: 除本地剪贴板外, 再用 OSC 52 把复制内容发给终端
+    #       (pi 1.2.0 起的环境变量, 见文档 docs/environment-variables.md)。pi 只在识别
+    #       出远程会话时才自带该行为; 本机 tmux 已开 allow-passthrough all
+    #       (home/shell/tmux.nix), 显式打开后 tmux 里跑的 pi 复制也能到达 kitty 的
+    #       剪贴板。取舍: 复制文本会额外经终端转发一层, 纯本地用不到时删掉这一行。
     #
     # sops.nix 是 pathExists 可选开关 (home.nix:45-53), 它缺席时 config.sops 这棵
     # 选项树整个不存在, 所以密钥注入必须在求值期分支: 用 config ? sops 判断
@@ -153,6 +159,7 @@ in
         buildInputs = [ pkgs.makeWrapper ];
         postBuild = ''
           wrapProgram $out/bin/pi \
+            --set PI_CLIPBOARD_OSC52 1 \
             --set GIT_CONFIG_COUNT 1 \
             --set GIT_CONFIG_KEY_0 core.hooksPath \
             --set GIT_CONFIG_VALUE_0 ${piGitHookDir} \
@@ -184,6 +191,10 @@ in
     # 插件自己的键不在这里: rpiv-todo 的 collapseKey、web-search.json 的 shortcuts。
     # -------------------------------------------------------------------------
     keybindings = {
+      # 配置 schema 引用 (说明见下方 settings 的同名项): 键名与取值都由 schema
+      # 约束, 写出后编辑器可直接校验与补全
+      "$schema" = "https://pi.dev/schemas/keybindings.schema.json";
+
       # --- 列表导航 (vim 风格) ---
       # 默认只有 ↑↓; 加上 ctrl+p / ctrl+n 后, 模型选择器 / 会话恢复 / 问答对话框
       # 等所有选择列表统一为 vim 键位。代价是这两个键本是 app.model.cycleForward
@@ -235,6 +246,9 @@ in
     # (baseUrl / api / models[...]), 字段写法参考内置条目。
     # -------------------------------------------------------------------------
     models = {
+      # 配置 schema 引用 (说明见下方 settings 的同名项)
+      "$schema" = "https://pi.dev/schemas/models.schema.json";
+
       providers = { };
     };
 
@@ -242,6 +256,12 @@ in
     # pi 全局设置 (settings.json, 含全局扩展包)
     # -------------------------------------------------------------------------
     settings = {
+      # 配置 schema 引用 (pi 1.2.0 起上游发布 settings / models / keybindings / theme
+      # 的 JSON Schema, 见 https://pi.dev/schemas/): 写出后编辑器对这份文件有校验与
+      # 补全, 也把"本配置按哪版 schema 写"记在文件里。键名与取值须与 schema 一致——
+      # pi 自身也用同一 schema 校验配置, 不合规会作为配置诊断 (warning) 打印。
+      "$schema" = "https://pi.dev/schemas/settings.schema.json";
+
       # --- 模型与思考 ---
       defaultProvider = "deepseek"; # 默认提供商
       defaultModel = "deepseek-flash"; # 默认模型
@@ -295,14 +315,14 @@ in
       # kitty 标签页显示进度 (OSC 9;4)
       terminal.showTerminalProgress = true;
 
-      # --- 自动压缩 (官方文档示例推荐值) ---
+      # --- 自动压缩 (取值与官方默认值一致, 见 docs/settings.md 的 Compaction 表) ---
       compaction = {
         enabled = true;
         reserveTokens = 16384; # 为 LLM 回复预留的 token
         keepRecentTokens = 20000; # 保留不摘要的最近 token
       };
 
-      # --- 重试 (官方文档示例推荐值) ---
+      # --- 重试 (取值与官方默认值一致, 见 docs/settings.md 的 Network and retries 表) ---
       retry = {
         enabled = true;
         maxRetries = 3;
@@ -324,9 +344,11 @@ in
       # builtin:codemode 注册的 codemode 工具默认 inactive (内置扩展的激活只有两种途径:
       # 本项显式启用, 或 MCP 服务器以 codemode 暴露时自动激活), 这里显式打开试水。
       # "+" 前缀表示在继承的默认选择 (read/bash/edit/write) 上追加, 不替换它们。
-      # 代价: 每次请求的固定前缀 +约 500 token (实测 499, deepseek-flash 计数;
-      # 构成 = codemode 自身声明 ~1520 字符 + 每个已声明工具描述尾追加一行 ~52 字符
-      # + 系统提示词 tools/rules 两段 ~190 字符)。位于稳定前缀内, 缓存命中后开销可忽略。
+      # 代价: 每次请求的固定前缀 +约 500 token (499 为 pi 1.1.0 实测, deepseek-flash 计数;
+      # 1.2.0 把输入约束改成 `@` 标签、不再内联 MCP 共享类型, 量级不变, 精确值待复测)。
+      # 构成 (1.1.0 实测) = codemode 自身声明 ~1520 字符 + 系统提示词 tools/rules 两段
+      # ~190 字符 + 每个已声明工具描述尾追加一行 ~52 字符。
+      # 位于稳定前缀内, 缓存命中后开销可忽略。
       # 收益: 脚本内并行调多个工具、先把大输出过滤再回传; 接 MCP 后其工具不占声明位。
       # 试用不满意就把本项删掉 (或写成 [ "-codemode" ]) 后 rebuild。
       # 参考 pi 1.0.2 文档 docs/codemode.md 与 docs/cli.md#enable-codemode
