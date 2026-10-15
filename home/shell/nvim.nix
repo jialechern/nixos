@@ -89,6 +89,11 @@ let
       plugin = telescope-fzf-native-nvim;
       optional = true;
     }
+    # 补全引擎(blink.cmp; 原生补全保留作兜底, 见 lua/plugins/blink-cmp.lua 与 settings/lsp.lua)
+    {
+      plugin = blink-cmp;
+      optional = true;
+    }
     # Snippet/LSP
     {
       plugin = nvim-lspconfig;

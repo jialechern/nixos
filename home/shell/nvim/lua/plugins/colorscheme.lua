@@ -42,6 +42,8 @@ require('catppuccin').setup({
     integrations = {
         -- 命令行 / 消息 / LSP 文档浮窗配色(命令行浮窗边框色见 plugins/noice.lua)
         noice = true,
+        -- 补全菜单 / 文档浮窗配色(blink.cmp; catppuccin 2.0 的默认集成表已含此项且 style = 'bordered', 此行与不写等价)
+        blink_cmp = true,
         -- 通知配色跟随后端: 现在不装 nvim-notify, 走 noice 内置 mini 视图(NoiceMini / NoiceFormatLevel*)
     },
 

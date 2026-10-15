@@ -16,7 +16,7 @@ vim.opt.shortmess:append('I')
 
 -- Hint: use `:h <option>` to figure out the meaning if needed
 -- vim.opt.clipboard = 'unnamedplus'                       -- 使用系统剪贴板
-vim.opt.completeopt = { 'menu', 'menuone', 'noselect', 'popup' } -- popup: 补全菜单用浮窗(并显示候选预览)
+vim.opt.completeopt = { 'menu', 'menuone', 'noselect', 'popup' } -- popup: 补全菜单用浮窗(并显示候选预览); blink.cmp 不读此项(用自己的浮窗), 仅兜底的原生 pum 受它管辖
 vim.opt.mouse = 'a' -- 启用鼠标支持
 
 -- Tab

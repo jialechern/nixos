@@ -28,7 +28,8 @@ require('noice').setup({
         },
     },
 
-    -- 补全菜单交给原生 vim.lsp.completion(见 settings/lsp.lua), 关掉 noice 的覆盖
+    -- 补全菜单: blink.cmp 用自己的浮窗渲染(不经过 pum), 兜底的原生补全也保持内置渲染,
+    -- 两条路径都不要 noice 的 popupmenu 接管
     popupmenu = {
         enabled = false,
     },

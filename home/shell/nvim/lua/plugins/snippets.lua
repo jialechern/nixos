@@ -1,6 +1,8 @@
 --- snippets.lua
 --- 片段: Neovim 原生引擎(vim.snippet) + mini.snippets(集合与匹配) + friendly-snippets(社区集合)。
---- 自研片段已弃用(snippets/ 目录已删); 键位见 keys/lsp.lua 的 snippet_*, 片段另经进程内 LSP 服务器进补全菜单。
+--- 自研片段已弃用(snippets/ 目录已删); 键位见 keys/lsp.lua 的 snippet_*。
+--- 片段进补全菜单两条路径: blink.cmp 接管时走其内置 mini_snippets 源(plugins/blink-cmp.lua),
+--- 否则走本文件末尾的进程内 LSP 服务器进原生补全菜单(兜底)。
 
 vim.cmd.packadd('mini.snippets')
 vim.cmd.packadd('friendly-snippets') -- 只提供数据(snippets/<lang>.json), 不加载脚本
@@ -43,5 +45,8 @@ map(keys.snippet_clear, function()
     vim.snippet.stop()
 end)
 
--- 起一个只实现 completion 的进程内 LSP 服务器, 让社区片段进入原生补全菜单
-snippets.start_lsp_server()
+-- 起一个只实现 completion 的进程内 LSP 服务器, 让社区片段进入原生补全菜单;
+-- 补全插件接管时不用它(片段源由插件提供, 双路会重复出候选), 仅兜底路径需要
+if not vim.g.completion_plugin_active then
+    snippets.start_lsp_server()
+end

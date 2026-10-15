@@ -66,12 +66,18 @@ vim.api.nvim_create_autocmd('LspAttach', {
         -- 推送当前 buffer 诊断到 location list
         map(keys.setloclist, vim.diagnostic.setloclist, opts)
 
-        -- --- --- --- 原生补全(取代 blink.cmp) --- --- ---
-        -- Neovim 0.12 内置: 由 LSP 提供候选, <C-y> 确认, <C-e> 取消菜单;
+        -- --- --- --- 原生补全(兜底) --- --- ---
+        -- 补全插件接管时(当前是 plugins/blink-cmp.lua, 它 setup 成功后设置
+        -- vim.g.completion_plugin_active)整段跳过, 开/关键由插件自己的 keymap 处理
+        -- (同一套 keys.lsp 条目)。本段是 Neovim 0.12 内置补全: LSP 提供候选, <C-y> 确认, <C-e> 取消菜单;
         -- 接受候选时会自动展开片段(LSP snippet 语法)并应用 text edits(例如补 import)
-        if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_completion) then
+        if
+            not vim.g.completion_plugin_active
+            and client
+            and client:supports_method(vim.lsp.protocol.Methods.textDocument_completion)
+        then
             -- autotrigger 默认只在服务器声明的触发字符(如 Python 的 . [ " ')上弹菜单, 敲普通字母不弹。
-            -- 这里把字母/数字/下划线也加进触发字符, 使边打边弹(≈ blink.cmp 的逐键触发);
+            -- 这里把字母/数字/下划线也加进触发字符, 使边打边弹(补全插件的逐键触发体验);
             -- 必须在 enable() 之前修改 —— 它会在这时读取 triggerCharacters 建触发表
             ---@type lsp.CompletionOptions?
             local provider = client.server_capabilities.completionProvider

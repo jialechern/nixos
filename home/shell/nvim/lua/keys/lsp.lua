@@ -1,7 +1,9 @@
 --- lsp.lua
 --- LSP / 补全 / snippet 相关按键 (lsp_leader 命名空间)
---- 大部分由 settings/lsp.lua 在 LspAttach 时注册(buffer-local; 其中 type_hint/open_hint/close_hint 为条件注册),
---- format 由 plugins/conform.lua 全局注册(格式化已与 LSP 解耦), snippet_* 由 plugins/snippets.lua 注册
+--- 大部分由 settings/lsp.lua 在 LspAttach 时注册(buffer-local; type_hint 为条件注册);
+--- format 由 plugins/conform.lua 全局注册(格式化已与 LSP 解耦), snippet_* 由 plugins/snippets.lua 注册;
+--- open_hint/close_hint 双路径: blink.cmp 接管时进 plugins/blink-cmp.lua 的 keymap
+--- (blink 按 buffer 在 InsertEnter 时注册), 兜底时由 settings/lsp.lua 条件注册(同为 buffer-local)
 
 ---@type string
 local lsp_leader = '<C-' .. (vim.g.maplocalleader or '\\') .. '>'

@@ -1,12 +1,12 @@
 # AGENTS.md
 
-本目录是 Neovim 配置的**真源**(Lua, 49 个文件 / 约 2.4k 行; 计数口径 = 在本目录下跑 `git ls-files --cached --others --exclude-standard '*.lua' | wc -l`)。它已并入 /etc/nixos 仓库, 由 `home/shell/nvim.nix` 以只读软链部署到 `~/.config/nvim`(见下)。无测试 / CI; 构建期只有一道 `luajit -bl` 语法检查, 语义验证靠"加载配置不报错"的几条命令(格式化由编辑器侧的 conform 负责, 见下)。
+本目录是 Neovim 配置的**真源**(Lua, 50 个文件 / 约 2.5k 行; 计数口径 = 在本目录下跑 `git ls-files --cached --others --exclude-standard '*.lua' | wc -l`)。它已并入 /etc/nixos 仓库, 由 `home/shell/nvim.nix` 以只读软链部署到 `~/.config/nvim`(见下)。无测试 / CI; 构建期只有一道 `luajit -bl` 语法检查, 语义验证靠"加载配置不报错"的几条命令(格式化由编辑器侧的 conform 负责, 见下)。
 
 > 注: 下文引用的 `docs/code-review-*.md` 是迁移前旧独立仓库里的评审记录, 未并入本仓库, 引用只作编号出处。
 
 ## 硬性前提
 
-- 需要 Neovim >= 0.12(本机 0.12.5)。注意别把这条当精确结论: 配置里用到的 `vim.lsp.config`/`vim.lsp.enable`、`winborder`、`vim.lsp.completion`(含 `autotrigger`)、`vim.treesitter.language.add` 在 0.11 就已可用, 真实最低版本没在本机验证过(没有 0.11 二进制)。
+- 需要 Neovim >= 0.12(本机 0.12.5)。注意别把这条当精确结论: 配置里用到的 `vim.lsp.config`/`vim.lsp.enable`、`winborder`、`vim.lsp.completion`(含 `autotrigger`, 仅补全兜底路径)、`vim.treesitter.language.add` 在 0.11 就已可用, 真实最低版本没在本机验证过(没有 0.11 二进制); 补全引擎 blink.cmp 官方要求 0.10+、term 补全 0.11+(本配置未用)。
 - 不要引入 lazy.nvim / packer / Mason 等插件管理器: **插件由 nix(`/etc/nixos/home/shell/nvim.nix` 的 `programs.neovim.plugins`)声明**, 懒加载靠 `packadd`(见下); LSP 二进制也由 home-manager 安装, 不在编辑器内装。
 - 本目录不再有插件清单与 lockfile(`nvim-pack-lock.json` 已随 vim.pack 一起移除, 不要加回); `.pi/` 由仓库根 `.gitignore` 忽略。
 
@@ -88,11 +88,11 @@ stylua --check $(git ls-files --cached --others --exclude-standard '*.lua')
   - `keys/` 内部相互引用时不要再用 `keys` 这个名字(避免与"本文件的表"混淆), 用该命名空间的短名, 如 `local split = require('keys.windows.split')`。
   - `require('utils.map').map(spec, rhs, opts)` 是唯一入口: 支持 `{ modes = {...} }` 覆盖模式、透传 `vim.keymap.set` 选项(如 `buffer`); 缺 `desc`/`lhs` 会在注册时报错。已删除 `map_by_modes`(`vim.keymap.set` 原生支持模式列表)与 `noremap`(0.12 已不支持, 非递归本就是默认)。
   - 启动自检 `require('utils.map').check()` 在 `lua/keymaps.lua` 末尾调用: 报告同一作用域下被**不同代码位置**抢注的键位(同一处代码重复注册、以及全局与 buffer-local 并存都不算冲突); 新增/改动键位后跑验证第 4 条。人工浏览全部已注册键位用 fuzzy finder 的 `<C-q>k`(telescope `builtin.keymaps`, 传 `show_plug = false` 滤掉 matchit/plenary 的 `<Plug>` 噪声)。
-  - 有的命名空间只在特定上下文注册: LSP 在 `settings/lsp.lua` 的 `LspAttach`、关闭特殊窗口的 `q` 在 `settings/autocmds.lua`、fzf/补全/浮动窗口在对应插件里。按文件类型注册的映射**必须带 buffer**(如 `{ buffer = buf }`; 否则会覆盖全局键位, 切回旧 buffer 时会跑错语言)。
+  - 有的命名空间只在特定上下文注册: LSP(跳转/诊断/折叠等)在 `settings/lsp.lua` 的 `LspAttach`; `open_hint`/`close_hint` 双路径 —— blink.cmp 接管时进 `plugins/blink-cmp.lua` 的 keymap, 兜底时由 `settings/lsp.lua` 条件注册; 关闭特殊窗口的 `q` 在 `settings/autocmds.lua`、fzf/浮动窗口在对应插件里。按文件类型注册的映射**必须带 buffer**(如 `{ buffer = buf }`; 否则会覆盖全局键位, 切回旧 buffer 时会跑错语言)。
 - 非按键的静态配置(调色板、行为参数)集中在 `lua/settings/consts.lua`, 例如 `colors`、`fast_move_by_lines`、`window_resize_step`; 内容变大再拆 `lua/settings/consts/`。
 - leader 约定: `<Leader>` = `/`, `<LocalLeader>` = `\`, LSP 前缀 `<C-\>`(`keys.lsp.lsp_leader`, 它由 `<LocalLeader>` 拼接派生 —— 改 `\` 会连带改 `<C-\>`), fuzzy finder `<C-q>`(`keys.fuzzy_finder.fuzzy_finder_leader`)。`vim.g.mapleader` / `vim.g.maplocalleader` 在 `init.lua` 定义; keys 表里取前缀用 `vim.g.maplocalleader`, 不要读全局变量(否则 lua_ls 报 `undefined-field`)。默认**不覆盖 Neovim 内置键**(曾经把 H/L 与 ^/$ 对调, 已撤销, 见 `docs/code-review-2026-10-01.md` 的 CMT-07);例外只保留普通模式的 `<C-u>`(改为打开撤销树, 内置的"上滚半屏"不再可用)与 `J`/`K`(改为按 5 个屏幕行快速移动, 内置 J 行连接 / K keywordprg 不再可用; 屏幕行口径与 j/k↔gj/gk 对调一致), 新增这类例外要在这里记一笔并说明理由。与内置键的另外两类重叠属**既定取舍**: ① 9 个命名空间前缀(`<C-b>/<C-d>/<C-f>/<C-m>/<C-q>/<C-s>/<C-t>/<C-\>/``<C-`>```)以内置键字节开头(`<C-m>`≡`<CR>`, `:h index.txt`), 这些内置键(Enter/<C-b>/<C-d>/<C-f>/<C-t> 翻页与 tag 回退)会先等 `timeoutlen`(默认 1000ms, `:h map-ambiguous`)再回落内置行为; ② `<C-h>/<C-j>/<C-l>` 直接覆盖内置 h/j/l(redraw)、`<C-k>`(内置未用)用作窗口光标移动。
-- 补全与片段: blink.cmp / LuaSnip 已删除, 改用 Neovim 原生实现 —— 补全在 `lua/settings/lsp.lua` 的 `LspAttach` 里用 `vim.lsp.completion.enable()` 启用(`<C-y>` 确认、`<C-e>` 取消), 片段用 `lua/plugins/snippets.lua` 的 `mini.snippets` + `friendly-snippets`, 引擎为 `vim.snippet`(展开/跳转/停止都用 `vim.snippet.*` 原生会话, 不再用 mini.snippets 的 session API); 相应的 `keys.lsp` 里的 `open_hint`/`close_hint`/`snippet_*` 由这两处注册。
-- snippets: 自研片段已全部弃用(`snippets/` 目录不存在, 不要重建), 只用社区集合; 片段会经 mini.snippets 起的进程内 LSP 服务器进入原生补全菜单。
+- 补全与片段: 引擎为 **blink.cmp**(nixpkgs `vimPlugins.blink-cmp`, 1.x 稳定线), 配置在 `lua/plugins/blink-cmp.lua`: super-tab 键(Tab 确认/跳节点, `<C-\>o`/`<C-\>x` 走 blink keymap, `<C-y>` 保留原生确认), `cmdline` 补全开(仅 `:` 自动弹), fuzzy 用 `prefer_rust`(nix 构建已把 frizbee 编进插件, 无预编译二进制下载), 片段源 preset `mini_snippets` 但 `snippets.expand/active/jump` **必须覆盖为原生 `vim.snippet.*`** —— preset 默认走 `MiniSnippets.session`, 而 `snippets.lua` 自定义了 `expand.insert`, session 不会建立, 不覆盖则片段跳转静默失效。原生补全(`settings/lsp.lua` 的 `vim.lsp.completion.enable` 段)保留作**兜底**: `plugins/blink-cmp.lua` 的 pcall 守卫失败时不设 `vim.g.completion_plugin_active`, 原生路径与 snippets.lua 的进程内 LSP 服务器照常回归; blink 在场时后两者让位。开关按**能力**(补全插件是否接管)而非插件名命名, 换补全引擎时只改设置方, 消费方与文档口径不动。LuaSnip 已删除, 不要加回; 片段集合仍为 `mini.snippets` + `friendly-snippets`, 引擎 `vim.snippet`。
+- snippets: 自研片段已全部弃用(`snippets/` 目录不存在, 不要重建), 只用社区集合; 片段进补全菜单两条路径: blink.cmp 在场走其内置 mini_snippets 源, 兜底时经 mini.snippets 起的进程内 LSP 服务器进原生补全菜单(见 `plugins/snippets.lua` 末尾)。
 - 类型标注: 本目录的 `.luarc.json`(LuaJIT + `undefined-field` 提到 Warning + `different-requires` 降为 Information + 忽略 `.pi`)的 `workspace.library` 指向 `${env:VIMRUNTIME}/lua`, 才能解析 `vim.keymap.set.Opts`、`vim.api.keyset.create_autocmd.callback_args` 等运行时类型; 离线跑 `lua-language-server --check=. --checklevel=Warning` 前要 `export VIMRUNTIME`。
   - `different-requires` 降级的原因: `require('plugins.noice')` 与 `require('noice')` 都会被 lua-language-server 解析到 `lua/plugins/noice.lua`(插件源码不在 workspace), 属误报。
 - 主题: catppuccin mocha + 透明背景。高亮覆盖分两条互不重叠的路径: `lua/plugins/colorscheme.lua`(catppuccin 选项, 插件路径)与 `lua/settings/transparency.lua`(`--noplugin` 时由 settings.lua 调用); 改透明相关先确认走哪条。

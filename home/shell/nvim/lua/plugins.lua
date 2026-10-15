@@ -8,6 +8,7 @@ require('plugins.colorscheme') -- 主题最先, 否则高亮会被后加载的�
 require('plugins.nvim-lspconfig')
 require('plugins.conform') -- 格式化(外部工具优先, LSP 兜底; 见该文件头部说明)
 require('plugins.telescope')
+require('plugins.blink-cmp') -- 补全引擎; 必须先于 snippets: 后者按它设置的 vim.g.completion_plugin_active 决定是否让位(blink 在场时不再起 mini.snippets 的进程内 LSP 服务器)
 require('plugins.snippets')
 require('plugins.lualine')
 require('plugins.noice')
