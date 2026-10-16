@@ -108,10 +108,9 @@ in
     # 必须启用才会安装软件包并生成配置
     enable = true;
 
-    # 包来源: 上游官方 flake (flake.nix 的 pi input; 正常跟踪 stable 分支 ⇒ 最新
-    # 正式版, 2026-10-12 起因 v1.2.0 的 Nix 构建失败而临时钉在 main 的修复 rev 上),
-    # 不再是 nixpkgs 的 pi-coding-agent。上游包 pname = "pi"、bin/pi 与 meta.mainProgram
-    # 不变, 所以下面的 wrapProgram 与 extraPackages 全部无需改动。
+    # 包来源: 上游官方 flake (flake.nix 的 pi input, 跟踪 stable 分支 ⇒ 最新正式版),
+    # 不再是 nixpkgs 的 pi-coding-agent。上游包 pname = "pi"、bin/pi 与
+    # meta.mainProgram 不变, 所以下面的 wrapProgram 与 extraPackages 全部无需改动。
     #
     # 包装注入三样东西:
     #   (1) sops-nix 生成的密钥到 pi 进程环境: 直接读密钥文件 (由 sops.nix 的 secrets

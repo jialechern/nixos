@@ -23,23 +23,16 @@
     # programs.pi-coding-agent.* 是因为 home-manager 上游自带该模块, 这里只是
     # "加 input + 用它提供的 package 覆盖点", 不走上游 overlay (那只产生
     # pkgs.pi, 不会替换 pkgs.pi-coding-agent)。
-    # 正常情况下这里跟踪 stable 分支: stable 由上游发版 workflow (nix.yml 的
-    # update-stable job) 快进到最新正式 tag, 因此它的 tip 即最新正式版。
+    # 跟踪 stable 分支 (即最新正式版): 上游发版 workflow (nix.yml 的
+    # update-stable job) 会把它快进到最新正式 tag。
     #
-    # 例外 (2026-10-12 起): 临时钉死到 main 上的一个 rev。v1.2.0 (tag 06a4669) 的
-    # Nix 构建在 installCheckPhase 报 "Cannot find module 'esbuild'" 而失败;
-    # nix.yml 的 update-stable `needs: build`, 失败即跳过 —— 于是 stable 至今仍停在
-    # v1.1.0 (abe508e)。修复只落在 main 上, 没有对应 tag / 分支; 上游 issue #10881
-    # 的回复是 "should be fixed on main now":
-    #   * 0a8cfff4 fix: drop chord and esbuild from the Nix package  ← 本次钉的 rev
-    #   * 235e8886 删除误提交的 packages/chord/node_modules 软链 (0a8cfff4 的父提交)
-    # 上游在该 rev 上手动重跑过 nix.yml (run 38321290165), 三个系统全绿; 它与 v1.2.0
-    # 只差 5 个修复/收尾提交, pi --version 仍是 1.2.0。
-    # 恢复时机: 日后某个正式版发布且 nix.yml 成功把 stable 推过 v1.2.0 之后, 把 url
-    # 改回 "github:earendil-works/pi/stable" 即可。注意 rev 形式的 input 不会随
-    # `nix flake update pi` 移动, 因此期间不会自动跟上上游。
+    # 历史 (2026-10-12 ~ 2026-10-16): v1.2.0 (tag 06a4669) 的 Nix 构建在
+    # installCheckPhase 报 "Cannot find module 'esbuild'" 而失败; nix.yml 的
+    # update-stable `needs: build`, 失败即跳过 —— 于是 stable 一度停在 v1.1.0
+    # (abe508e), 这里临时钉死到 main 上的修复 rev 0a8cfff4 (上游 issue #10881)。
+    # v1.3.0 (tag 71023aec, 2026-10-15) 构建通过并推上 stable 后已改回分支跟踪。
     pi = {
-      url = "github:earendil-works/pi/0a8cfff4cbcbbdb0071ebe056f1fcb5710e7fcf0";
+      url = "github:earendil-works/pi/stable";
 
       # 上游这两项都指向 GitHub, follows 到本机清华镜像 nixpkgs:
       # 省下一次完整 nixpkgs 下载。上游依赖 hash 取自其 package-lock.json 的
