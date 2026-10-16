@@ -339,6 +339,22 @@ in
       # "-" 前缀表示禁用, "+" 表示显式启用; 项目级 settings 可用 + 覆盖本项。
       extensions = [ "-builtin:llama.cpp" ];
 
+      # --- 全局扩展包 (settings.packages) ---
+      # 与项目级 extension-groups.json 的分工: 这里声明的包对**所有项目**生效,
+      # 每次 pi 启动都会加载; 只有部分项目才要的能力 (rpiv-todo / pi-subagents /
+      # pi-web-access / pi-lens / pi-simplify) 仍走 /exts 的按项目装配。
+      #
+      # pi-zentui (终端 TUI 皮肤, lmilojevicc): 编辑器 (opencode / accent-rail /
+      # minimalist 等 4 种) + 用户消息样式 + 可选择接管的 Working 行 + Starship
+      # 风格页脚 + 选择器边框, 每个组件独立开关; 交互配置命令 /zentui。
+      # 上游节奏快 (2026-10 单月 6 个版本) 且有 pi 版本矩阵 CI, 故不锁版本 (与
+      # extension-groups.json 的写法一致): pi 启动时经 npmCommand 的 npmmirror 源
+      # 安装/复用 ~/.pi/agent/npm, pi update --extensions 可升级。
+      # 要钉版本就写成 "npm:pi-zentui@0.31.0" —— 带版本的 npm 规格 pi 视为钉住,
+      # 代价是升级需要改本文件后 rebuild。
+      # 配置本体见下方 home.file 的 ~/.pi/agent/zentui.json。
+      packages = [ "npm:pi-zentui" ];
+
       # --- 默认工具集 ---
       # builtin:codemode 注册的 codemode 工具默认 inactive (内置扩展的激活只有两种途径:
       # 本项显式启用, 或 MCP 服务器以 codemode 暴露时自动激活), 这里显式打开试水。
@@ -504,6 +520,26 @@ in
     ".config/rpiv-todo/config.json".text = builtins.toJSON {
       collapseKey = "ctrl+shift+f";
     };
+
+    # pi-zentui 配置 (终端 TUI 皮肤; 包在 settings.packages 里声明, 见上方)
+    # 配置数据在 ./pi/zentui.nix —— 那里是带键级注释与出处的自文档数据文件,
+    # 本处只负责部署 (与 ./pi/AGENTS.md、./pi/extensions-manager.ts 同一模式)。
+    #
+    # ⚠ 部署成**只读**软链 (nix store), 而 zentui 把配置文件当状态:
+    #   /zentui 面板每次改动都会原子重写该文件 (且先 realpath 解析软链),
+    #   所以在只读软链上"保存"会失败 —— 面板仍可打开/预览/试切, 只是不落盘,
+    #   不会改坏配置也不会崩 (官方文档: "Saves fail without changing active settings");
+    #   面板里的 "Migrate component selections" 同理写不进去, 忽略即可。
+    #   实测报错形如 (每次尝试写会在转录里打两行, 仅此而已):
+    #     Error: Could not update Zentui settings: EROFS: read-only file system,
+    #       open '/nix/store/.<hash>…-hm_.piagentzentui.json.<pid>.<uuid>.tmp'
+    #   改配置 = 改 ./pi/zentui.nix → rebuild。
+    # 想临时试新值: rm ~/.pi/agent/zentui.json (删掉软链), zentui 会自己在原路径
+    #   创建可写文件; 试好后把内容搬回 ./pi/zentui.nix 再 rebuild。
+    # 备选方案 (若以后宁要可写面板也不要这一层只读语义): 改用 home.activation 配合
+    #   cp -n 只播种初值 (文件本身可写), 代价是 nix 与磁盘状态开始漂移,
+    #   声明式失去唯一权威 —— 届时把它从 home.file 移走即可。
+    ".pi/agent/zentui.json".text = builtins.toJSON (import ./pi/zentui.nix);
 
     # pi 用户级扩展 extensions-manager.ts: 注册 /exts 命令, 在会话内对当前
     # 项目装配/卸载/清点 extension-groups.json 里定义的插件组 (见本文件头部注释)。
