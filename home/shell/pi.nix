@@ -90,16 +90,10 @@ let
   # pi 项目级扩展集合 (extension groups)
   #
   # 这些包不进全局 settings.packages, 因此未装配它们的项目是零启动成本;
-  # 包列表内联在下方 home.file 的 ~/.pi/agent/extension-groups.json, 定义了
-  # init / coding 两个组, 由用户级扩展 extensions-manager.ts (同样经
-  # home.file 部署) 的 /exts 命令在 pi 会话内装配到当前项目的 .pi/settings.json:
-  #   装配基础集合  /exts add-group init     (幂等, 已装的跳过)
-  #   装配编码集合  /exts add-group coding
-  #   卸载全部      /exts clean             (带确认; -y 跳过)
-  #   查看清单      /exts list              (含组标注; 组名 Tab 补全)
-  # 装配后扩展自动 reload 生效, 无需重启 pi。
-  # 注: 写操作要求项目已被信任 (会话内用 /trust 授予), 未信任时 /exts 会
-  # 弹确认, 或加 -y 直接写入 (不保存信任决定); list 始终可用。
+  # 组定义在 ./pi/extensions/extension-groups.nix (部署为
+  # ~/.pi/agent/extension-groups.json), 由用户级扩展 extensions-manager.ts 的
+  # /exts 命令在 pi 会话内装配到当前项目的 .pi/settings.json
+  # (命令用法、信任要求与项目级覆盖方式见该数据文件头注释)。
   # ---------------------------------------------------------------------------
 
 in
@@ -352,7 +346,7 @@ in
       # 安装/复用 ~/.pi/agent/npm, pi update --extensions 可升级。
       # 要钉版本就写成 "npm:pi-zentui@0.31.0" —— 带版本的 npm 规格 pi 视为钉住,
       # 代价是升级需要改本文件后 rebuild。
-      # 配置本体见下方 home.file 的 ~/.pi/agent/zentui.json。
+      # 配置本体见 ./pi/extensions/zentui.nix (部署为 ~/.pi/agent/zentui.json)。
       packages = [ "npm:pi-zentui" ];
 
       # --- 默认工具集 ---
@@ -371,7 +365,7 @@ in
 
       # --- npm 镜像 ---
       # pi 查找/安装 npm 扩展时使用 —— 含 /exts add-group 经 pi install 装到项目的
-      # 扩展 (源见下方 extension-groups.json); 写进配置就不依赖 ~/.npmrc
+      # 扩展 (源见 ./pi/extensions/extension-groups.nix); 写进配置就不依赖 ~/.npmrc
       npmCommand = [
         "npm"
         "--registry=https://registry.npmmirror.com"
@@ -389,127 +383,15 @@ in
   # ---------------------------------------------------------------------------
   # home.file: 主题 / 提示词模板 / 各扩展配置
   # 注: 凡是用 builtins.toJSON 生成的 json, 都是"声明式只读"的 —— 指向 nix store
-  # 的符号链接, 在 pi 内改这些配置不会落盘, 改配置请改本文件后 rebuild。
+  # 的符号链接, 在 pi 内改这些配置不会落盘; json 数据源在 ./pi/extensions/*.nix
+  # (zentui / web-search / extension-groups), 改配置请改对应数据文件后 rebuild。
   # ---------------------------------------------------------------------------
   home.file = {
-    # pi-web-access 搜索配置: 复用 sops 注入的 TAVILY_API_KEY / FIRECRAWL_API_KEY
-    # $VAR 在请求时解析 (环境变量由 pi 包装脚本启动时从 sops 密钥文件读出并导出)
-    ".pi/agent/web-search.json".text = builtins.toJSON {
-      # --- 搜索凭据 ---
-      # 显式声明凭据来源便于自文档化; 环境变量优先级高于此处的字面值
-      tavilyApiKey = "$TAVILY_API_KEY";
-      firecrawlApiKey = "$FIRECRAWL_API_KEY";
-
-      # --- 搜索路由 ---
-      # 不设 provider (其优先级高于 searchRouting, 会覆盖路由):
-      # 先用 Tavily, 失败退 Firecrawl, 再失败退 Exa (无 key 时走托管 MCP,
-      # 免凭据兜底; 实测 mcp.exa.ai 可直连)。
-      # fallbackOn 决定哪类错误继续尝试下一个 provider; 它不含凭据类错误,
-      # 所以 key 配错不会继续回退, 而是就地返回诊断
-      searchRouting = {
-        providers = [
-          "tavily"
-          "firecrawl"
-          "exa"
-        ];
-        fallbackOn = [
-          "transient"
-          "quota"
-          "network"
-          "invalid-response"
-        ];
-      };
-
-      # --- 交互与快捷键 ---
-      # none: web_search 直接返回原始结果, 不弹浏览器策展窗口
-      workflow = "none";
-      # 两个默认键都被 kitty 拦截 (2026-10-04 核实, 规则见 home/desktop/kitty.nix):
-      #   curate   ctrl+shift+s → kitty 的 search_scrollback
-      #   activity ctrl+shift+w → kitty 的 close_window (按一下直接关窗口)
-      # 故一并改到 kitty 层空闲的 alt 键。注: 扩展注册的是字面量键, 不能用
-      # keybindings.json 改, 只能在这里改 (web-search.json 也是 builtins.toJSON 生成)。
-      shortcuts = {
-        curate = "alt+u";
-        activity = "alt+a";
-      };
-
-      # --- 工具 / 命令 / 图片开关 (显式写出, 便于日后核对) ---
-      tools = {
-        webSearch = {
-          enabled = true;
-        };
-        sourceCheck = {
-          enabled = true;
-        };
-        fetchContent = {
-          enabled = true;
-        };
-        getSearchContent = {
-          enabled = true;
-        };
-      };
-      commands = {
-        websearch = {
-          enabled = true;
-        };
-        curator = {
-          enabled = true;
-        };
-        search = {
-          enabled = true;
-        };
-        "google-account" = {
-          enabled = true;
-        };
-      };
-      image = {
-        enabled = true;
-      };
-
-      # --- 内容提取 ---
-      # fetch_content 内联切片, 同时是 get_search_content 的默认/最大切片
-      maxInlineContentChars = 30000;
-      fetch = {
-        timeout = 30;
-      };
-      # 无 Datalab / Gemini key, auto 会落到本地 unpdf (纯文本, 离线免费)
-      pdf = {
-        provider = "auto";
-        maxSizeMB = 20;
-        maxPages = 100;
-      };
-
-      # --- GitHub ---
-      # 公共库直接 clone 到本地; 超过 350MB 走 API 轻量视图
-      # gh CLI 由本文件 programs.pi-coding-agent.extraPackages 提供,
-      # 认证靠 sops.nix 注入的 GH_TOKEN;
-      # 未认证或 gh 失败时 PR/Issue 降级到未认证 REST (仅公共库, 限流 60/h, 无 checks)
-      githubClone = {
-        enabled = true;
-        maxRepoSizeMB = 350;
-        cloneTimeoutSeconds = 30;
-      };
-      githubPrIssue = {
-        enabled = true;
-      };
-
-      # --- 视频 ---
-      # 无 GEMINI_API_KEY / Gemini Web cookie / Perplexity key 时, YouTube 与本地视频
-      # 分析都会失败, 但 enabled = true 会返回明确可操作的报错
-      # ("Sign into Google ... or set GEMINI_API_KEY"), 优于静默退化成普通网页抓取。
-      # 注意: 本地视频抽帧受 video.enabled 门控; YouTube 抽帧只受 image.enabled 门控,
-      # 用 yt-dlp + ffmpeg 本地完成, 不需要 API key。
-      youtube = {
-        enabled = true;
-      };
-      video = {
-        enabled = true;
-      };
-
-      # --- SSRF ---
-      # 保持默认为空: 本机 v2raya 未使用 TUN/fake-IP (公共域名解析到真实 IP),
-      # 无需豁免 198.18.0.0/15 等保留段; 保留完整 SSRF 防护
-    };
+    # pi-web-access 搜索配置 (数据在 ./pi/extensions/web-search.nix —— 带键级注释与
+    # 出处的自文档数据文件; 本处只负责部署, 只读, 改配置请改那里后 rebuild)。
+    # 搜索凭据复用 sops 注入的环境变量 $TAVILY_API_KEY / $FIRECRAWL_API_KEY
+    # ($VAR 在请求时解析; 变量由 pi 包装脚本启动时从密钥文件读出并导出)
+    ".pi/agent/web-search.json".text = builtins.toJSON (import ./pi/extensions/web-search.nix);
 
     # rpiv-todo 配置: 折叠面板的快捷键
     # 插件默认 ctrl+shift+t, 本机为 ctrl+shift+f —— 但两者都被 kitty 拦截
@@ -522,7 +404,7 @@ in
     };
 
     # pi-zentui 配置 (终端 TUI 皮肤; 包在 settings.packages 里声明, 见上方)
-    # 配置数据在 ./pi/zentui.nix —— 那里是带键级注释与出处的自文档数据文件,
+    # 配置数据在 ./pi/extensions/zentui.nix —— 那里是带键级注释与出处的自文档数据文件,
     # 本处只负责部署 (与 ./pi/AGENTS.md、./pi/extensions-manager.ts 同一模式)。
     #
     # ⚠ 部署成**只读**软链 (nix store), 而 zentui 把配置文件当状态:
@@ -533,55 +415,24 @@ in
     #   实测报错形如 (每次尝试写会在转录里打两行, 仅此而已):
     #     Error: Could not update Zentui settings: EROFS: read-only file system,
     #       open '/nix/store/.<hash>…-hm_.piagentzentui.json.<pid>.<uuid>.tmp'
-    #   改配置 = 改 ./pi/zentui.nix → rebuild。
+    #   改配置 = 改 ./pi/extensions/zentui.nix → rebuild。
     # 想临时试新值: rm ~/.pi/agent/zentui.json (删掉软链), zentui 会自己在原路径
-    #   创建可写文件; 试好后把内容搬回 ./pi/zentui.nix 再 rebuild。
+    #   创建可写文件; 试好后把内容搬回 ./pi/extensions/zentui.nix 再 rebuild。
     # 备选方案 (若以后宁要可写面板也不要这一层只读语义): 改用 home.activation 配合
     #   cp -n 只播种初值 (文件本身可写), 代价是 nix 与磁盘状态开始漂移,
     #   声明式失去唯一权威 —— 届时把它从 home.file 移走即可。
-    ".pi/agent/zentui.json".text = builtins.toJSON (import ./pi/zentui.nix);
+    ".pi/agent/zentui.json".text = builtins.toJSON (import ./pi/extensions/zentui.nix);
 
     # pi 用户级扩展 extensions-manager.ts: 注册 /exts 命令, 在会话内对当前
-    # 项目装配/卸载/清点 extension-groups.json 里定义的插件组 (见本文件头部注释)。
+    # 项目装配/卸载/清点 extension-groups.json 里定义的插件组
+    # (组定义与命令用法见 ./pi/extensions/extension-groups.nix 头注释)。
     # 部署为只读软链即可: pi 经 jiti 直接运行 TS 源码, 无需编译
     # (文档: pi docs/extensions.md 的 "Add it to Pi")
     ".pi/agent/extensions/extensions-manager.ts".source = ./pi/extensions-manager.ts;
 
-    # 插件组定义 (声明式只读: 改组请改本文件后 rebuild); 某个项目想用不同的
-    # 组内容时, 可在该项目 .pi/extension-groups.json 定义同名组整体覆盖。
-    ".pi/agent/extension-groups.json".text = builtins.toJSON {
-      # 基础集合: 通用能力, 任何项目都可能想要
-      init = {
-        description = "基础集合: 通用能力, 任何项目都可能想要 (待办 / 子代理 / 网页访问)";
-        packages = [
-          # 待办清单 (MIT, juicesharp): todo 工具 + /todos 命令 + 编辑器上方实时面板
-          # 面板折叠键在 ~/.config/rpiv-todo/config.json 绑定为 ctrl+shift+f
-          # 注意 (2026-10-04 核实): 该键被 kitty 的 toggle_fullscreen 拦截
-          # (home/desktop/kitty.nix 的 "ctrl+shift+f"), pi 收不到 —— 折叠功能实际不可用;
-          # 换到 alt+t 之类 kitty 层空闲的键即可恢复。pi 侧已把同键的
-          # tui.altScreen.search 置空, 因此这里不产生扩展抢键告警。
-          "npm:@juicesharp/rpiv-todo"
-          # 子代理: 把任务委托给专注的子会话
-          "npm:pi-subagents"
-          # 网页访问: 搜索 / 抓取 / GitHub 克隆 / PDF / 视频理解
-          # 配置见上方 home.file 的 ~/.pi/agent/web-search.json
-          "npm:pi-web-access"
-        ];
-      };
-      # 编码集合: 与基础集合正交, 只含编码相关。
-      # add-group 是幂等追加, 各组叠加即得并集: 日常项目只装 init 保持轻量,
-      # 编码项目再叠加 coding, 主动用启动耗时换功能。
-      # 需要继续细化时可再加一组 (如 audit → 审计集合)。
-      coding = {
-        description = "编码集合: 实时代码反馈 LSP 诊断 / linter / autofix (与基础正交)";
-        packages = [
-          # 实时代码反馈 (LSP 诊断 / linter / autofix)
-          "npm:pi-lens"
-          # 简单代码审查
-          "npm:pi-simplify"
-        ];
-      };
-    };
+    # 插件组定义 (数据在 ./pi/extensions/extension-groups.nix —— 组内容与项目级
+    # 覆盖方式见该文件头注释; 本处只负责部署, 只读, 改组请改那里后 rebuild)
+    ".pi/agent/extension-groups.json".text = builtins.toJSON (import ./pi/extensions/extension-groups.nix);
   };
 
   # ---------------------------------------------------------------------------

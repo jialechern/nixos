@@ -45,7 +45,11 @@ import order and the order lands in the generated fstab (and the drv hash).
   so it belongs on the "needs a proxy on a first install" list
   too (README's 网络问题 section). Unlike `sops.nix`, `home/shell/pi.nix` has no
   `pathExists` switch: it is imported unconditionally by `home/shell.nix`, so
-  disabling it means commenting that import out. No
+  disabling it means commenting that import out. Per-extension config data lives
+  in `home/shell/pi/extensions/` as plain nix attrsets (`zentui.nix`,
+  `web-search.nix`, `extension-groups.nix`) that `pi.nix` serializes with
+  `builtins.toJSON` into read-only `~/.pi/agent/` store links; edit the data file
+  and rebuild. No
   external dotfiles inputs remain: the Neovim config now lives in this repo at
   `home/shell/nvim/` and is deployed to `~/.config/nvim` by
   `home/shell/nvim.nix` (see "Neovim config" below); KeePassXC is still
