@@ -322,10 +322,11 @@ in
       };
 
       # --- 网络代理 (可选) ---
-      # 国内访问海外 API (如 OpenCode Zen/Go ...) 时启用, 走本机代理 127.0.0.1:20172
+      # 国内访问海外 API (如 OpenCode Zen/Go ...) 时启用, 走本机代理
+      # (地址/端口见 modules/proxy.nix 的 machine.proxy.httpUrl)
       # pi 会将其应用为 HTTP_PROXY / HTTPS_PROXY。只能在 agent 目录级 settings 配置
       # (pi 文档 docs/settings.md: "Can only be set in agent-directory settings"), 项目级不可覆盖
-      # httpProxy = "http://127.0.0.1:20172";
+      # httpProxy = "http://127.0.0.1:<端口>";
 
       # --- 内置扩展开关 (0.99.0 起) ---
       # 内置扩展名为 builtin:mcp / builtin:llama.cpp / builtin:codemode / builtin:tool-search,

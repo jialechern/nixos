@@ -84,7 +84,7 @@
       # profile.release.lto = "thin"; # 发布产物做 thin LTO
       # profile.release.strip = "symbols"; # 发布产物剥掉符号
       # build.rustflags = [ "-C" "target-cpu=native" ];
-      # http.proxy = "http://127.0.0.1:20172"; # 需要显式代理时 (本机透明代理通常不必)
+      # http.proxy = "http://127.0.0.1:<端口>"; # 需要显式代理时 (端口见 modules/proxy.nix; 本机通常不必)
     };
   };
 }

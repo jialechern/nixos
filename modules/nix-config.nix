@@ -55,10 +55,7 @@
   };
 
   # --- nix 代理设置 ---
-  systemd.services.nix-daemon.environment = {
-    http_proxy = "http://127.0.0.1:20172";
-    https_proxy = "http://127.0.0.1:20172";
-    ftp_proxy = "http://127.0.0.1:20172";
-    no_proxy = "localhost,127.0.0.1,::1";
-  };
+  # 端口/no_proxy 的唯一来源是 modules/proxy.nix 的 machine.proxy; 这里只引用,
+  # 不要再写死 URL。nix-daemon 需要显式注入 (它不会读会话环境变量)。
+  systemd.services.nix-daemon.environment = config.machine.proxy.env;
 }

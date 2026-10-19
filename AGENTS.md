@@ -133,11 +133,18 @@ single-sourced keymaps, treesitter, folding) live in `home/shell/nvim/AGENTS.md`
   so a plain `nix build` does not need the key. Edit secrets with
   `sops secrets/<dir>/<file>.yaml`. Encrypted files are committed; never add
   plaintext secrets.
-- **Proxy dependence**: nix-daemon is configured with `http://127.0.0.1:20172`
-  in `modules/nix-config.nix`; some packages (and sops) only build via the
-  transparent proxy (v2raya). If a build fails on network fetch and the proxy is
-  down, temporarily remove the `*-require-proxy` files or `sops.nix` rather than
-  editing proxy config.
+- **Proxy dependence**: the HTTP proxy is declared once in `modules/proxy.nix`
+  (`machine.proxy.{enable,clientHost,httpPort,noProxy,lanListen}` plus the derived
+  read-only `httpUrl` / `noProxyString` / `env`). Consumers reference those and
+  never hardcode `127.0.0.1:20172`: `modules/nix-config.nix` (nix-daemon env),
+  `modules/steam.nix` (`pkgs.steam.override { extraEnv = config.machine.proxy.env; }`),
+  `modules/network.nix` (firewall, gated by `enable && lanListen`) and
+  `home/shell/proxychains.nix` (via `osConfig`, which Home Manager injects for
+  every HM module — see its `nixos/common.nix`). `grep -rn 20172 --include='*.nix'`
+  must only hit `modules/proxy.nix`; the port itself is still set in v2raya's GUI,
+  so changing it means changing it in both places. Some packages (and sops) only
+  build via the proxy; if a build fails on network fetch and it is down, temporarily
+  remove the `*-require-proxy` files or `sops.nix` rather than editing proxy config.
 - `stateVersion` is `25.11` in both system and home configs — do not bump
   casually.
 

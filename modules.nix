@@ -15,6 +15,8 @@
     ./modules/nix-config.nix
     # 引入网络配置
     ./modules/network.nix
+    # 引入本机代理的单一事实源 (端口/地址/no_proxy 只在此定义)
+    ./modules/proxy.nix
     # 引入基本外设配置
     ./modules/peripherals.nix
     # 引入时区与语言配置

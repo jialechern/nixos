@@ -32,4 +32,5 @@
   需要语言库环境或同一批依赖会反复使用时 (如引入外部 skill), 经用户同意后在项目根写
   `flake.nix` 提供 dev shell (`nix develop`; git 仓库内须先 `git add`, 否则 nix 不可见),
   一次性用途可放 `/tmp`
-- 构建或联网失败先确认 v2raya 代理在运行 (`systemctl status v2raya`; `127.0.0.1:20172`)
+- 构建或联网失败先确认 v2raya 代理在运行 (`systemctl status v2raya`; 端口见
+  `/etc/nixos/modules/proxy.nix` 的 `machine.proxy.httpPort`)
