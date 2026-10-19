@@ -10,16 +10,14 @@
     remotePlay.openFirewall = true;
 
     # 声明式注入代理, 不必再手动 `https_proxy=... steam`。
-    # 原理: pkgs/by-name/st/steam/package.nix 会把 extraEnv 以
-    # `set -a` + `lib.toShellVars extraEnv` 写进 FHS 环境的 /etc/profile,
-    # 该 profile 由容器内的 /init `source` 后再 exec steam; bwrap 未加
-    # --clearenv, 所以变量一路传到 steam 客户端 / CEF / libcurl 下载以及它
-    # 拉起的游戏进程 (桌面图标、终端、steam:// 链接、steam-gamescope 都走这个包)。
-    # 取值来自 modules/proxy.nix 的 machine.proxy.env (端口只在那里定义);
-    # 注意:
-    #   - HTTP 代理只接管 TCP/HTTP(S); 游戏的 UDP 联机流量不受影响, 仍直连
-    #   - no_proxy 已含回环, 免得 Steam 内部的本地 HTTP/IPC 流量被绕去代理
-    #   - 想让游戏下载直连时, 把 steamcontent.com 等域名加进 machine.proxy.noProxy
+    # 原理: pkgs/by-name/st/steam/package.nix 会把 extraEnv 以 `set -a` +
+    # `lib.toShellVars` 写进 FHS 环境的 /etc/profile, 容器内 /init `source` 后再
+    # exec steam; bwrap 未加 --clearenv, 所以变量一路传到客户端 / CEF / libcurl
+    # 下载以及它拉起的游戏进程 (桌面图标、终端、steam:// 链接、steam-gamescope
+    # 都用这个包)。取值来自 modules/proxy.nix 的 machine.proxy.env, 想让下载直连
+    # 就往那里的 noProxy 加域名。
+    # 注意: HTTP 代理只接管 TCP/HTTP(S), 游戏 UDP 联机仍直连; no_proxy 已含回环,
+    # 免得 Steam 内部的本地 HTTP/IPC 流量被绕去代理。
     package = pkgs.steam.override {
       extraEnv = config.machine.proxy.env;
     };

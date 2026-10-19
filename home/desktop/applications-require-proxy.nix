@@ -2,11 +2,9 @@
 
 {
   home.packages = with pkgs; [
-    # 不要在此添加 steam: programs.steam.enable (modules/steam.nix) 已把它放进
-    # 系统 profile (steam + steam-run), 且那份带 hardware.graphics 的 32/64 位
-    # extraLibraries 与 STEAM_EXTRA_COMPAT_TOOLS_PATHS (GE-Proton)。HM 用户 profile
-    # 在 PATH 中优先于系统 profile, 在这里放 pkgs.steam 会遮蔽系统定制包,
-    # 使 programs.steam.package 的任何定制(含代理 extraEnv)全部失效。
+    # 不要在此添加 steam: programs.steam.enable (modules/steam.nix) 已把定制包放进
+    # 系统 profile; HM 用户 profile 在 PATH 中优先, 在这里放 pkgs.steam 会遮蔽它,
+    # 使 programs.steam.package 的定制 (extraLibraries、GE-Proton、代理 extraEnv) 失效。
     # Telegram 桌面端
     telegram-desktop
     # QQ

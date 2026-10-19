@@ -53,7 +53,7 @@
   };
 
   # --- nix 代理设置 ---
-  # 端口/no_proxy 的唯一来源是 modules/proxy.nix 的 machine.proxy; 这里只引用,
-  # 不要再写死 URL。nix-daemon 需要显式注入 (它不会读会话环境变量)。
+  # nix-daemon 不读会话环境变量, 必须显式注入; 端口/no_proxy 的唯一来源是
+  # modules/proxy.nix 的 machine.proxy, 这里只引用, 不再写死 URL。
   systemd.services.nix-daemon.environment = config.machine.proxy.env;
 }

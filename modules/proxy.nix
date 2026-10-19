@@ -29,8 +29,8 @@ in
       type = lib.types.bool;
       default = true;
       description = ''
-        总开关: 关掉后 env 退化为空, 所有消费方 (steam、nix-daemon、系统 profile)
-        随之不再注入代理, 不必逐个注释。
+        总开关: 关掉后 env 退化为空, 所有消费方 (steam、nix-daemon) 随之不再
+        注入代理, 不必逐个注释。
       '';
     };
 
@@ -54,11 +54,7 @@ in
 
     noProxy = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [
-        "localhost"
-        "127.0.0.1"
-        "::1"
-      ];
+      default = [ "localhost" "127.0.0.1" "::1" ];
       description = ''
         不走代理的域名/地址 (no_proxy)。想让 Steam 下载这类大流量直连时,
         把 steamcontent.com 等域名追加进来。
@@ -79,26 +75,24 @@ in
       type = lib.types.str;
       readOnly = true;
       default = "http://${cfg.clientHost}:${toString cfg.httpPort}";
-      defaultText = lib.literalExpression ''
-        "http://''${config.machine.proxy.clientHost}:''${toString config.machine.proxy.httpPort}"
-      '';
-      description = "派生量: 完整的代理 URL。";
+      defaultText = lib.literalExpression ''"http://''${clientHost}:''${httpPort}"'';
+      description = "完整的代理 URL。";
     };
 
     noProxyString = lib.mkOption {
       type = lib.types.str;
       readOnly = true;
       default = lib.concatStringsSep "," cfg.noProxy;
-      description = "派生量: no_proxy 环境变量的字符串形式 (逗号分隔, 不带空格)。";
+      description = "no_proxy 环境变量的字符串形式 (逗号分隔, 不带空格)。";
     };
 
     env = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
       readOnly = true;
       default = if cfg.enable then proxyEnv else { };
-      defaultText = lib.literalExpression "由 enable / httpUrl / noProxyString 派生";
+      defaultText = lib.literalMD "由 `enable` / `httpUrl` / `noProxyString` 派生";
       description = ''
-        派生量: 可直接赋给 `systemd.services.<name>.environment` 或
+        可直接赋给 `systemd.services.<name>.environment` 或
         `pkgs.steam.override { extraEnv = ...; }` 的环境变量集
         (http/https/ftp 的大小写两套 + no_proxy)。
       '';

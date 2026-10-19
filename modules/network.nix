@@ -39,11 +39,11 @@
   networking.firewall.allowedTCPPorts = [
     22 # SSH (openssh 也会自动放, 这里显式声明维护意图)
   ]
-  ++ lib.optionals (config.machine.proxy.enable && config.machine.proxy.lanListen) [
+  ++ lib.optional (config.machine.proxy.enable && config.machine.proxy.lanListen) (
     # 局域网设备经由此机代理上网 (需在 v2raya 的 GUI 里把监听地址改为 0.0.0.0);
     # 端口号定义在 modules/proxy.nix, 不要写死
     config.machine.proxy.httpPort
-  ];
+  );
   # 默认对未放行端口为 DROP (静默丢弃), 更安全; 若想明确拒绝、让端口扫描
   # 更容易探出已开放端口, 可改为 networking.firewall.rejectPackets = true;
 
