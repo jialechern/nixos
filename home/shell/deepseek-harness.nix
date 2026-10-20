@@ -16,17 +16,18 @@
 #
 # 关键路径 (都由 dsh 自己创建/写入, 不可用 home.file 管理, 否则是只读 store 软链):
 #   $DSH_HOME = ~/.dsh          默认家目录
-#   ~/.dsh/.credentials.yaml    API key 明文落盘 (首启在 Web UI 里填)
+#   ~/.dsh/.credentials.yaml    API key 与 cookie 签名密钥明文落盘 (key 在 Web UI 里填)
 #   ~/.dsh/profiles/web/        web profile 的 cordis.patch.yml 与插件
 #   ~/.dsh/logs/                启动失败诊断报告
 let
   # --- dsh-url: 取当前这一轮可用的 Web UI 地址 ---
-  # dsh web 的 launch token 与会话 cookie 的签名密钥都是逐进程 randomBytes 生成的:
-  # 服务每重启 (含 systemctl --user restart) 一次, 旧 URL 和浏览器里已存的 cookie
-  # 一起失效, 所以只能从 journal 里取最近一次的启动播报 (它打在 stdout, 即 user journal)。
-  # 直接开 http://localhost:3080/ 提示 "authentication required", 就是因为没走过
-  # token URL 这一趟; 且该 cookie 是 host-only, localhost 与 127.0.0.1 互不通用,
-  # 所以认证后请认准同一个主机名。
+  # dsh web 的 launch token 逐进程 randomBytes 生成, cookie 的签名密钥则落盘
+  # ($DSH_HOME/.credentials.yaml), 所以服务每重启 (含 systemctl --user restart)
+  # 一次旧 URL 就失效, 已认证的浏览器 cookie 却仍然有效; token 只能从 journal 里
+  # 取本次启动的播报 (它打在 stdout, 即 user journal)。
+  # 没认证过的浏览器直接开 http://localhost:3080/ 会提示 "authentication required",
+  # 就是没走过 token URL 这一趟; 且 cookie 是 host-only (连同端口) 的, localhost 与
+  # 127.0.0.1 互不通用, 所以认证后请认准同一个主机名。
   dshUrl = pkgs.writeShellApplication {
     name = "dsh-url";
     runtimeInputs = with pkgs; [
@@ -48,10 +49,12 @@ let
         -o, --open   直接在默认浏览器中打开取到的地址
         -h, --help   显示帮助
 
-      说明: token 在每次启动时重新生成, 旧地址与浏览器里已存的 cookie 随之失效;
-            本命令取的是最近一次启动播报的地址。认证成功后请固定用同一个主机名
+      说明: token 在每次启动时重新生成, 旧地址随之失效; 已认证的浏览器 cookie
+            仍然有效 (签名密钥落盘, 默认 30 天), 过期、换浏览器或主机名时才需
+            重新认证。
+            本命令取的是本次启动播报的地址; 认证成功后请固定用同一个主机名
             (cookie 为 host-only, localhost 与 127.0.0.1 互不通用)。
-      退出码: 0=成功, 1=服务未运行或日志里没有启动播报, 2=参数错误
+      退出码: 0=成功, 1=服务未运行或日志里没有本次启动的播报, 2=参数错误
       EOF
       }
 
@@ -75,10 +78,15 @@ let
         exit 1
       fi
 
-      url="$(journalctl --user -u "$UNIT" -o cat --no-pager 2>/dev/null |
+      # Type=simple 下, dsh 打印 URL 之前 unit 就已 active。若只取 "最近一条",
+      # 重启后、新进程还没播报时会拿到上一次运行的过期 token; 按本次启动的
+      # InvocationID 过滤, 没有新播报就报错 (提示稍后重试) 而不是给死链接。
+      invocation="$(systemctl --user show -p InvocationID --value "$UNIT")"
+      url="$(journalctl --user -u "$UNIT" \
+        "_SYSTEMD_INVOCATION_ID=$invocation" -o cat --no-pager 2>/dev/null |
         grep -oE 'https?://[^[:space:]]*token=[^[:space:]]*' | tail -n 1)" || url=""
       if [ -z "$url" ]; then
-        printf 'dsh-url: %s 的日志里没有找到带 token 的启动播报\n' "$UNIT" >&2
+        printf 'dsh-url: %s 的日志里没有找到本次启动的 token 播报 (刚重启可稍后重试)\n' "$UNIT" >&2
         exit 1
       fi
 
@@ -125,8 +133,8 @@ in
       # 端口与监听地址保持上游默认 (127.0.0.1:3080), 因此不写 --port / --host。
       ExecStart = "${lib.getExe pkgs.deepseek-harness} web --no-open";
 
-      # 每次重启 launch token 与浏览器 cookie 都重新生成 (逐进程 randomBytes),
-      # 取新地址用本模块安装的 dsh-url (加 -o 可直接在浏览器里打开)。
+      # 每次重启 launch token 都会重新生成 (逐进程 randomBytes); 取新地址用本模块
+      # 安装的 dsh-url (加 -o 可直接在浏览器里打开), 已认证的浏览器 cookie 不受影响。
       Restart = "on-failure";
       RestartSec = 3;
     };
