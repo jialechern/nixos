@@ -14,7 +14,7 @@
 #   - 不启用 linger: 登录后才起, 最后一个会话结束即停。
 # 远程访问请用 SSH 端口转发, 不要改防火墙。
 #
-# 关键路径 (都由 dsh 自己创建/写入, 不可用 home.file 管理, 否则是只读 store 软链):
+# 关键路径 (都由 dsh 自己创建/写入, 不可用 home.file 管理):
 #   $DSH_HOME = ~/.dsh          默认家目录
 #   ~/.dsh/.credentials.yaml    API key 与 cookie 签名密钥明文落盘 (key 在 Web UI 里填)
 #   ~/.dsh/profiles/web/        web profile 的 cordis.patch.yml 与插件
@@ -124,11 +124,11 @@ in
       Type = "simple";
 
       # Web UI 的默认 workspace 与沙箱策略的 workspaceRoot 都取自进程 cwd
-      # (base bundle: workspaceRoot: process.cwd()), 即本行决定 agent 能写哪里。
+      # (base bundle: workspaceRoot: process.cwd()), 即本行决定 agent 能写哪里:
+      # 整个 ~/Projects 树 (含其中已有的各项目), 而非一个专用空目录。
       # 故意不设 $HOME: 那等于把整个家目录交给 workspace-write 沙箱。
-      # 目录本身由 home.nix 的 xdg.userDirs 声明式创建 (createDirectories 建成的
-      # 实体可写目录); 这里直接取同一个值, 避免把路径写两遍。
-      WorkingDirectory = config.xdg.userDirs.extraConfig.DEEPSEEKHARNESS;
+      # 路径取自 home.nix 的 xdg.userDirs.projects (默认 ~/Projects)。
+      WorkingDirectory = config.xdg.userDirs.projects;
 
       # --no-open: 服务没有浏览器, 不加的话每次启动都尝试打开默认浏览器并失败。
       # 端口与监听地址保持上游默认 (127.0.0.1:3080), 因此不写 --port / --host。

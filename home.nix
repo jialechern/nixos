@@ -62,8 +62,11 @@
     setSessionVariables = true;
 
     # 8 个标准目录 (documents/download/pictures/videos/music/desktop/
-    # publicShare/templates) 以及 projects 都等于 HM 默认值 ($HOME/同名目录),
-    # 不再逐个声明; 需要改名时再显式写
+    # publicShare/templates) 与 projects 都取 HM 默认值 ($HOME/同名目录), 故不逐个
+    # 声明, 需要改名时再显式写。其中 projects (~/Projects) 同时是 DeepSeek Harness
+    # Web UI 的工作目录 (见 home/shell/deepseek-harness.nix), dsh 要在其中读写,
+    # 必须由上面的 createDirectories 建成实体可写目录 (home.file 只会给出只读的
+    # store 软链)。
 
     # 额外的自定义目录
     extraConfig = {
@@ -71,12 +74,6 @@
       # home/desktop/niri/conf.d/{startup,bind}.kdl), 这里声明是为了让遵循 XDG
       # 的 GUI 程序也能找到它; 图片由用户自行放置
       WALLPAPERS = "${config.home.homeDirectory}/Wallpapers";
-
-      # DeepSeek Harness Web UI 的工作目录 (细节见 home/shell/deepseek-harness.nix)。
-      # 靠上面的 createDirectories 建成**实体可写目录**: 不能用 home.file —— 那会
-      # 给出只读 store 软链, dsh 无法在其中读写。
-      # 副作用: setSessionVariables 会多导出一个 XDG_DEEPSEEKHARNESS_DIR。
-      DEEPSEEKHARNESS = "${config.home.homeDirectory}/DeepseekHarness";
     };
   };
 
