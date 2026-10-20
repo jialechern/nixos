@@ -1,8 +1,8 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   # 锁屏命令 (swaylock 配置里 daemonize = true, 即锁定建立后才返回)
-  swaylock = "${config.programs.swaylock.package}/bin/swaylock";
+  swaylock = "${lib.getExe config.programs.swaylock.package}";
 in
 {
   services.swayidle = {
@@ -15,9 +15,9 @@ in
       # 十分钟（600 秒）无活动后自动关闭显示器
       {
         timeout = 600;
-        command = "${pkgs.niri}/bin/niri msg action power-off-monitors";
+        command = "${lib.getExe pkgs.niri} msg action power-off-monitors";
         # 恢复活动时点亮显示器
-        resumeCommand = "${pkgs.niri}/bin/niri msg action power-on-monitors";
+        resumeCommand = "${lib.getExe pkgs.niri} msg action power-on-monitors";
       }
       # 十五分钟（900 秒）无活动后锁屏
       {
@@ -35,7 +35,7 @@ in
       lock = swaylock;
 
       # 系统从睡眠恢复后确保显示器点亮
-      after-resume = "${pkgs.niri}/bin/niri msg action power-on-monitors";
+      after-resume = "${lib.getExe pkgs.niri} msg action power-on-monitors";
     };
   };
 }

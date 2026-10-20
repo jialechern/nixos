@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   # --- 合成器与桌面环境 ---
@@ -23,7 +23,7 @@
         # --cmd 指定登录后启动的会话; 用绝对路径, 不依赖 greetd 的 PATH
         # (它只是默认会话, 仍可在登录界面的会话菜单里手动改选 —— 如 gamescope session;
         #  tuigreet(1): "--cmd ... can be overridden by manual selection within tuigreet")
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd ${config.programs.niri.package}/bin/niri-session";
+        command = "${lib.getExe pkgs.tuigreet} --time --remember --cmd ${lib.getExe' config.programs.niri.package "niri-session"}";
         user = "greeter";
       };
     };

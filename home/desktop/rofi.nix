@@ -15,7 +15,7 @@
       # location 在 rofi 原生配置中是数字: 0=center, 1=top-left, 2=top, 3=top-right,
       # 4=right, 5=bottom-right, 6=bottom, 7=bottom-left, 8=left
       location = 0;
-      terminal = "${pkgs.kitty}/bin/kitty";
+      terminal = "${lib.getExe pkgs.kitty}";
 
       modi = "drun,run,filebrowser,window";
       show-icons = true;

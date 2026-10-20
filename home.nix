@@ -121,7 +121,7 @@
     # EDITOR / VISUAL 由 home/shell/nvim.nix 的 programs.neovim.defaultEditor 提供
 
     # 默认 Shell
-    SHELL = "${pkgs.fish}/bin/fish";
+    SHELL = "${lib.getExe pkgs.fish}";
 
     # 禁止 fzf 在 tmux 中新建 pane, 改为内联显示(覆盖 fzf 模块默认的 "1")
     FZF_TMUX = lib.mkForce "0";

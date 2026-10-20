@@ -22,7 +22,7 @@
 
       # --- --- --- 终端 --- --- ---
       terminal.shell = {
-        program = "${pkgs.fish}/bin/fish";
+        program = "${lib.getExe pkgs.fish}";
         args = [ ];
       };
       terminal.osc52 = "CopyPaste"; # SSH 远程会话可读写本地剪贴板 (个人桌面机可接受)

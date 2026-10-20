@@ -93,11 +93,11 @@ in
         scrollback_lines = 100000; # 回滚缓冲上限
         # 用 nvim 浏览回滚历史 (vi 模式), 由 show_scrollback (默认 ctrl+shift+h, 另绑定 alt+s>alt+v) 调用
         # 官方文档示例: nvim_open_term 渲染 ANSI 颜色, q 直接退出, 打开时定位到上次光标行
-        scrollback_pager = "${pkgs.neovim}/bin/nvim --cmd 'set eventignore=FileType' +'nnoremap q ZQ' +'call nvim_open_term(0, {})' +'set nomodified nolist' +'$' -";
+        scrollback_pager = "${lib.getExe pkgs.neovim} --cmd 'set eventignore=FileType' +'nnoremap q ZQ' +'call nvim_open_term(0, {})' +'set nomodified nolist' +'$' -";
         # 单独给 pager 使用的历史缓冲上限 (MB), 0 = 全部传入
         # 约 1MB/万行: 32MB 足够容纳 10 万行回滚, 同时防止缓冲异常增长拖慢打开
         scrollback_pager_history_size = 32;
-        shell = "${pkgs.fish}/bin/fish"; # 启动时直接进入 fish shell
+        shell = "${lib.getExe pkgs.fish}"; # 启动时直接进入 fish shell
         # 标签页栏: 位置与风格
         tab_bar_edge = "top"; # 标签页栏置于顶部
         tab_bar_style = "powerline"; # Powerline 风格 (可选: fade / slant / separator / powerline / custom / hidden)
