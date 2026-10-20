@@ -11,7 +11,7 @@
     keyMode = "vi";
     baseIndex = 1;
     escapeTime = 0;
-    shell = "${lib.getExe pkgs.fish}"; # tmux 内部命令使用的 shell(default-shell)
+    shell = "${lib.getExe config.programs.fish.package}"; # tmux 内部命令使用的 shell(default-shell)
 
     # --- --- --- Home Manager 声明式选项 --- --- ---
     historyLimit = 10000; # 回滚行数 (默认 2000)
@@ -45,7 +45,7 @@
       # ============================================================
       # 默认 Shell: 所有新 window/pane 使用 fish
       # ============================================================
-      set -g default-command "${lib.getExe pkgs.fish}"
+      set -g default-command "${lib.getExe config.programs.fish.package}"
 
       # ============================================================
       # 终端兼容性与色彩

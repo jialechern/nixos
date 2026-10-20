@@ -34,8 +34,6 @@ let
       #
       # 退出码: 0 = 期望 GPU 渲染; 1 = 其他 GPU 渲染 (多半是核显回退); 2 = 无法判定
 
-      set -euo pipefail
-
       # 期望用于渲染的 GPU 的 PCI vendor: 0x10de = NVIDIA (本机 dGPU); 换 A 卡改为 0x1002
       EXPECTED_VENDOR=0x10de
 

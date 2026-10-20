@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   ...
@@ -21,7 +22,7 @@
 
       # --- --- --- 终端 --- --- ---
       terminal.shell = {
-        program = "${lib.getExe pkgs.fish}";
+        program = "${lib.getExe config.programs.fish.package}";
         args = [ ];
       };
       terminal.osc52 = "CopyPaste"; # SSH 远程会话可读写本地剪贴板 (个人桌面机可接受)

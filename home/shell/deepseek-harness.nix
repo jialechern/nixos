@@ -20,26 +20,26 @@
 #   ~/.dsh/profiles/web/        web profile 的 cordis.patch.yml 与插件
 #   ~/.dsh/logs/                启动失败诊断报告
 let
+  # dsh 本体: home.packages 与 systemd 单元的 ExecStart 共用这一个绑定
+  dsh = pkgs.deepseek-harness;
+
   # --- dsh-url: 取当前这一轮可用的 Web UI 地址 ---
   # dsh web 的 launch token 逐进程 randomBytes 生成, cookie 的签名密钥则落盘
   # ($DSH_HOME/.credentials.yaml), 所以服务每重启 (含 systemctl --user restart)
   # 一次旧 URL 就失效, 已认证的浏览器 cookie 却仍然有效; token 只能从 journal 里
   # 取本次启动的播报 (它打在 stdout, 即 user journal)。
   # 没认证过的浏览器直接开 http://localhost:3080/ 会提示 "authentication required",
-  # 就是没走过 token URL 这一趟; 且 cookie 是 host-only (连同端口) 的, localhost 与
-  # 127.0.0.1 互不通用, 所以认证后请认准同一个主机名。
+  # 就是没走过 token URL 这一趟 (cookie 的 host-only 细节见 usage())。
   dshUrl = pkgs.writeShellApplication {
     name = "dsh-url";
     runtimeInputs = with pkgs; [
-      coreutils # tail
+      coreutils # cat / tail
       gnugrep # grep
       systemd # systemctl / journalctl
       xdg-utils # xdg-open (-o)
     ];
     text = ''
       # dsh-url: 打印 (或用 -o 打开) DeepSeek Harness Web UI 当前可用的带 token 地址
-
-      set -euo pipefail
 
       UNIT=deepseek-harness.service
 
@@ -98,13 +98,14 @@ let
   };
 in
 {
-  # bubblewrap: dsh 的 Linux 沙箱 runner 链是 bwrap -> Landlock
-  # (packages/sandbox/sandbox-local, 用 spawnSync('bwrap') 走 PATH 探测),
-  # 而 nixpkgs 的 dsh wrapper 只往 PATH 里塞了 pnpm, 不含 bwrap; 不装就会退化到
-  # Landlock。两者都不可用时 dsh 是 fail closed (SANDBOX_UNAVAILABLE), 命令直接不跑。
   home.packages = [
-    pkgs.deepseek-harness
-    dshUrl # 取当前可用的 Web UI 地址 (dsh web 的 token 每次启动都变)
+    dsh
+    dshUrl
+
+    # bubblewrap: dsh 的 Linux 沙箱 runner 链是 bwrap -> Landlock
+    # (packages/sandbox/sandbox-local, 用 spawnSync('bwrap') 走 PATH 探测),
+    # 而 nixpkgs 的 dsh wrapper 只往 PATH 里塞了 pnpm, 不含 bwrap; 不装就会退化到
+    # Landlock。两者都不可用时 dsh 是 fail closed (SANDBOX_UNAVAILABLE), 命令直接不跑。
     pkgs.bubblewrap
   ];
 
@@ -131,7 +132,7 @@ in
 
       # --no-open: 服务没有浏览器, 不加的话每次启动都尝试打开默认浏览器并失败。
       # 端口与监听地址保持上游默认 (127.0.0.1:3080), 因此不写 --port / --host。
-      ExecStart = "${lib.getExe pkgs.deepseek-harness} web --no-open";
+      ExecStart = "${lib.getExe dsh} web --no-open";
 
       # 每次重启 launch token 都会重新生成 (逐进程 randomBytes); 取新地址用本模块
       # 安装的 dsh-url (加 -o 可直接在浏览器里打开), 已认证的浏览器 cookie 不受影响。
