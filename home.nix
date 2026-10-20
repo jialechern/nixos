@@ -71,6 +71,14 @@
       # home/desktop/niri/conf.d/{startup,bind}.kdl), 这里声明是为了让遵循 XDG
       # 的 GUI 程序也能找到它; 图片由用户自行放置
       WALLPAPERS = "${config.home.homeDirectory}/Wallpapers";
+
+      # DeepSeek Harness Web UI 的工作目录: home/shell/deepseek-harness.nix 的
+      # user unit 以它为 WorkingDirectory, 且 dsh 的默认 workspace 与沙箱
+      # workspaceRoot 都取自进程 cwd (见该文件内的说明)。
+      # 靠上面的 createDirectories 建成**实体可写目录**: 不能用 home.file —— 那会
+      # 给出只读 store 软链, dsh 无法在其中读写。
+      # 副作用: setSessionVariables 会多导出一个 XDG_DEEPSEEKHARNESS_DIR。
+      DEEPSEEKHARNESS = "${config.home.homeDirectory}/DeepseekHarness";
     };
   };
 

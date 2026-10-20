@@ -32,6 +32,9 @@
 
     # pi-coding-agent 配置 (包来自 flake.nix 的 pi 输入; 无代理首装时可注释本行)
     ./shell/pi.nix
+
+    # DeepSeek Harness Web UI + 常驻 systemd user unit (包来自 nixpkgs)
+    ./shell/deepseek-harness.nix
   ]
   ++ (builtins.filter builtins.pathExists [
     # neovim 配置 (pathExists 只看 git 已索引的文件: 新增后必须先 git add)
