@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ lib, pkgs, ... }:
 
 let
   myPreviewer = pkgs.writers.writePython3Bin "fzf-previewer" {

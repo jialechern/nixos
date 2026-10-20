@@ -2,13 +2,13 @@
 
 let
   # 下载主目录
-  downloadDir = "${config.home.homeDirectory}/Downloads/yt-dlp";
+  downloadDir = "${config.xdg.userDirs.download}/yt-dlp";
 
   # 临时目录
-  tempDir = "${config.home.homeDirectory}/.cache/yt-dlp";
+  tempDir = "${config.xdg.cacheHome}/yt-dlp";
 
   # 归档文件: 避免重复下载
-  archiveFile = "${config.home.homeDirectory}/.config/yt-dlp/download-archive.txt";
+  archiveFile = "${config.xdg.configHome}/yt-dlp/download-archive.txt";
 in
 {
   programs.yt-dlp = {

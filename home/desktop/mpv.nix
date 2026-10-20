@@ -84,7 +84,7 @@
       screenshot-format = "png";
       screenshot-jpeg-quality = 95;
       screenshot-template = "mpv-shot-%F-%T";
-      screenshot-directory = "${config.home.homeDirectory}/Pictures/mpv-screenshots";
+      screenshot-directory = "${config.xdg.userDirs.pictures}/mpv-screenshots";
     };
 
     # ==================== 键位绑定 (input.conf) ====================
