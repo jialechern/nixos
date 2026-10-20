@@ -11,7 +11,8 @@
 # (仓库 SAFETY.md)。它跑模型生成的命令、可访问网络/文件, 因此本单元有意:
 #   - 只绑回环 (dsh 默认, 且拒绝 --host 0.0.0.0), 不开防火墙端口;
 #   - 不注入代理: 需要时手动加 Environment, 否则模型跑的命令也能读到代理 URL;
-#   - 不启用 linger: 登录后才起, 最后一个会话结束即停。
+#   - 不启用 linger: 随 niri 的 graphical-session.target 起停, 故纯 TTY/SSH
+#     (无图形会话) 时不启动; 要支持那种用法见下方 Install 注释。
 # 远程访问请用 SSH 端口转发, 不要改防火墙。
 #
 # 关键路径 (都由 dsh 自己创建/写入, 不可用 home.file 管理):
@@ -112,6 +113,16 @@ in
   systemd.user.services.deepseek-harness = {
     Unit = {
       Description = "DeepSeek Harness Web UI (dsh web)";
+
+      # dsh 的 open-in-app 用自身环境启动 kitty 等 GUI 程序, 因此必须等 niri 把
+      # WAYLAND_DISPLAY / DISPLAY / XDG_CURRENT_DESKTOP / DBUS 地址导入 systemd
+      # user manager 之后再启动 (niri 在激活 graphical-session.target 之前完成);
+      # 挂 default.target 会先于 niri 启动, 点“用 kitty 打开”将立刻失败。
+      # 不写 Environment=WAYLAND_DISPLAY=...: socket 名由 niri 决定, 硬编码在
+      # wayland-1 被占用时会失效; 交给 graphical-session.target 继承。
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+
       # 只监听回环, 不依赖网络就绪, 故不写 After=network-online.target
     };
 
@@ -141,7 +152,10 @@ in
     };
 
     Install = {
-      WantedBy = [ "default.target" ];
+      # 随 niri 图形会话起停; 纯 TTY/SSH 无图形会话时不启动。若要支持那种用法,
+      # 改回 default.target 并给 Service.Environment 补上 WAYLAND_DISPLAY 等变量
+      # (理由见上方 Unit 注释)。
+      WantedBy = [ "graphical-session.target" ];
     };
   };
 }
