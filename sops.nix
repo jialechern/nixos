@@ -29,10 +29,6 @@
         mode = "0600";
       };
 
-      "deepseek_api_key" = {
-        sopsFile = ./secrets/ai_api_keys/module_api_keys.yaml;
-      };
-
       "context7" = {
         sopsFile = ./secrets/ai_api_keys/mcp_api_keys.yaml;
       };

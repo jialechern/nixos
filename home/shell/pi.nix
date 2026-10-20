@@ -138,7 +138,6 @@ in
             # 注意 wrapper 由 makeWrapper 以 bash -e 运行, 守卫必须 errexit 安全
             # (不能用 "&&" 结尾 —— 缺失文件时会因返回非零而中止整个 pi 启动)
             load_secret() { local k; k="$(cat "$2" 2>/dev/null || true)"; [ -z "$k" ] || export "$1=$k"; }
-            load_secret DEEPSEEK_API_KEY "${config.sops.secrets.deepseek_api_key.path}"
             load_secret TAVILY_API_KEY "${config.sops.secrets.tavily.path}"
             load_secret FIRECRAWL_API_KEY "${config.sops.secrets.firecrawl.path}"
             load_secret CONTEXT7_API_KEY "${config.sops.secrets.context7.path}"
