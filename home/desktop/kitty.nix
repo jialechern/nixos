@@ -13,7 +13,6 @@ in
   # --- --- --- Kitty 终端模拟器配置 --- --- ---
   programs.kitty = {
     enable = true;
-    package = pkgs.kitty;
 
     # Shell 集成
     shellIntegration.enableFishIntegration = true;

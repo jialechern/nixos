@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, ... }:
 
 let
   # 下载主目录
@@ -13,7 +13,6 @@ in
 {
   programs.yt-dlp = {
     enable = true; # 启用 yt-dlp
-    package = pkgs.yt-dlp; # 使用 Nixpkgs 里的 yt-dlp
 
     settings = {
       # 输出模板为唯一命名, 减少 Bilibili 分 P / 播放列表撞名

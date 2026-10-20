@@ -1,6 +1,5 @@
 {
   config,
-  pkgs,
   lib,
   ...
 }:
@@ -9,7 +8,6 @@
   # --- --- --- Alacritty 终端模拟器配置 --- --- ---
   programs.alacritty = {
     enable = true;
-    package = pkgs.alacritty;
     theme = "catppuccin_mocha"; # Catppuccin Mocha 主题
 
     settings = {
