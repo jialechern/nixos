@@ -19,6 +19,76 @@
 #   ~/.dsh/.credentials.yaml    API key 明文落盘 (首启在 Web UI 里填)
 #   ~/.dsh/profiles/web/        web profile 的 cordis.patch.yml 与插件
 #   ~/.dsh/logs/                启动失败诊断报告
+let
+  # --- dsh-url: 取当前这一轮可用的 Web UI 地址 ---
+  # dsh web 的 launch token 与会话 cookie 的签名密钥都是逐进程 randomBytes 生成的:
+  # 服务每重启 (含 systemctl --user restart) 一次, 旧 URL 和浏览器里已存的 cookie
+  # 一起失效, 所以只能从 journal 里取最近一次的启动播报 (它打在 stdout, 即 user journal)。
+  # 直接开 http://localhost:3080/ 提示 "authentication required", 就是因为没走过
+  # token URL 这一趟; 且该 cookie 是 host-only, localhost 与 127.0.0.1 互不通用,
+  # 所以认证后请认准同一个主机名。
+  dshUrl = pkgs.writeShellApplication {
+    name = "dsh-url";
+    runtimeInputs = with pkgs; [
+      coreutils # tail
+      gnugrep # grep
+      systemd # systemctl / journalctl
+      xdg-utils # xdg-open (-o)
+    ];
+    text = ''
+      # dsh-url: 打印 (或用 -o 打开) DeepSeek Harness Web UI 当前可用的带 token 地址
+
+      set -euo pipefail
+
+      UNIT=deepseek-harness.service
+
+      usage() {
+        cat <<'EOF'
+      用法: dsh-url [-o|-h]
+        -o, --open   直接在默认浏览器中打开取到的地址
+        -h, --help   显示帮助
+
+      说明: token 在每次启动时重新生成, 旧地址与浏览器里已存的 cookie 随之失效;
+            本命令取的是最近一次启动播报的地址。认证成功后请固定用同一个主机名
+            (cookie 为 host-only, localhost 与 127.0.0.1 互不通用)。
+      退出码: 0=成功, 1=服务未运行或日志里没有启动播报, 2=参数错误
+      EOF
+      }
+
+      open=0
+      case "''${1:-}" in
+        "") ;;
+        -o | --open) open=1 ;;
+        -h | --help)
+          usage
+          exit 0
+          ;;
+        *)
+          printf 'dsh-url: 未知参数 %s\n' "$1" >&2
+          usage >&2
+          exit 2
+          ;;
+      esac
+
+      if ! systemctl --user is-active --quiet "$UNIT"; then
+        printf 'dsh-url: %s 未在运行 (先 systemctl --user start %s)\n' "$UNIT" "$UNIT" >&2
+        exit 1
+      fi
+
+      url="$(journalctl --user -u "$UNIT" -o cat --no-pager 2>/dev/null |
+        grep -oE 'https?://[^[:space:]]*token=[^[:space:]]*' | tail -n 1)" || url=""
+      if [ -z "$url" ]; then
+        printf 'dsh-url: %s 的日志里没有找到带 token 的启动播报\n' "$UNIT" >&2
+        exit 1
+      fi
+
+      if [ "$open" -eq 1 ]; then
+        exec xdg-open "$url"
+      fi
+      printf '%s\n' "$url"
+    '';
+  };
+in
 {
   # bubblewrap: dsh 的 Linux 沙箱 runner 链是 bwrap -> Landlock
   # (packages/sandbox/sandbox-local, 用 spawnSync('bwrap') 走 PATH 探测),
@@ -26,6 +96,7 @@
   # Landlock。两者都不可用时 dsh 是 fail closed (SANDBOX_UNAVAILABLE), 命令直接不跑。
   home.packages = [
     pkgs.deepseek-harness
+    dshUrl # 取当前可用的 Web UI 地址 (dsh web 的 token 每次启动都变)
     pkgs.bubblewrap
   ];
 
@@ -55,7 +126,7 @@
       ExecStart = "${lib.getExe pkgs.deepseek-harness} web --no-open";
 
       # 每次重启 launch token 与浏览器 cookie 都重新生成 (逐进程 randomBytes),
-      # 取新地址: journalctl --user -u deepseek-harness -o cat | grep 'dsh web:'
+      # 取新地址用本模块安装的 dsh-url (加 -o 可直接在浏览器里打开)。
       Restart = "on-failure";
       RestartSec = 3;
     };
