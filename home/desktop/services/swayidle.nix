@@ -1,6 +1,9 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, osConfig, ... }:
 
 let
+  # 与 NixOS 侧 greetd 启动的会话用同一个包 (见 modules/desktop.nix)
+  niri = osConfig.programs.niri.package;
+
   # 锁屏命令 (swaylock 配置里 daemonize = true, 即锁定建立后才返回)
   swaylock = "${lib.getExe config.programs.swaylock.package}";
 in
@@ -15,9 +18,9 @@ in
       # 十分钟（600 秒）无活动后自动关闭显示器
       {
         timeout = 600;
-        command = "${lib.getExe pkgs.niri} msg action power-off-monitors";
+        command = "${lib.getExe niri} msg action power-off-monitors";
         # 恢复活动时点亮显示器
-        resumeCommand = "${lib.getExe pkgs.niri} msg action power-on-monitors";
+        resumeCommand = "${lib.getExe niri} msg action power-on-monitors";
       }
       # 十五分钟（900 秒）无活动后锁屏
       {
@@ -35,7 +38,7 @@ in
       lock = swaylock;
 
       # 系统从睡眠恢复后确保显示器点亮
-      after-resume = "${lib.getExe pkgs.niri} msg action power-on-monitors";
+      after-resume = "${lib.getExe niri} msg action power-on-monitors";
     };
   };
 }
