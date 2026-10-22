@@ -106,7 +106,7 @@ in
     # 不再是 nixpkgs 的 pi-coding-agent。上游包 pname = "pi"、bin/pi 与
     # meta.mainProgram 不变, 所以下面的 wrapProgram 与 extraPackages 全部无需改动。
     #
-    # 包装注入三样东西:
+    # 包装注入四样东西:
     #   (1) sops-nix 生成的密钥到 pi 进程环境: 直接读密钥文件 (由 sops.nix 的 secrets
     #       声明生成, 权限 0400/0600), 不再额外落一份明文 env 文件 —— 旧的
     #       ~/.config/pi/secrets.env 可以手动删掉;
@@ -116,7 +116,13 @@ in
     #       (pi 1.2.0 起的环境变量, 见文档 docs/environment-variables.md)。pi 只在识别
     #       出远程会话时才自带该行为; 本机 tmux 已开 allow-passthrough all
     #       (home/shell/tmux.nix), 显式打开后 tmux 里跑的 pi 复制也能到达 kitty 的
-    #       剪贴板。取舍: 复制文本会额外经终端转发一层, 纯本地用不到时删掉这一行。
+    #       剪贴板。取舍: 复制文本会额外经终端转发一层, 纯本地用不到时删掉这一行;
+    #   (4) PI_CODEMODE_MAX_WORKERS=4: codemode 脚本 worker 池的并发上限 (pi 1.4.0 起的环境
+    #       变量, 默认 2; 见文档 docs/environment-variables.md 与 docs/codemode.md 的 Limits)。
+    #       本机全局开 codemode (settings.defaultTools) 且 init 组装了进程内子代理
+    #       (npm:pi-subagents), 并发跑脚本/子代理时 2 个 worker 会排队 (语义见下方
+    #       settings.defaultTools 注释)。取 4 是"够用且不至于失控": 每个 worker 的脚本 VM
+    #       内存上限 256MB, 真并发时最坏多占约 512MB; 用不到就删掉这一行回到默认 2。
     #
     # sops.nix 是 pathExists 可选开关 (home.nix:45-53), 它缺席时 config.sops 这棵
     # 选项树整个不存在, 所以密钥注入必须在求值期分支: 用 config ? sops 判断
@@ -152,6 +158,7 @@ in
         postBuild = ''
           wrapProgram $out/bin/pi \
             --set PI_CLIPBOARD_OSC52 1 \
+            --set PI_CODEMODE_MAX_WORKERS 4 \
             --set GIT_CONFIG_COUNT 1 \
             --set GIT_CONFIG_KEY_0 core.hooksPath \
             --set GIT_CONFIG_VALUE_0 ${piGitHookDir} \
@@ -236,6 +243,11 @@ in
     # maxTokens / thinkingLevelMap / cost 都在内置条目里, 认证由 /login deepseek 写入
     # auth.json)。只有 pi.dev 远程目录尚未收录某个新模型时, 才在这里加 provider 条目
     # (baseUrl / api / models[...]), 字段写法参考内置条目。
+    #
+    # 字段级权威参考 (pi 1.4.0 新增, 由 models.json 的 schema 生成, 逐字段列出 provider /
+    # model / 覆盖项 / compat): https://pi.dev/docs/latest/models-configuration
+    # 内置 provider 只写 baseUrl 即可整体走代理 (模型列表与认证不变), 比下方 settings.httpProxy
+    # 更细。
     # -------------------------------------------------------------------------
     models = {
       # 配置 schema 引用 (说明见下方 settings 的同名项)
@@ -308,9 +320,11 @@ in
       terminal.showTerminalProgress = true;
 
       # --- 自动压缩 (取值与官方默认值一致, 见 docs/settings.md 的 Compaction 表) ---
+      # 1.4.0 起 reserveTokens 只决定"何时开始压缩", 不再给摘要输出封顶 (摘要改用模型自身
+      # 的输出上限); 两个默认值 (16384 / 20000) 未变。
       compaction = {
         enabled = true;
-        reserveTokens = 16384; # 为 LLM 回复预留的 token
+        reserveTokens = 16384; # 空闲上下文低于该值即触发压缩
         keepRecentTokens = 20000; # 保留不摘要的最近 token
       };
 
@@ -359,6 +373,9 @@ in
       # ~190 字符 + 每个已声明工具描述尾追加一行 ~52 字符。
       # 位于稳定前缀内, 缓存命中后开销可忽略。
       # 收益: 脚本内并行调多个工具、先把大输出过滤再回传; 接 MCP 后其工具不占声明位。
+      # 并发 (1.4.0 复核): 一个 pi 进程内所有会话共享 worker 池, 默认 2 个; 满员时 1.4.0 起
+      # 按到达顺序排队 (最多等 60s, 或脚本自己的 timeout_ms —— 该超时现在包含排队时间),
+      # 1.3.0 则是立即失败。本机已用 PI_CODEMODE_MAX_WORKERS=4 放宽 (见上方包装脚本 (4))。
       # 试用不满意就把本项删掉 (或写成 [ "-codemode" ]) 后 rebuild。
       # 参考 pi 1.0.2 文档 docs/codemode.md 与 docs/cli.md#enable-codemode
       defaultTools = [ "+codemode" ];
@@ -432,7 +449,9 @@ in
 
     # 插件组定义 (数据在 ./pi/extensions/extension-groups.nix —— 组内容与项目级
     # 覆盖方式见该文件头注释; 本处只负责部署, 只读, 改组请改那里后 rebuild)
-    ".pi/agent/extension-groups.json".text = builtins.toJSON (import ./pi/extensions/extension-groups.nix);
+    ".pi/agent/extension-groups.json".text = builtins.toJSON (
+      import ./pi/extensions/extension-groups.nix
+    );
   };
 
   # ---------------------------------------------------------------------------

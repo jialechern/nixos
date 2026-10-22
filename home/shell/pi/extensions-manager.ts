@@ -11,6 +11,14 @@
 //       只多 3 处 normalizePath, 引用的 stdio 选择仍在第 2145 行, getPackageIdentity 与
 //       removeAndPersist 未动; interactive-mode.js 第 603 行 (preserveScreen) 未动; pi-tui 的
 //       TuiStopOptions.preserveScreen、AutocompleteItem 与 PackageSource 结构未变。
+//   1.3.0 → 1.4.0 复核 (对照 npm 包 1.4.0 的 dist, 2026-10-22): 本文件无需改动。
+//     * 包根导出面 (DefaultPackageManager、SettingsManager、CONFIG_DIR_NAME、getAgentDir、
+//       ExtensionCommandContext、registerCommand、getArgumentCompletions) 与 package.json 的
+//       bin/exports 均不变。
+//     * C 级锚点: dist/core/package-manager.js、dist/core/settings-manager.js、dist/utils/git.js
+//       与 1.3.0 逐字节相同 (子进程 stdio 选择仍在 package-manager.js 第 2145 行);
+//       interactive-mode.js 的 preserveScreen 仍在第 603 行, 其改动 (扩展对话框改为栈式,
+//       修复并发对话框 promise 不 settle) 不触及本文件 §3 的子进程 stdio / TUI 暂停逻辑。
 //   A 级——官方 prose/示例明确背书:pi.registerCommand/getArgumentCompletions(docs/extensions.md、
 //     examples/extensions/commands.ts);ctx.cwd/mode/hasUI/reload(docs/extensions.md、
 //     docs/rpc-extension-ui.md,类型为包根导出的 ExtensionCommandContext);
