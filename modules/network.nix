@@ -23,9 +23,11 @@
   services.avahi.openFirewall = true; # 自动放行 UDP 5353 (mDNS), 不必手工列端口
   services.avahi.nssmdns4 = true; # 通过 nss-mdns 把 .local 解析交给 avahi (IPv4)
   services.avahi.nssmdns6 = true; # 通过 nss-mdns 把 .local 解析交给 avahi (IPv6)
-  services.avahi.publish = {
-    enable = true; # 发布本机 <hostname>.local, 方便其他设备(如树莓派)反向访问
-    addresses = true; # 发布本机 IP 地址记录, 否则其他设备只能发现名字、解析不到 IP
+  # 直接映射 avahi-daemon.conf 的 [publish] 段 (旧 services.avahi.publish.* 已弃用;
+  # 这两项在模块里默认为关闭, 必须显式打开)
+  services.avahi.settings.publish = {
+    disable-publishing = false; # 发布本机 <hostname>.local, 方便其他设备(如树莓派)反向访问
+    publish-addresses = true; # 同时发布 IP 地址记录, 否则其他设备能发现名字、却解析不到 IP
   };
   # --- 入站防火墙放行 (NixOS 原生命令式防火墙, iptables 后端) ---
   # 注意: 部分服务模块会自动放行自己的端口, 无需在此重复:
