@@ -14,6 +14,7 @@
     '')
 
     # cargo 扩展
+    cargo-expand # 查看宏展开后的代码
     cargo-edit # cargo add / rm / upgrade
     cargo-watch # 文件变化自动重新编译
     cargo-audit # 依赖安全漏洞扫描
