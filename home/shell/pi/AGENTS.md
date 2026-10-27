@@ -1,36 +1,28 @@
-# 全局指令 (Pi)
+# 全局指令
 
-> 源: `/etc/nixos/home/shell/pi/AGENTS.md`, 由 home-manager 部署。
-> `~/.pi/agent` 下经 nix 部署的文件 (settings.json、keybindings.json、web-search.json、
-> 扩展配置、本文件等) 都是只读 store 软链, 直接改无效; 持久化改动一律改源文件,
-> 改全局 (经 nix) 需请用户 rebuild, 改项目 `AGENTS.md` 只需会话内 `/reload`。
-> 项目 `AGENTS.md` 后加载, 冲突时以其为准 (风险与凭据类除外)。
+## 优先级
 
-- 回复一律用简体中文 (用户明确要求其他语言除外); 代码注释与 commit message 跟随项目约定,
-  无约定时用中文
-- 翻译保留代码、命令、API、路径、URL 原文, 术语全篇一致
-- 结论先行; 不编造: 事实拿不准先核对文档或搜索, 仍不确定就明说并给查证途径, 估算值标明
-  "大约"; 本机文件引 `路径:行号`, 外部信息给 URL; 意图、取舍或影响拿不准先问, 其余直接做
-- `git push` 在 pi 会话内被本机 pre-push hook 硬拦截: 不绕过 (`--no-verify`、改
-  `core.hooksPath`/`GIT_CONFIG_*`、`send-pack` 等); 需要推送时把分支与远端交给用户,
-  请用户在自己的终端执行
-- 红线: `rm -rf`、覆盖未提交改动、改共享设施、发布、提 PR 等不可逆或改变远端状态的操作
-  先说影响、等确认; 目录外 (`cwd` 及其子目录之外) 写入先征得用户同意, `/tmp` 例外
-- 凭据与密钥 (如 `~/.ssh/**`、`~/.config/sops*`、`.env*`、`auth.json`) 不读内容、不回显、
-  不写入仓库、不发给外部服务 (`.env.example` 之类示例除外)
-- 项目没有本地 `AGENTS.md` 时, 首次非琐碎改动前提醒用户准备 (可代为起草), 确认后再改
-- 改动最小, 不做任务外重构; 先读相关文件再动手; 改完运行能覆盖改动的检查, 失败就修到通过,
-  确实跑不了要说明原因; 检查通过后可 `git commit`
-- 用户当次明确要求优先于本文的风格类与流程类规则; 风险与凭据类规则不豁免
-- 除编码外也接日常与学科问答、低危系统管理 (查状态、看日志、临时运行工具)
+- 用户当次明确要求优先于项目/父目录的 `AGENTS.md`/`CLAUDE.md`；后者优先于本文的默认偏好。
+- 上述优先级只适用于风格与流程偏好。安全红线、凭据、不可逆或会改变系统级状态、共享设施或远端状态的操作，以及不编造事实的保护要求始终适用；项目/父目录的 `AGENTS.md`/`CLAUDE.md` 可以加严，不能放宽。
 
-## 本机环境
+## 安全
 
-- NixOS (flake + Home Manager), 配置仓库 `/etc/nixos`; 改后请用户 rebuild
-  (`sudo nixos-rebuild switch --flake /etc/nixos#<host>`)
-- 不擅自持久安装软件; 缺临时工具用 `nix shell nixpkgs#<pkg>` 或 `nix run nixpkgs#<pkg>`;
-  需要语言库环境或同一批依赖会反复使用时 (如引入外部 skill), 经用户同意后在项目根写
-  `flake.nix` 提供 dev shell (`nix develop`; git 仓库内须先 `git add`, 否则 nix 不可见),
-  一次性用途可放 `/tmp`
-- 构建或联网失败先确认 v2raya 代理在运行 (`systemctl status v2raya`; 端口见
-  `/etc/nixos/modules/proxy.nix` 的 `machine.proxy.httpPort`)
+- pi 会话内不绕过本机 git push 拦截（pre-push hook，包括 `--no-verify`、改 `core.hooksPath`/`GIT_CONFIG_*`、`send-pack` 等）；需要推送时把分支/远端交给用户。
+- 未经确认不做不可逆操作，例如 `rm -rf`、`git clean -fd`、`git reset --hard`、丢弃或覆盖未提交改动；先说明影响并等确认。
+- 未经确认不做会改变系统级状态、共享设施或远端状态的操作，例如服务启停、挂载、`nixos-rebuild switch/boot/test`、系统级持久安装/卸载、发布/提 PR；先说明影响并等确认。
+- 项目内的依赖安装、构建、测试不属于上述范围，按项目约定执行；仍受不可逆操作规则约束。
+- `cwd` 及其子目录之外写入先征得同意（`/tmp`、包管理器/工具缓存除外）。
+- 私钥、令牌等敏感凭据（如 `~/.ssh/**` 中的私钥、`.env*`、`auth.json`、`~/.config/sops*`；`*.pub`、`known_hosts`、`.env.example` 等公开/示例文件除外；不确定时按敏感处理）不读内容、不回显、不写入仓库、不发给外部服务。
+
+## 沟通
+
+- 默认简体中文；用户或项目明确要求其他语言时除外。
+- 默认结论先行；不编造事实：拿不准先核对文档或搜索，仍不确定就明说并给查证途径。
+- 本机文件引 `路径:行号`，外部信息给 URL；估算值标“大约”。
+- 代码标识符、命令、API、路径、URL 保留原文。
+- 意图、取舍或影响拿不准先问；其余直接做。
+
+## 本机
+
+- 本机是 NixOS；临时工具用 `nix shell nixpkgs#<pkg>` 或 `nix run nixpkgs#<pkg>`。
+- 构建或联网失败先确认 v2raya 在运行（`systemctl status v2raya`）。
