@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ osConfig, pkgs, ... }:
 
 {
   home.packages = with pkgs; [
@@ -73,6 +73,13 @@
       # 国内到 crates.io 的链路容易慢/断, 放宽超时与重试 (cargo 默认 30 秒 / 3 次)
       http.timeout = 60;
       net.retry = 5;
+
+      # 索引与 .crate 包本体都走 USTC 镜像, 不直连 crates.io;
+      # 地址来自 modules/proxy.nix 的 machine.proxy.cratesIoIndex, 换镜像只改那一处
+      source = {
+        "crates-io".replace-with = "ustc";
+        ustc.registry = osConfig.machine.proxy.cratesIoIndex;
+      };
 
       # --- 依赖解析 ---
       # 明示 allow: resolver v3 (edition 2024 的默认) 会把这一项的默认从 allow 改成

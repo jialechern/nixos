@@ -1,5 +1,6 @@
 {
   config,
+  osConfig,
   pkgs,
   inputs,
   ...
@@ -356,7 +357,8 @@ in
       # minimalist 等 4 种) + 用户消息样式 + 可选择接管的 Working 行 + Starship
       # 风格页脚 + 选择器边框, 每个组件独立开关; 交互配置命令 /zentui。
       # 上游节奏快 (2026-10 单月 6 个版本) 且有 pi 版本矩阵 CI, 故不锁版本 (与
-      # extension-groups.json 的写法一致): pi 启动时经 npmCommand 的 npmmirror 源
+      # extension-groups.json 的写法一致): pi 启动时经 npmCommand 指定的镜像源
+      # (见 modules/proxy.nix 的 npmRegistry, 当前为 npmmirror)
       # 安装/复用 ~/.pi/agent/npm, pi update --extensions 可升级。
       # 要钉版本就写成 "npm:pi-zentui@0.31.0" —— 带版本的 npm 规格 pi 视为钉住,
       # 代价是升级需要改本文件后 rebuild。
@@ -383,9 +385,11 @@ in
       # --- npm 镜像 ---
       # pi 查找/安装 npm 扩展时使用 —— 含 /exts add-group 经 pi install 装到项目的
       # 扩展 (源见 ./pi/extensions/extension-groups.nix); 写进配置就不依赖 ~/.npmrc
+      # 地址来自 modules/proxy.nix 的 machine.proxy.npmRegistry (经 osConfig),
+      # 换镜像只改那一处
       npmCommand = [
         "npm"
-        "--registry=https://registry.npmmirror.com"
+        "--registry=${osConfig.machine.proxy.npmRegistry}"
       ];
     };
 

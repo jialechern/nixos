@@ -161,13 +161,18 @@
         
         { ... }
         ```
+        - 构建期需要联网的固定输出派生(FOD, 如 `*-go-modules`)只有**经 nix-daemon** 构建时才拿得到 `modules/nix-config.nix` 注入的代理与 `GOPROXY`: nix 的 `store = auto`(默认)在 `/nix/var/nix` 对当前用户可写时会选本地 store, 因此 root 直接跑 `sudo nixos-rebuild switch` 并不经过 daemon, 这些环境变量对它完全无效. 症状是 go 直连 `proxy.golang.org` 之类的境外站点超时(日志里既看不到本机代理参与, 也看不到镜像地址). 解决办法是重建时带上 `--option store daemon`(由 `nixos-rebuild` 透传给 `nix build`), 让 root 也走 daemon:
+        ```zsh,bash
+        sudo nixos-rebuild switch --flake <flake.nix-path>#<host-name> --option store daemon
+        ```
+        排查: `journalctl -b -u nix-daemon` 里应当能看到 `accepted connection from … user root`(没有就说明 root 在本地构建); `nix store ping` 会打印实际使用的 store(`daemon` / `local`)。注意如果本次改的正是 daemon 的环境(如 `machine.proxy`), 运行中的 daemon 要等激活重启后才拿到新值, 这种"自己拉自己"的情况得先 `nixos-rebuild boot` 再重启, 或临时用 `sudo env GOPROXY=… http_proxy=… nixos-rebuild switch --option store local` 让 root 的本地构建拿到变量。
         - 也可以使用局域网内的其它主机作为代理(记得开启对应的代理工具的 "允许来自局域网内的连接" 功能)
 
 4. 安装完成后使用 `nixos-enter --root /mnt` 进入刚刚安装的系统, 使用 `passwd <USER>` 修改配置文件中定义好的一般用户的密码(root 用户的密码在安装过程中就会通过交互式的方式设置好)
 
 5. 重启 `reboot`
 6. 再次构建前, 如果希望使用存放在配置仓库里的私密数据, 可以将对应的加密密钥存放在 `~/.config/sops/age/keys.txt`. 该私钥由 `age-keygen` 生成(流程见 `.sops.yaml` 顶部注释), 应当**离线备份** —— 仓库里只有公钥, 它一旦丢失, `secrets/` 里的密文就无法恢复; 轮换密钥 = `age-keygen -o new.key` → 把新公钥写进 `.sops.yaml` → `sops updatekeys secrets/**`
-7. 重启后如果 `v2raya` 已经正常开启, 则可以导入节点并开启透明代理, 并将刚刚移出的需要透明代理才可以构建的 nix 配置文件重新放回原本的位置, 并使用 `sudo nixos-rebuild switch --flake <flake.nix-path>#<host-name>` 再次构建
+7. 重启后如果 `v2raya` 已经正常开启, 则可以导入节点并开启透明代理, 并将刚刚移出的需要透明代理才可以构建的 nix 配置文件重新放回原本的位置, 并使用 `sudo nixos-rebuild switch --flake <flake.nix-path>#<host-name> --option store daemon` 再次构建
 ### 安装交换空间(`Btrfs` 事后补救版)
 1. 挂载 `Btrfs` 顶层视图并创建用于交换分区的字卷
     ```zsh,bash
@@ -206,7 +211,7 @@
 
 4. 重新构建以应用(交换文件由上游用 `btrfs filesystem mkswapfile` 自动创建, 无需手工 mkswap/chattr)
     ```zsh,bash
-    sudo nixos-rebuild switch --flake <flake.nix-path>#<host-name>
+    sudo nixos-rebuild switch --flake <flake.nix-path>#<host-name> --option store daemon
     ```
 5. 检查交换空间的 开启/使用 情况
     ```zsh,bash

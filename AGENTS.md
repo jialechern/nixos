@@ -14,8 +14,11 @@ import order and the order lands in the generated fstab (and the drv hash).
 
 - Rebuild system **and** home manager in one step (HM is embedded as a NixOS
   module — there is no standalone `home-manager switch`): the **user** runs
-  `sudo nixos-rebuild switch --flake /etc/nixos#omen` (or `#hp`). Agents must not
-  run `sudo`; make the change and ask the user to rebuild.
+  `sudo nixos-rebuild switch --flake /etc/nixos#omen --option store daemon` (or
+  `#hp`). Agents must not run `sudo`; make the change and ask the user to rebuild.
+  Keep `--option store daemon`: without it root builds against the local store, so
+  the daemon's proxy/mirror environment never reaches the build (see "Build-time
+  network fetches only see the daemon's environment").
 - Fresh install: `sudo ./nixos-install.sh -n <host>` (wraps `nixos-install` with
   TUNA substituters)
 - Fast eval check: `nix flake check` (evaluates every nixosConfiguration). Bare
@@ -140,11 +143,40 @@ single-sourced keymaps, treesitter, folding) live in `home/shell/nvim/AGENTS.md`
   `modules/steam.nix` (`pkgs.steam.override { extraEnv = config.machine.proxy.env; }`),
   `modules/network.nix` (firewall, gated by `enable && lanListen`) and
   `home/shell/proxychains.nix` (via `osConfig`, which Home Manager injects for
-  every HM module — see its `nixos/common.nix`). `grep -rn 20172 --include='*.nix'`
+  every HM module — see its `nixos/common.nix`). The file is also the single source
+  for the package-manager mirrors (direct, unaffected by `enable`): `goProxy`,
+  `cratesIoIndex` and `npmRegistry`, plus the derived read-only `toolchainEnv`
+  (currently only `GOPROXY`), which `modules/nix-config.nix` `unionOfDisjoint`s
+  into the daemon environment. `home/dev/rust.nix` reads `cratesIoIndex` for cargo
+  `source` replacement, and `home/dev/nodejs.nix` / `home/shell/pi.nix` read
+  `npmRegistry` (`.npmrc` `registry=` and pi's `npmCommand`), all via `osConfig`;
+  cargo/npm mirrors are config files rather than env vars, so they cannot be
+  pushed through `toolchainEnv`. `grep -rn 20172 --include='*.nix'`
   must only hit `modules/proxy.nix`; the port itself is still set in v2raya's GUI,
   so changing it means changing it in both places. Some packages (and sops) only
   build via the proxy; if a build fails on network fetch and it is down, temporarily
   remove the `*-require-proxy` files or `sops.nix` rather than editing proxy config.
+- **Build-time network fetches only see the daemon's environment.** Nix injects
+  impure env vars into the sandbox from the process that performs the build, and
+  only those a derivation whitelists via `impureEnvVars` (nixpkgs' go module FOD
+  whitelists `GOPROXY` plus the usual `*_proxy` names; `fetchurl`/`fetchzip`, and
+  hence `importNpmLock`, only the `*_proxy` ones). `store = auto` resolves to the
+  **local** store whenever `/nix/var/nix` is writable by the current user, so a
+  plain `sudo nixos-rebuild switch` builds in root's own Nix process and never
+  contacts `nix-daemon`: everything `modules/nix-config.nix` puts on
+  `systemd.services.nix-daemon.environment` (`machine.proxy.env` +
+  `machine.proxy.toolchainEnv`) is then ignored, and a FOD that needs the network
+  dials out directly — `proxy.golang.org` over IPv6 until it times out, with no
+  trace of the local proxy in the log. That is why `--option store daemon` belongs
+  in every rebuild command (see Commands). Diagnose with
+  `journalctl -b -u nix-daemon` (a build of yours should log `accepted connection
+  from …, user root`; no such line means root built locally) and with
+  `nix store ping` (`Store URL: daemon` vs `local`). Remaining chicken-and-egg: if
+  the edit *is* to the daemon environment, the running daemon keeps the old env
+  until activation restarts it, so a rebuild that needs the new value cannot
+  bootstrap itself — use `nixos-rebuild boot` + reboot, or build once locally with
+  the vars in root's own env (`sudo env GOPROXY=… http_proxy=… nixos-rebuild
+  switch --option store local`).
 - `stateVersion` is `25.11` in both system and home configs — do not bump
   casually.
 

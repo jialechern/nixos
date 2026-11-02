@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, osConfig, pkgs, ... }:
 
 {
   home.packages = with pkgs; [
@@ -21,9 +21,10 @@
     cache=${config.home.homeDirectory}/.cache/npm
 
     # --- 镜像源配置 ---
-    # 阿里云 npmmirror (原淘宝 npm, 官方维护, ~10 分钟同步官方源, 国内事实标准)
+    # 地址来自 modules/proxy.nix 的 machine.proxy.npmRegistry (阿里云 npmmirror),
+    # 换镜像只改那一处。镜像的同步频率等细节见该选项的 description
     # 需要回官方源时: npm install --registry=https://registry.npmjs.org <pkg>
-    registry=https://registry.npmmirror.com
+    registry=${osConfig.machine.proxy.npmRegistry}
 
     # --- 安装与执行配置 ---
     # 隐藏赞助信息
