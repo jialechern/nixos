@@ -1,6 +1,6 @@
 // extensions-manager.ts — pi 个人扩展:项目级(本地)插件与插件组管理
 //
-// 契约锚点(按本机 pi 1.2.0 逐条核对;升级 pi 后按下列名称复核,不要只对照 dist 行号):
+// 契约锚点(按 pi 1.5.0 的 dist 复核; 升级 pi 后按下列名称复核, 不要只对照 dist 行号)。
 //   1.1.0 → 1.2.0 复核: 用到的符号与锚点均未变, 变更点与本文件无关。
 //     * 类型面: 包根新增 BeforeAgentStartUserEvent/BeforeAgentStartCustomEvent (BeforeAgentStartEvent
 //       变联合类型)、ToolDefinition.reachesTools、ToolNamespace.aliases; Settings 等类型挪到
@@ -19,6 +19,15 @@
 //       与 1.3.0 逐字节相同 (子进程 stdio 选择仍在 package-manager.js 第 2145 行);
 //       interactive-mode.js 的 preserveScreen 仍在第 603 行, 其改动 (扩展对话框改为栈式,
 //       修复并发对话框 promise 不 settle) 不触及本文件 §3 的子进程 stdio / TUI 暂停逻辑。
+//   1.4.0 → 1.5.0 复核: 本文件无需改动。
+//     * 导出面与类型面: 包根导出 (DefaultPackageManager、SettingsManager、CONFIG_DIR_NAME、
+//       getAgentDir、ExtensionAPI、ExtensionCommandContext、PackageManager、ProgressEvent)、
+//       package.json 的 bin/exports、ExtensionAPI / ExtensionCommandContext 类型均未变
+//       (settings schema 只新增键)。
+//     * C 级锚点: normalizeGitSource、normalizePath/resolvePath、ConfiguredPackage、子进程
+//       stdio 选择、preserveScreen 与 pi-tui 的 TuiStopOptions/stop/start/requestRender 均未变;
+//       preserveScreen 改为读 this.renderer.mode (见下)。1.5.0 的安装失败处理、npm 参数与
+//       工具参数校验改动不触及本文件。
 //   A 级——官方 prose/示例明确背书:pi.registerCommand/getArgumentCompletions(docs/extensions.md、
 //     examples/extensions/commands.ts);ctx.cwd/mode/hasUI/reload(docs/extensions.md、
 //     docs/rpc-extension-ui.md,类型为包根导出的 ExtensionCommandContext);
@@ -542,7 +551,7 @@ function createPackageManager(ctx: ExtensionCommandContext): DefaultPackageManag
   // pi 只在非交互模式调 takeOverStdout(dist/main.js + dist/core/output-guard.js;
   // 语义见 docs/json.md:"Stdout is reserved for JSONL"),而 DefaultPackageManager.spawnCommand 的
   // stdio 选择是 isStdoutTakenOver() ? ["ignore", 2, 2] : "inherit"
-  // (dist/core/package-manager.js;1.1.0 为第 2145 行)。因此 TUI 模式下 npm/git 子进程
+  // (dist/core/package-manager.js 的 spawnCommand; 行号随版本变)。因此 TUI 模式下 npm/git 子进程
   // 继承终端、输出会直写终端打穿输入框。
   // 处理方式:写操作统一包在 withSuspendedTui 里,先把界面让给子进程(见该函数说明);
   // 这里不覆写任何私有方法,也不再捕获子进程输出 —— npm/git 日志直落暂停后的终端。
@@ -583,7 +592,8 @@ function createPackageManager(ctx: ExtensionCommandContext): DefaultPackageManag
  * - tui.stop()/start()/requestRender() 是 @earendil-works/pi-tui 导出的 TUI 接口方法
  *   (TuiStopOptions.preserveScreen 同在该包类型里);pi 自身的挂起、外部编辑器与全屏切换走同一套 API:
  *   外部编辑器是 stop() → start() + requestRender(true)(interactive-mode.js handleOpenExternalEditor),
- *   preserveScreen 照抄 pi 的 stopInteractiveTui()(1.1.0 第 603 行:mode === "fullscreen"),
+ *   preserveScreen 照抄 pi 的 stopInteractiveTui()(mode === "fullscreen"; 1.5.0 起读
+ *   this.renderer.mode),
  *   handleCtrlZ 与外部编辑器只调 stop() 不传参,不要引用它们作为 preserveScreen 的依据。
  * - 判 ctx.mode === "tui" 而非 ctx.hasUI:custom() 需要真实终端
  *   (docs/rpc-extension-ui.md;rpc 模式 hasUI 也为 true)。

@@ -107,6 +107,10 @@ in
     # 不再是 nixpkgs 的 pi-coding-agent。上游包 pname = "pi"、bin/pi 与
     # meta.mainProgram 不变, 所以下面的 wrapProgram 与 extraPackages 全部无需改动。
     #
+    # 升级只走 `nix flake update pi` + rebuild, 故有意不设 selfUpdateCommand /
+    # PI_SELF_UPDATE_COMMAND (它们让 `pi update` 去改装别处, 而这里的 pi 在只读 store
+    # 里); `pi update --extensions` 不受影响, 扩展包仍由 pi 自己升级。
+    #
     # 包装注入四样东西:
     #   (1) sops-nix 生成的密钥到 pi 进程环境: 直接读密钥文件 (由 sops.nix 的 secrets
     #       声明生成, 权限 0400/0600), 不再额外落一份明文 env 文件 —— 旧的
@@ -258,7 +262,18 @@ in
     };
 
     # -------------------------------------------------------------------------
-    # pi 全局设置 (settings.json, 含全局扩展包)
+    # settings.json 可写 (上游 HM 模块的开关, 不是 pi 的 settings 键)
+    #
+    # pi 要把运行期状态 (lastChangelogVersion 等) 写回 settings.json, 只读 store 软链
+    # 会让升级 changelog 永不显示、每次启动都被当成首次安装。打开后 activation 把该文件
+    # 变成真实可写文件 (mode 600): 声明值优先, packages 按包身份合并, 其余键原样保留。
+    # 代价: 删掉的声明不会从磁盘消失 (需手动清理), 注释与格式不保留, 数组型键每次
+    # activation 整段覆盖; 切回只读软链前需先手动删掉该文件 (否则软链会撞文件)。
+    # -------------------------------------------------------------------------
+    mutableSettings = true;
+
+    # -------------------------------------------------------------------------
+    # pi 全局设置 (settings.json, 含全局扩展包; 上面的 mutableSettings 打开后为可写文件)
     # -------------------------------------------------------------------------
     settings = {
       # 配置 schema 引用 (pi 1.2.0 起上游发布 settings / models / keybindings / theme
@@ -314,11 +329,19 @@ in
       # 隐藏模型范围行与已加载资源清单 (清单随项目装配的扩展变化, 通常占好几行)
       quietStartup = "header";
 
-      # 升级后显示精简 changelog: 版本由 flake update 驱动, 升级后一眼看到改了什么
+      # 升级后的 changelog 提示折叠成一行 (pi 自身与带 CHANGELOG 的扩展包); 设为 false
+      # 则展开完整条目。生效前提是 settings.json 可写 (见上方 mutableSettings)。
       collapseChangelog = true;
+
+      # 安装/更新遥测 (默认 true): 版本真正变化后 POST 一次匿名版本到
+      # pi.dev/api/report-install; 同一开关也控制 provider 归属头, 这里关掉纯属隐私取舍。
+      enableInstallTelemetry = false;
 
       # kitty 标签页显示进度 (OSC 9;4)
       terminal.showTerminalProgress = true;
+
+      # 内容收缩时清掉残行 (默认 false), 只影响观感。
+      terminal.clearOnShrink = true;
 
       # --- 自动压缩 (取值与官方默认值一致, 见 docs/settings.md 的 Compaction 表) ---
       # 1.4.0 起 reserveTokens 只决定"何时开始压缩", 不再给摘要输出封顶 (摘要改用模型自身
@@ -406,6 +429,8 @@ in
   # 注: 凡是用 builtins.toJSON 生成的 json, 都是"声明式只读"的 —— 指向 nix store
   # 的符号链接, 在 pi 内改这些配置不会落盘; json 数据源在 ./pi/extensions/*.nix
   # (zentui / web-search / extension-groups), 改配置请改对应数据文件后 rebuild。
+  # 例外: ~/.pi/agent/settings.json 由 HM 按 mutableSettings 合并成可写文件
+  # (见上文), 不在本块里。
   # ---------------------------------------------------------------------------
   home.file = {
     # pi-web-access 搜索配置 (数据在 ./pi/extensions/web-search.nix —— 带键级注释与
