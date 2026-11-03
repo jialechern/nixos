@@ -103,13 +103,16 @@ in
     # 必须启用才会安装软件包并生成配置
     enable = true;
 
-    # 包来源: 上游官方 flake (flake.nix 的 pi input, 跟踪 stable 分支 ⇒ 最新正式版),
-    # 不再是 nixpkgs 的 pi-coding-agent。上游包 pname = "pi"、bin/pi 与
-    # meta.mainProgram 不变, 所以下面的 wrapProgram 与 extraPackages 全部无需改动。
+    # 包来源是 flake.nix 的 pi input (上游 flake), 不再是 nixpkgs 的
+    # pi-coding-agent; 当前钉 rev 的原因与恢复方式见 flake.nix。上游包
+    # pname = "pi"、bin/pi 与 meta.mainProgram 不变, 所以下面的 wrapProgram 与
+    # extraPackages 无需改动。
     #
-    # 升级只走 `nix flake update pi` + rebuild, 故有意不设 selfUpdateCommand /
-    # PI_SELF_UPDATE_COMMAND (它们让 `pi update` 去改装别处, 而这里的 pi 在只读 store
-    # 里); `pi update --extensions` 不受影响, 扩展包仍由 pi 自己升级。
+    # 升级: 跟踪分支时走 `nix flake update pi`; 钉 rev 期间先改 flake.nix 的 rev,
+    # 再执行 `nix flake lock --update-input pi`, 然后 rebuild。
+    # 有意不设 selfUpdateCommand / PI_SELF_UPDATE_COMMAND (它们让 `pi update`
+    # 改装别处, 而这里的 pi 在只读 store 里); `pi update --extensions` 不受影响,
+    # 扩展仍由 pi 自己升级。
     #
     # 包装注入四样东西:
     #   (1) sops-nix 生成的密钥到 pi 进程环境: 直接读密钥文件 (由 sops.nix 的 secrets
