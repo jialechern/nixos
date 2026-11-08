@@ -10,10 +10,6 @@
 
 // --- --- --- niri 初始化配置 --- --- ---
 
-// 保留: niri 的 environment {} 不会进入 systemd/D-Bus, 本行作为 niri 的子进程
-// 把它的覆盖值 (见 env.kdl) 上报给 D-Bus 激活环境
-spawn-at-startup "dbus-update-activation-environment" "--all"
-
 // XWayland: niri >= 25.08 已内置 xwayland-satellite 集成 (只要它在 $PATH),
 // 不要再手动 spawn; 自定义路径或禁用用顶层 xwayland-satellite { path "…" } / { off }
 // 壁纸初始化
