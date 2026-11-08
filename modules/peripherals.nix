@@ -44,8 +44,18 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-    jack.enable = true;
+    # JACK 兼容层不再全局注入: services.pipewire.jack.enable 已被 nixpkgs 弃用
+    # (PR #582717), 它把 pipewire 自带的 libjack.so.0 塞进整个会话的
+    # LD_LIBRARY_PATH, 会压过各程序自身 RUNPATH 里的真 libjack2 (例如 fhs 沙箱
+    # 的 multiPkgs)。需要用 JACK 的程序改成单独用 `pw-jack <命令>` 启动 —— 它的
+    # wrapper 只对那一个进程临时设置 LD_LIBRARY_PATH。
+    # 去掉后 PipeWire 的 jack.conf 与 JACK 协议支持照旧; alsa/pulse 已让
+    # services.pipewire.audio.enable 保持默认 true, 不依赖 jack.enable。
   };
+
+  # pw-jack 在 pipewire 的 jack output 里 (bin/pw-jack), 默认的 out output 不含它,
+  # 所以显式安装; 这只是同一 pipewire 派生已构建的另一个 output, 不会额外编译
+  environment.systemPackages = [ pkgs.pipewire.jack ];
 
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
