@@ -24,12 +24,9 @@
     # "加 input + 用它提供的 package 覆盖点", 不走上游 overlay (那只产生
     # pkgs.pi, 不会替换 pkgs.pi-coding-agent)。
     # 跟踪 stable 分支 (上游 nix.yml 的 update-stable job 快进到最新正式 tag)。
-    # 曾临时钉在 main 的修复 rev a57438e: v1.5.0 求值时报
-    # `attribute 'integrity' missing` (pi-schema 在 install-lock 里只有 link,
-    # nix/package.nix 未 pack), 见上游 issue #11682; 修复已随 v1.5.1 进入
-    # stable, 故改回该分支。若 stable 再次落后于所需热修复, 把 url 换成
-    # "github:earendil-works/pi/<rev>" 即可; rev 不随 `nix flake update pi`
-    # 移动, 升级时需手动改。
+    # 某个正式版的 Nix 构建失败、而 main 上已有修复时, 才临时把 url 换成
+    # "github:earendil-works/pi/<rev>"; rev 不随 `nix flake update pi` 移动,
+    # 升级时需手动改, 待修复发版后换回 stable。
     pi = {
       url = "github:earendil-works/pi/stable";
 
