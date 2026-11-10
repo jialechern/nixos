@@ -26,6 +26,7 @@
     firefox
     seahorse # 图形化 keyring 管理工具
     keepassxc # 密码管理器
+    otpclient # 临时密码生成(双因素认证)工具
 
     # --- 字体、主题与图标 ---
     # GTK 主题与图标不在这里装: `home/desktop/gtk.nix` 通过 gtk.theme.package /
