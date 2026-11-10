@@ -39,9 +39,9 @@ import order and the order lands in the generated fstab (and the drv hash).
   (iGPU, e.g. `hp`) — never both.
 - Flake inputs: `nixpkgs` (TUNA mirror), `home-manager`, `sops-nix` and `pi`
   (GitHub: `earendil-works/pi`, `follows` this repo's nixpkgs). That input
-  normally tracks the `stable` branch, which upstream fast-forwards to the latest
-  official tag; it is currently pinned to a main rev because v1.5.0's Nix build
-  fails during evaluation — see `flake.nix` for why and how to un-pin. All three
+  tracks the `stable` branch, which upstream fast-forwards to the latest
+  official tag; pin a `main` rev only as a temporary workaround when a
+  release's Nix build fails — see `flake.nix` for why and how. All three
   of `home-manager`, `sops-nix` and `pi` are fetched from GitHub, and `pi`
   additionally pulls a fixed-output model catalog from `pi.dev` at build time
   (its npm dependencies come from the npm registry, pinned by `importNpmLock`),

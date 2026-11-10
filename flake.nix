@@ -23,18 +23,15 @@
     # programs.pi-coding-agent.* 是因为 home-manager 上游自带该模块, 这里只是
     # "加 input + 用它提供的 package 覆盖点", 不走上游 overlay (那只产生
     # pkgs.pi, 不会替换 pkgs.pi-coding-agent)。
-    # 平时跟踪 stable 分支 (上游 nix.yml 的 update-stable job 快进到最新正式 tag)。
-    # 当前临时钉在 main 上的修复 rev: v1.5.0 的 Nix 构建在求值阶段报
-    # `attribute 'integrity' missing` (pi-schema 进了 install-lock 却只有 link,
-    # nix/package.nix 又未 pack packages/schema), 修复只落在 main 上
-    # (上游 issue #11682); 该 rev 还带着 v1.5.0 之后尚未发版的 main 提交,
-    # 版本号仍是 1.5.0。
-    #
-    # 恢复: 待 stable 被推过 v1.5.0 后, 把 url 改回
-    # "github:earendil-works/pi/stable" 并重新 lock。rev 形式不会随
-    # `nix flake update pi` 移动, 期间升级需改这里的 rev。
+    # 跟踪 stable 分支 (上游 nix.yml 的 update-stable job 快进到最新正式 tag)。
+    # 曾临时钉在 main 的修复 rev a57438e: v1.5.0 求值时报
+    # `attribute 'integrity' missing` (pi-schema 在 install-lock 里只有 link,
+    # nix/package.nix 未 pack), 见上游 issue #11682; 修复已随 v1.5.1 进入
+    # stable, 故改回该分支。若 stable 再次落后于所需热修复, 把 url 换成
+    # "github:earendil-works/pi/<rev>" 即可; rev 不随 `nix flake update pi`
+    # 移动, 升级时需手动改。
     pi = {
-      url = "github:earendil-works/pi/a57438e918350a2387d7518e46c74f367cc7feaf";
+      url = "github:earendil-works/pi/stable";
 
       # 上游这两项都指向 GitHub, follows 到本机清华镜像 nixpkgs:
       # 省下一次完整 nixpkgs 下载。上游依赖 hash 取自其 package-lock.json 的
