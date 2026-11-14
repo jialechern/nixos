@@ -73,7 +73,9 @@ let
             // 全局常开写法 (此前在 DP 上实测正常; 不推荐, 静止画面可能触发 modeset 黑闪):
             // variable-refresh-rate
             // 若低帧率时光标卡顿, 可加 debug { disable-cursor-plane } 并重连显示器
-            // 外接屏禁用热角 (25.11+), 避免误触 overview; 全局 gestures 开启后同样生效
+
+            // 热角已在 config.kdl 的 gestures 中全局关闭; 这里保留 per-output off
+            // 作为兜底 (若以后重新启用全局热角, 外接屏仍然不会触发)。
             hot-corners {
                 off
             }
@@ -122,6 +124,8 @@ let
         //   ExecStartPre 等待脚本兜底;
         // - 副作用: 内置屏变为 NVIDIA 渲染 → Intel 扫描 (反向跨 GPU), 实测正常;
         //   PRIME Sync 下 NVIDIA 本就全程通电, 功耗影响可忽略;
+        // - 上游 issue #2477 已于 2026-10 关闭 (未复现/归因 NVIDIA), 但没有对应修复
+        //   进入 26.04; 该 workaround 仍需保留, 等新版进 nixpkgs 后再复测;
         // - debug 选项不受 niri 配置兼容性政策保护, 升级 niri 后建议复核;
         // - 回退: 驱动修复或换 AMD 后可删本块; 备选 debug { disable-direct-scanout }
         //   (全屏也走合成路径, 保持全屏, 性能损失很小)。

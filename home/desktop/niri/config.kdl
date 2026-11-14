@@ -8,7 +8,7 @@
 // 配置文件采用 KDL 格式：https://kdl.dev
 // "/-" 注释掉后面的节点
 // 完整配置说明请查阅维基：
-// https://yalter.github.io/niri/Configuration:-Introduction
+// https://niri-wm.github.io/niri/Configuration:-Introduction
 
 // 环境变量配置
 include "conf.d/env.kdl"
@@ -28,6 +28,8 @@ include "conf.d/startup.kdl"
 hotkey-overlay {
     // 已禁用启动时的"重要快捷键"弹出窗口 (不需要时删掉 skip-at-startup 即可恢复)
     skip-at-startup
+    // 只显示已绑定的动作, 让 Mod+Shift+/ 的列表更精简 (25.08+)
+    hide-not-bound
 }
 
 // prefer-no-csd: 请求客户端尽可能省略其客户端装饰 (已启用 —— 即去掉窗口标题栏)
@@ -55,13 +57,13 @@ cursor {
     xcursor-size 24
     // 闲置时隐藏光标
     hide-after-inactive-ms 3000
-    // 打字时应藏光标
+    // 打字时隐藏光标; 若 Wine 原生 Wayland 游戏按键并移动鼠标时视角跳变, 注释掉此行。
     hide-when-typing
 }
 
 // 动画设置
 // 维基解释了如何配置单个动画：
-// https://yalter.github.io/niri/Configuration:-Animations
+// https://niri-wm.github.io/niri/Configuration:-Animations
 animations {
     // 取消注释以关闭所有动画
     // off
@@ -134,7 +136,7 @@ animations {
 
 // 窗口规则允许您调整单个窗口的行为
 // 更多信息请查阅维基：
-// https://yalter.github.io/niri/Configuration:-Window-Rules
+// https://niri-wm.github.io/niri/Configuration:-Window-Rules
 
 // 全局预览配置
 overview {
@@ -154,6 +156,8 @@ overview {
 include "conf.d/window-rule.kdl"
 
 // --- 最近窗口切换器（Alt+Tab 风格） ---
+// 注意: 写了 binds {} 会整体替换上游默认绑定; 下面补上 Alt+Tab 与应用内切换
+// (Mod+grave 已用于工作区切换, 故不重复)。
 recent-windows {
     // 立即弹出, 无延迟
     open-delay-ms 0
@@ -173,89 +177,47 @@ recent-windows {
     binds {
         Mod+Tab         { next-window; }
         Mod+Shift+Tab   { previous-window; }
+        Alt+Tab         { next-window; }
+        Alt+Shift+Tab   { previous-window; }
+        Alt+grave       { next-window     filter="app-id"; }
+        Alt+Shift+grave { previous-window filter="app-id"; }
     }
 }
 
 // --- 硬件开关事件（笔记本盖子、平板模式） ---
 switch-events {
-    // 合盖锁屏 (开盖由 niri 自动恢复内置屏)
-    lid-close { spawn "swaylock"; }
+    // 合盖锁屏 (开盖由 niri 恢复内置屏); 先检查已运行的 swaylock, 尽量避免与
+    // swayidle 的 before-sleep 重复启动。switch-events 只支持 spawn, 故经 sh 执行。
+    lid-close { spawn "sh" "-c" "pgrep -x swaylock >/dev/null 2>&1 || exec swaylock"; }
 
     // 平板模式 (二合一设备才需要):
     // tablet-mode-on  { spawn "bash" "-c" "gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled true"; }
     // tablet-mode-off { spawn "bash" "-c" "gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled false"; }
 }
 
-// --- 命名工作区（持久化工作区，即使为空也不会被自动删除） ---
-// 命名工作区与普通动态工作区一样，可参与 focus-workspace-down/up 切换，
-// 声明顺序决定初始排列顺序（先声明的在上方）。
-
-workspace "main"
-
-workspace "term"
-
-workspace "media"
-
-// --- 命名工作区可用的配置项（按需取消注释启用） ---
+// --- 命名工作区 ---
+// 当前未声明。命名工作区一旦声明就会一直存在（即使为空），需要时再取消注释。
 //
-// 1. open-on-output — 将工作区绑定到指定显示器（多显示器场景）
-//    使用 "niri msg outputs" 获取显示器名称
-// /-workspace "main" {
-//     open-on-output "eDP-1"
-// }
+// 示例:
+//   workspace "main"
+//   workspace "chat" {
+//       open-on-output "eDP-1"
+//   }
 //
-// 2. layout { } — 为当前工作区覆盖全局布局设置
-//    可用的子项：gaps / struts / border / focus-ring / preset-column-widths
-//    / default-column-width / always-center-single-column / center-focused-column
-// /-workspace "term" {
-//     layout {
-//         // 覆盖全局间隙大小
-//         gaps 16
-//
-//         // 覆盖工作区边距（留白区域）
-//         struts {
-//             left 0
-//             right 0
-//             bottom 0
-//             top 0
-//         }
-//
-//         // 覆盖窗口边框
-//         border {
-//             on
-//             width 2
-//             active-color "#ffc87f"
-//             inactive-color "#505050"
-//         }
-//
-//         // 覆盖焦点环
-//         focus-ring {
-//             on
-//             width 4
-//             active-color "#7fc8ff"
-//             inactive-color "#505050"
-//         }
-//
-//         // 覆盖预设列宽
-//         preset-column-widths {
-//             proportion 0.33333
-//             proportion 0.5
-//             proportion 0.66667
-//             proportion 1.0
-//         }
-//
-//         // 覆盖默认列宽
-//         default-column-width { proportion 0.5; }
-//
-//         // 列中只有一个窗口时始终居中（设为 false 则取消）
-//         always-center-single-column false
-//
-//         // 聚焦列始终居中
-//         center-focused-column
-//     }
-// }
+// 可用 open-on-output（绑定显示器）与 layout { ... }（覆盖布局）；
+// window-rule 的 open-on-workspace 可让应用固定打开到该工作区。
+// 完整说明: https://niri-wm.github.io/niri/Configuration:-Named-Workspaces
 
 // --- 手势配置 ---
+// 热角全局关闭; 删掉此块可恢复内置屏默认的 top-left 热角
+// (外接屏仍由 niri.nix 的 per-output off 兜底; 需要时可在 output 块中覆盖)。
+gestures {
+    hot-corners {
+        off
+    }
+}
+
+// 其余手势选项（按需启用）
 /- gestures {
     // 拖放时边缘滚动视图的触发参数
     // dnd-edge-view-scroll {
@@ -269,15 +231,6 @@ workspace "media"
     //     trigger-height 50
     //     delay-ms 100
     //     max-speed 1500
-    // }
-
-    // 全局热角配置（可在 per-output 级别覆盖）
-    // hot-corners {
-    //     // off
-    //     top-left
-    //     // top-right
-    //     // bottom-left
-    //     // bottom-right
     // }
 }
 
@@ -295,7 +248,8 @@ workspace "media"
     // 禁用 Direct Scanout 优化
     // disable-direct-scanout
 
-    // 从 resume 时不自动重连显示器
+    // resume (TTY 切换/唤醒) 时强制断开所有输出并触发一次 modeset/黑屏,
+    // 用于修复画面损坏或显示器不亮 (26.04+)
     // force-disable-connectors-on-resume
 
     // 指定渲染 DRM 设备
@@ -339,7 +293,7 @@ clipboard {
 }
 
 // --- 毛玻璃模糊特效 ---
-// 全局模糊参数，配合窗口规则中的 background-effect { blur true; } 使用
+// 全局模糊参数; 规则里的 background-effect 未写 noise/saturation 时回退到这里。
 // passes: 下采样/上采样轮数，越多越光滑但更消耗 GPU
 // offset: 每轮的像素偏移倍率，越大越光滑（不增加 GPU 开销），但过高会产生伪影
 // noise: 在模糊上叠加微噪声，防止色带伪影

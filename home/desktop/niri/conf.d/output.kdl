@@ -3,7 +3,7 @@
 // 可以通过输出名称配置输出设备，名称可通过在 niri 实例中运行 `niri msg outputs` 找到
 // 内置笔记本电脑显示器通常称为 "eDP-1"
 // 更多信息请查阅维基：
-// https://yalter.github.io/niri/Configuration:-Outputs
+// https://niri-wm.github.io/niri/Configuration:-Outputs
 
 // 输出设备配置模板
 /- output "eDP-1" {
@@ -32,12 +32,12 @@
     // 每个显示器独立的背景色（alpha 通道会被忽略）
     // backdrop-color "#001100"
 
-    // 最大色彩深度，如 8 或 10
+    // max-bpc 在 26.04 不可用 (25.11 移除, 下一版重新加入);
+    // 取消注释会让构建期 niri validate 失败。
     // max-bpc 8
 
-    // 热角配置（覆盖全局 gestures 中的 hot-corners 设置）
-    // 可启用 top-left、top-right、bottom-left、bottom-right
-    // 或设 off 全部关闭
+    // 热角配置: 全局已在 config.kdl 关闭; 这里可按输出单独启用
+    // top-left / top-right / bottom-left / bottom-right, 或设 off。
     // hot-corners {
     //     bottom-left
     //     bottom-right

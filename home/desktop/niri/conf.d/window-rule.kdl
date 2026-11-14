@@ -20,7 +20,8 @@ layer-rule {
     }
 }
 
-// 使 Waybar 状态栏获得圆角裁剪与毛玻璃模糊
+// Waybar 状态栏: 本体圆角由 CSS 负责 (geometry-corner-radius 仅影响 shadow/blur);
+// 弹出菜单额外加半透明与毛玻璃模糊。
 layer-rule {
     match namespace="^waybar$"
 
@@ -36,19 +37,33 @@ layer-rule {
     }
 }
 
-// 使 Mako 通知弹窗获得毛玻璃模糊特效 (mako 的命名空间是 "notifications", 不是 "mako")
+// Mako 通知: 毛玻璃 + 不进录屏 (mako 的命名空间是 "notifications", 不是 "mako")
 layer-rule {
     match namespace="^notifications$"
 
     geometry-corner-radius 8
     opacity 0.92
 
+    // 通知内容可能包含敏感信息，不进入录屏 (仍可正常出现在屏幕上)
+    block-out-from "screencast"
+
     background-effect {
         blur true
     }
 }
 
-// 匹配器（match）完整列表:
+// 26.04: top/overlay 层用非 xray 模糊, 让 rofi/mako 透出下层窗口。
+// 非 xray 更贵, 且仅对已开启 blur 的层生效。
+layer-rule {
+    match layer="top"
+    match layer="overlay"
+
+    background-effect {
+        xray false
+    }
+}
+
+// 窗口匹配器（match）完整列表:
 //   match app-id="..." — 按 app-id 匹配
 //   match title="..."  — 按窗口标题匹配
 //   match is-active=true        — 匹配活动窗口
@@ -69,18 +84,16 @@ window-rule {
 
 // 所有窗口都应用的规则
 window-rule {
+    // 默认 xray=true (模糊壁纸); 非 xray 仅用于上方 top/overlay 层与下方浮动窗口。
     // --- 启用圆角 ---
     geometry-corner-radius 12
     clip-to-geometry true
-    // --- 不透明度 ---
-    // 提示：透明度越低毛玻璃越明显，可尝试 0.85 ~ 0.92
-    opacity 0.85
+    // 活动窗口 0.92、非活动窗口 0.85; 活动窗口更清晰, 同时保留轻微毛玻璃
+    opacity 0.92
     draw-border-with-background false
-    // --- 毛玻璃背景特效 ---
+    // 毛玻璃的 noise/saturation 由 config.kdl 的全局 blur 块统一提供
     background-effect {
         blur true
-        noise 0.03
-        saturation 1.6
     }
     // --- 右键菜单等弹出窗口 ---
     popups {
@@ -88,9 +101,23 @@ window-rule {
         geometry-corner-radius 15
         background-effect {
             blur true
-            noise 0.03
-            saturation 1.6
         }
+    }
+}
+
+// 非活动窗口更透明 (0.85)。
+window-rule {
+    match is-active=false
+    opacity 0.85
+}
+
+// 浮动窗口在全局 blur 基础上改用非 xray 模糊; 该模式仍是实验性的,
+// 打开/关闭动画和拖动平铺窗口时可能消失。
+window-rule {
+    match is-floating=true
+
+    background-effect {
+        xray false
     }
 }
 
@@ -101,6 +128,16 @@ window-rule {
     // - Flatpak Firefox (app-id is "org.mozilla.firefox")
     match app-id=r#"firefox$"# title="^Picture-in-Picture$"
     open-floating true
+}
+
+// 正在被单独录制的窗口: 红色焦点环提示 (25.02+), 用于确认当前共享的是哪个窗口。
+window-rule {
+    match is-window-cast-target=true
+
+    focus-ring {
+        active-color "#f38ba8"
+        inactive-color "#7d0d2d"
+    }
 }
 
 // --- 以下为新增窗口规则属性示例，默认全部注释 ---
@@ -152,10 +189,10 @@ window-rule {
     // min-height 300
     // max-height 300
 
-    // 强制窗口保持平铺状态
+    // 告知窗口它处于平铺状态（通常会让窗口变矩形并隐藏客户端阴影）
     // tiled-state true
 
-    // 启用类似 baba 布局的浮动行为
+    // 让窗口上下浮动（25.02+ 愚人节功能）
     // baba-is-float true
 }
 

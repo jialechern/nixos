@@ -192,8 +192,12 @@ binds {
     Mod+Ctrl+R { switch-preset-window-height-back; }
     Mod+Alt+R { switch-preset-window-height-back; }
 
-    // 最大化
+    // 整列最大化（保留 gaps/border，可含多个窗口）
     Mod+F { maximize-column; }
+
+    // 单窗口真最大化（25.11+）：铺到工作区边缘，去掉 gaps/border；
+    // 与上游默认绑定一致，Mod+M 在本仓库中未被占用
+    Mod+M { maximize-window-to-edges; }
 
     // 重置高度
     Mod+Shift+F { reset-window-height; }
@@ -203,9 +207,14 @@ binds {
     // 使该列“填充剩余空间”。
     Mod+Ctrl+F { expand-column-to-available-width; }
 
-    // 全屏模式
+    // 全屏 / 窗口化全屏
     Mod+Ctrl+Shift+F { fullscreen-window; }
-    Mod+Ctrl+Alt+F { fullscreen-window; }
+    // 窗口化全屏（25.05+）：告诉应用它全屏了，但窗口仍保持普通窗口大小，
+    // 适合录屏演示；原来的 Mod+Ctrl+Alt+F 与 Mod+Ctrl+Shift+F 重复，故改为此动作
+    Mod+Ctrl+Alt+F { toggle-windowed-fullscreen; }
+
+    // 在窗口的 opacity 规则与不透明之间切换（25.02+）
+    Mod+Shift+O { toggle-window-rule-opacity; }
 
     // 在屏幕上居中所有完全可见的列。
     Mod+Ctrl+C { center-visible-columns; }
@@ -381,8 +390,14 @@ binds {
     Mod+S { screenshot; }
     // 截取整个屏幕
     Mod+Shift+S { screenshot-screen; }
-    // 截取当前窗口
-    Mod+Ctrl+S { screenshot-window; }
+    // 截取当前窗口；26.04+ 可带鼠标指针（仅当指针位于该窗口上）
+    Mod+Ctrl+S { screenshot-window show-pointer=true; }
+
+    // --- 动态录屏目标 (25.05+) ---
+    // 先在录屏对话框选择 "niri Dynamic Cast Target", 再用这些键切换目标。
+    Mod+Shift+C      { set-dynamic-cast-window; }
+    Mod+Ctrl+Shift+C { set-dynamic-cast-monitor; }
+    Mod+Ctrl+Alt+C   { clear-dynamic-cast-target; }
 
     // 打开剪切板历史
     Mod+Ctrl+X { spawn "alacritty" "-e" "sh" "-c" "cliphist list | fzf | cliphist decode | wl-copy"; }

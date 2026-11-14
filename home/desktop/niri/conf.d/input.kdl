@@ -1,7 +1,7 @@
 // input.kdl
 // 输入设备配置
 // 完整选项列表请查阅维基：
-// https://yalter.github.io/niri/Configuration:-Input
+// https://niri-wm.github.io/niri/Configuration:-Input
 input {
     keyboard {
         xkb {
@@ -86,7 +86,7 @@ input {
         // map-to-output "eDP-1"
         // 将平板笔映射到当前聚焦的显示器
         // map-to-focused-output
-        // 将平板笔映射到当前聚焦的窗口
+        // 将平板笔映射到当前聚焦的窗口 (下一版才支持; 26.04 会 validate 失败)
         // map-to-focused-window
         // 左手模式
         // left-handed

@@ -1,7 +1,7 @@
 // layout.kdl
 // 此处存放窗口定位和大小的设置
 // 更多信息请查阅维基：
-// https://yalter.github.io/niri/Configuration:-Layout
+// https://niri-wm.github.io/niri/Configuration:-Layout
 
 layout {
     // 以逻辑像素为单位设置窗口周围的间隙
