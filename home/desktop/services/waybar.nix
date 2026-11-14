@@ -1,7 +1,37 @@
-{ config, pkgs, ... }:
+{ osConfig, pkgs, ... }:
 
 let
   term-run = "kitty -e";
+
+  # 录屏指示器: 轮询 niri 26.04 的 cast IPC (`niri msg --json casts`).
+  # --check 只判断是否有 cast, 供 Waybar 的 exec-if 决定是否显示模块;
+  # 正常模式输出 Waybar custom module 的 JSON (text/tooltip/class).
+  niri = osConfig.programs.niri.package;
+  niriCast = pkgs.writeShellApplication {
+    name = "niri-cast-status";
+    runtimeInputs = [ niri pkgs.jq ];
+    text = ''
+      casts="$(niri msg --json casts 2>/dev/null || printf '[]')"
+
+      if [ "''${1:-}" = "--check" ]; then
+        jq -e 'length > 0' <<<"$casts" >/dev/null
+        exit
+      fi
+
+      # Waybar 的 custom module 只读取 stdout 的第一行, 必须用 -c 输出紧凑单行 JSON。
+      jq -c '
+        if length == 0 then
+          { text: "", tooltip: "", class: "empty" }
+        else
+          {
+            text: "",
+            tooltip: ("正在录屏 (" + (length | tostring) + "): " + ([.[] | .target | if has("Output") then "输出 " + .Output.name elif has("Window") then "窗口 #" + (.Window.id | tostring) else "未选择目标" end] | join(", "))),
+            class: "active"
+          }
+        end
+      ' <<<"$casts"
+    '';
+  };
 in
 {
   home.packages = with pkgs; [
@@ -55,6 +85,7 @@ in
           "backlight"
           "pulseaudio"
           "bluetooth"
+          "custom/niri-cast"
           "tray"
           "battery"
         ];
@@ -233,6 +264,19 @@ in
           "tooltip-format-enumerate-connected" = "   {device_alias}";
           "tooltip-format-enumerate-connected-battery" = "   {device_alias} 电量 {device_battery_percentage}%";
           "on-click" = "overskride";
+        };
+
+        # ═══════════════════════════════════════════════
+        # 录屏指示器 (niri 26.04 cast IPC)
+        # 只有存在 screencast 时才显示 (exec-if 控制), 平时不占位。
+        # ═══════════════════════════════════════════════
+        "custom/niri-cast" = {
+          exec = "${niriCast}/bin/niri-cast-status";
+          exec-if = "${niriCast}/bin/niri-cast-status --check";
+          interval = 2;
+          "return-type" = "json";
+          format = "{}";
+          tooltip = true;
         };
 
         # ═══════════════════════════════════════════════
@@ -461,6 +505,17 @@ in
       /* 蓝牙: 宝蓝 */
       #bluetooth {
         color: @sapphire;
+      }
+
+      /* 录屏指示器: 红点 + 红底, 仅在录屏时出现 */
+      #custom-niri-cast {
+        margin: 3px 6px;
+        padding: 0 12px;
+        background: rgba(243, 139, 168, 0.22);
+        color: @red;
+        border-radius: 12px;
+        box-shadow: 0px 0px 12px rgba(243, 139, 168, 0.35);
+        font-weight: 700;
       }
 
       /* 网络: 绿色 */
