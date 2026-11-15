@@ -7,17 +7,14 @@ layer-rule {
     place-within-backdrop true
 }
 
-// 使 Rofi 启动器获得毛玻璃模糊特效
+// Rofi 启动器: 半透明底 (毛玻璃关闭)。rofi 2.1.0 (Wayland) 的 layer surface
+// 恒为整屏大小 (2.0.0 时按内容尺寸建), 而 niri 按该 surface 的范围模糊, 启用即整屏模糊;
 layer-rule {
     match namespace="^rofi$"
 
     opacity 0.88
 
     geometry-corner-radius 12
-
-    background-effect {
-        blur true
-    }
 }
 
 // Waybar 状态栏: 本体圆角由 CSS 负责 (geometry-corner-radius 仅影响 shadow/blur);
@@ -28,7 +25,7 @@ layer-rule {
     geometry-corner-radius 12
 
     popups {
-        geometry-corner-radius 10
+        geometry-corner-radius 12
         opacity 0.88
 
         background-effect {
